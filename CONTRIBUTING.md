@@ -1,10 +1,8 @@
-We very much welcome contribution from human authorss of all forms, including feedback sharing, bug reports, feature requests, improved documentation, and source code or library contributions. 
-
-Before preparing a pull request (PR), please test your changes beforehand, running `dune build` to check that the Pearl source code compiles properly and then checking that nothing in the library `lib/all.prl` was broken.
+We very much welcome contribution from human authors of all forms, including feedback sharing, bug reports, feature requests, improved documentation, and source code or library contributions. Before preparing a pull request (PR), which assumes that you have read the AI Use Policy found below, we ask that you please test your changes beforehand, running `dune build` to check that the Pearl source code compiles properly and then checking that nothing in the library `lib/all.prl` was broken.
 
 ## AI Use Policy
 
-We are fully committed to the value of human understanding. Above all else, Pearl is written by human beings for human use. While minimal use of AI for basic technical assistance and proofreading is tolerated, contributors will only publish code that they can write themselves without AI-generating tools. Thus, contribution of vibe coding is only allowed to the extent that the author is capable of producing the code on their own.
+We are fully committed to the preservation of human understanding. Above all else, Pearl is written by human beings for human use. While minimal use of AI for basic technical assistance and proofreading is tolerated, contributors will only publish code that they can write themselves without AI-generating tools. Thus, contribution of vibe coding is only allowed to the extent that the author is capable of producing the code on their own.
 
 ## Desired features
 

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/bbentzen/pearl/blob/master/doc/assets/pearl-logo.png?raw=true" width="600"/>
+  <img src="https://github.com/bbentzen/pearl/blob/main/doc/assets/pearl-logo.png?raw=true" width="600"/>
 </p>
 
 <p align="center">
@@ -34,11 +34,11 @@ This will create the executable `main.exe` which you can run on any `.pearl` fil
 $ dune exec _build/default/bin/main.exe <filename>.pearl
 ```
 
-However, we recommend using the pearl-vscode extension for verification support. More information can be found at [pearl-vscode/README.md](https://github.com/bbentzen/pearl/blob/master/pearl-vscode/README.md).
+However, we recommend using the pearl-vscode extension for verification support. More information can be found at [pearl-vscode/README.md](https://github.com/bbentzen/pearl/blob/main/pearl-vscode/README.md).
 
 ## Usage
 
-Please see the reference manual on [doc/README.md](https://github.com/bbentzen/pearl/blob/master/doc/README.md).
+Please see the reference manual on [doc/README.md](https://github.com/bbentzen/pearl/blob/main/doc/README.md).
 
 ## Support
 
