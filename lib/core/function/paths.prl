@@ -1,0 +1,32 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+universe ℓ
+
+/* Function application and extensionality */
+
+def ap {A B : type ℓ} (f : A → B) {a b : A} :
+  eq A a b → eq B (f a) (f b) :=
+λ p, reflect p (refl _)
+
+def eta {A B : type ℓ} (f : A → B) :
+  eq (A → B) f (λ x, f x) :=
+refl _
+
+def apd {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) {a b : A} (p : eq A a b) :
+  eq (B a) (f a) (reflect p (f b)) :=
+reflect p (refl _)
+
+def etad {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) :
+  eq (Π (x : A), B x) f (λ x, f x) :=
+refl _
+
+infer {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) : etad f
+
+/* def funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) (p : eq (Π (x : A), B x) f (λ x, f x)) :
+  (Π (x : A), eq (B x) (f x) (g x)) → eq (Π (x : A), B x) f g :=
+λh, reflect p _ */
+/* (λ x, reflect (f x) x) */

@@ -1,0 +1,574 @@
+(**
+  (c) Copyright 2019 Bruno Bentzen. All rights reserved.
+  Released under Apache 2.0 license as described in the file LICENSE.
+
+  Desc: This module contains the elaborator, type checker, type inference, and unifier.
+        The elaborator performs ambiguously elaboration, type checking, and type inference.
+        The unifier implements the eta conversion.
+ **)
+
+open Basis
+open Context
+open Ast
+open Eval
+
+let st = Constraints.empty ()
+
+let solve_meta_application args vars body = function
+  | Meta n ->
+    let rec build_lam vars body = function
+      | [] -> body
+      | _ :: args -> 
+        let v1 = Expr.init_fresh vars in
+        Lam (v1, build_lam (vars + 1) (Expr.shift 1 0 body) args)
+    in
+    if Placeholder.has_placeholder_name n body then None else 
+      Some (build_lam vars body args)
+  | _ -> None
+
+(* Checks whether the type of a given expression is the given type *)
+
+let rec elaborate global ctx lvl sl ty vars bs = function
+  | Global x ->
+    begin match Global.var_type x ctx with
+    | Ok xty ->
+      let ty = eval ty in
+      let c = Global.check_var_ty x ty ctx in
+      let h = Placeholder.is ty in 
+      let h' = Placeholder.is xty in 
+      let d = Global.is_declared x ctx in
+      begin match c, h, h', d with
+      | true , _, _ , _ | _ , _, true , _ -> Ok (Global x, ty, sl)
+      | _ , true, _ , _ -> Ok (Global x, xty, sl)
+      | false , false, false , true ->
+        let h1 = Placeholder.generate () in
+        begin match elaborate global ctx lvl sl h1 vars bs xty with
+        | Ok (_, tTy', sa) ->
+          let u = unify global ctx lvl sl vars bs (eval ty, eval xty, tTy') true in
+          begin match u with
+          | Ok s -> 
+            Ok (Global x, s, sl) 
+          | Error (_, msg) -> Error (sa, Msg.var_type_mismatch x xty ty msg)
+          end
+        | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
+        end
+      | false, false, false, false -> 
+        begin match Env.unfold x global with
+        | Ok (_, xty) ->
+          let h1 = Placeholder.generate () in
+          begin match elaborate global ctx lvl sl h1 vars bs xty with
+          | Ok (_, tTy', sa) ->
+            let u = unify global ctx lvl sl vars bs (eval xty, eval ty, tTy') true in
+            begin match u with
+            | Ok s -> Ok (Global x, s, sl) (* runs faster when not body *)
+            | _ -> Error (sa, Msg.var_type_mismatch_2 x xty ty)
+            end
+          | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
+          end
+        | Error msg -> Error (sl, Msg.var_error x msg)
+        end
+      end
+    | Error _ -> Error (sl, Msg.undeclared x)
+    end
+
+  | Lam (x, e) ->
+    let e = eval e in
+    let ty = eval ty in
+    begin match ty with
+    | Pi (_, ty1, ty2) ->
+      let v1 = Expr.mk_fresh x ctx in
+      let e' = Expr.open_var 0 (Global v1) e in
+      let ty2' = Expr.open_var 0 (Global v1) ty2 in
+      let elab = elaborate global ((v1, ty1, true) :: ctx) lvl sl ty2' (vars+1) bs e' in
+      begin match elab with
+      | Ok (e', ty2', sa) -> 
+        Ok (Lam (v1, Expr.close_bound v1 e'), Pi (v1, ty1, Expr.close_bound v1 ty2'), sa)
+      | Error (sa, msg) -> Error (sa, msg)
+      end
+    | Meta _ ->
+      let h1 = Placeholder.generate () in
+      let h2 = Placeholder.generate () in
+      elaborate global ctx lvl sl (Pi(x, h1, h2)) vars bs (Lam (x, e))
+    | _ -> 
+      Error (sl, Msg.lam_error x e ty)
+    end
+
+  | App (e1, e2) ->
+    (* If the head expression is a recursor try to infer the motive *)
+    let ty = eval ty in
+    let head, args = Eval.break_args [] (App (e1, e2)) in
+    let rec_env, cons_env = Data.get_ind_env () in 
+    begin match Infer.rec_motive_idx elaborate global ctx lvl sl vars bs rec_env ty args head with
+    | Some res ->
+      elaborate global ctx lvl sl ty vars bs res
+    | None ->
+      (* If the head expression is a constructor try to infer indices *)
+      begin match Infer.constr_indices cons_env ty args head with
+      | Some res ->
+        elaborate global ctx lvl sl ty vars bs res
+      | None ->
+        (* Otherwise infer the type of e1 and check its evaluated domain against e2 *)
+        let h1 = Placeholder.generate () in
+        let v1 = Expr.init_fresh vars in
+        let h2 = Placeholder.generate () in
+        let elab1 = elaborate global ctx lvl sl (Pi(v1, h1, h2)) (vars+1) bs e1 in
+        begin match elab1 with
+        | Ok (e1', Pi(_, ty1, ty2), sa1) ->
+          (* Evaluates the inferred domain before type checking *)
+          let ty1' = eval ty1 in
+          let h3 = Placeholder.generate () in
+          let elab2 = elaborate global ctx lvl sl ty1' (vars+1) bs e2 in
+          begin match elab2 with
+          | Ok (e2', _, sa2) ->
+            (* Otherwise unify both types possibly lifting the universe levels *)
+            let ty2' = eval (Expr.open_var 0 e2' ty2) in
+            let u = unify global ctx lvl sl (vars+1) bs (ty, ty2', h3) true in
+            begin match u with
+            | Ok _ -> 
+              Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
+            | Error (_, msg) ->
+              Error (Stack.append sa1 sa2, Msg.app_fail_1 e2' ty1' msg)
+            end
+          | Error (sa2, msg) -> 
+            Error (Stack.append sa1 sa2, Msg.app_fail_2 e2 ty1' msg)
+          end
+        | Ok (e1', ty1', sa1) -> 
+          begin match elaborate global ctx lvl sl h1 (vars+1) bs e2 with
+          | Ok (e2', ty1, sa2) ->
+            Constraints.add st {
+            lhs = (Pi(v1, ty1, h2)); 
+            rhs = ty1'; 
+            cty = Type(Var "?_"); 
+            clift = true };
+            let ty2' = eval (Expr.open_var 0 e2' h2) in
+            (* Delay unification *)
+            Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
+          | Error (sa2, msg) -> 
+            Error (Stack.append sa1 sa2, Msg.app_fail_2 e2 ty1' msg)
+          end
+          (* Error (sa1, Msg.app_wrong_ty1 e1' (Pi(v1, h1, h2)) ty1') *)
+        | Error (sa, msg) -> 
+          Error (sa, Msg.app_wrong_ty2 e1 msg)
+        end
+      end
+    end
+  
+  | Reflect (e1, e2) ->
+    let h1 = Placeholder.generate () in
+    begin match elaborate global ctx lvl sl h1 vars bs e1 with
+    | Ok (e1, ty1, sa) ->
+      begin match ty1 with
+      | Eq (_, e1', e2') ->
+        let ty = Expr.fullsubst 0 e1' e2' true ty in
+        elaborate global ctx lvl sl ty vars bs e2
+      | ty1 ->
+        Error (sa, Msg.reflection_error e1 ty1)
+      end
+    | Error (sa, msg) -> Error (sa, Msg.reflection_error_2 e1 msg)
+    end
+
+  | Explode (e1, e2) ->
+    begin match elaborate global ctx lvl sl (Void()) vars bs e1 with
+    | Ok (e1', _, sa) -> 
+      (* Need to check later if e2 has dangling metas or _s *)
+      Ok (Explode (e1', e2), ty, sa)
+    | Error (sa, msg) -> Error (sa, Msg.void_error e1 msg)
+    end
+  
+  | Local index -> Error (sl, Msg.unexpected index ty ctx)
+
+  | Refl e ->
+    (* Note that e is never type checked at inference stage below *)
+    begin match ty with
+    | Eq (ty1, e1, e2) ->
+      let elab1 = elaborate global ctx lvl sl ty1 vars bs e1 in
+      let elab2 = elaborate global ctx lvl sl ty1 vars bs e2 in
+      begin match elab1, elab2 with
+      | Ok (e1, _, sa), Ok (e2, _, sb) ->
+        begin match unify global ctx lvl sl vars bs (eval e1, eval e2, ty) false with
+          | Ok e ->
+            Ok (Refl e, Eq (ty1, e1, e2), Stack.append sa sb)
+          | Error (_, msg) -> Error (Stack.append sa sb, msg)
+        end
+      | Error (sl, msg), _ -> Error (sl, Msg.refl_error_1 e1 ty msg)
+      |  _ , Error (sl, msg) -> Error (sl, Msg.refl_error_1 e2 ty msg)
+      end
+
+    | Meta _ ->
+      let h1 = Placeholder.generate () in
+      begin match elaborate global ctx lvl sl h1 vars bs e with
+      | Ok (e, ty1, sa) ->
+        Ok (Refl e, Eq (ty1, e, e), sa)
+      | Error (sl, msg) -> Error (sl, msg)
+      end
+    | _ -> 
+      Error (sl, Msg.refl_error_2 e ty)
+    end
+
+  | Pi(x, ty1, ty2) ->
+    let ty1 = eval ty1 in
+    let h1 = Placeholder.generate () in
+    let elab1 = elaborate global ctx lvl sl h1 vars bs ty1 in
+    let ty2 = eval ty2 in
+    let ty2' = (Expr.open_var 0 (Global x) ty2) in
+    let elab2 = elaborate global ((x, ty1, true) :: ctx) lvl sl h1 vars bs ty2'
+    in
+    begin match elab1, elab2 with
+    | Ok (ty1', Type n1, sa1), Ok (ty2', Type n2, sa2) -> 
+      let max = Level.reduce (Max(n1, n2)) in
+      begin match ty with
+      | Type (Var par) when Level.is_arbitrary_string par ->
+        (* Synthesize type levels placeholder *)
+        Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type (Suc(max)), Stack.append sa1 sa2)
+      | Type m ->
+        (* Check if levels are compatible *)
+        if Level.leq max m then 
+          Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type m, Stack.append sa1 sa2)
+        else 
+          Error (Stack.append sa1 sa2, Msg.pi_universe_1 x ty1 ty2 max m)
+      | Meta n ->
+        Hashtbl.add Data.meta_store n { Data.solution = Type max};
+        Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type max, Stack.append sa1 sa2)
+      | _ -> Error (Stack.append sa1 sa2, Msg.pi_universe_2 x ty1 ty2 ty)
+      end
+    (* Store these Ok'd metas? *)
+    | Ok (ty1', Type n, sa), Ok (ty2', Meta _, _) 
+    | Ok (ty1', Meta _, sa), Ok (ty2', Type n, _) -> 
+      begin match ty with
+      | Type m ->
+        if Level.leq n m then 
+          Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type m, sa) 
+        else 
+          Error (sa, Msg.pi_universe_1 x ty1 ty2 n m)
+      | Meta k -> 
+        Hashtbl.add Data.meta_store k { Data.solution = Type n}; 
+        Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type n, sa)
+      | _ -> 
+        Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
+      end
+    
+    | Ok (ty1', Type n, sa), Ok (Meta k, _, _) -> 
+      begin match ty with
+      | Type m ->
+        if Level.leq n m then 
+          Ok (Pi(x, ty1', Meta k), Type m, sa) 
+        else 
+          Error (sa, Msg.pi_universe_1 x ty1 ty2 n m)
+      | Meta l ->
+        Hashtbl.add Data.meta_store l { Data.solution = Type n}; 
+        Ok (Pi(x, ty1', Meta k), Type n, sa) (* TODO: hole might live in a higher universe *)
+      | _ -> 
+        Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
+      end
+    | Ok (Meta k, _, _), Ok (ty2', Type n, sa) -> 
+      begin match ty with
+      | Type m ->
+        if Level.leq n m then 
+          Ok (Pi(x, Meta k, Expr.close_bound x ty2'), Type m, sa) 
+        else 
+          Error (sa, Msg.pi_universe_1 x ty1 ty2 n m)
+      | Meta l ->
+        Hashtbl.add Data.meta_store l { Data.solution = Type n}; 
+        Ok (Pi(x, Meta k, Expr.close_bound x ty2'), Type n, sa) (* TODO: hole might have live in a higher universe *)
+      | _ ->
+        Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
+      end
+    | Ok (Meta k1, _, _), Ok (Meta k2, _, _) ->
+      begin match ty with
+      | Type m -> Ok (Pi(x, Meta k1, Meta k2), Type m, sl) 
+      | Meta k -> Ok (Pi(x, Meta k1, Meta k2), Meta k, sl)
+      | _ -> Error (sl, Msg.pi_universe_2 x ty1 ty2 ty)
+      end
+    
+    | Ok (_, Type _, sa), Error (sb, msg) -> Error (Stack.append sa sb, Msg.pi_codomain ty2' msg)
+    | _, Error (sb, msg) -> Error (sb, Msg.pi_codomain ty2' msg)
+    | Error (sa, msg), _ -> 
+      Error (sa, Msg.pi_domain ty1 msg)
+    | Ok (ty1', u1, _), Ok (ty2', u2, _) -> 
+      Error (sl, Msg.pi_unexpected x ty1 ty2 ty ty1' u1 ty2' u2)
+    end
+
+  | Void() ->
+    let ty = eval ty in
+    begin match ty with
+    | Type m -> Ok (Void(), Type m, sl)
+    | Meta k -> 
+      Hashtbl.add Data.meta_store k { Data.solution = Type (Num 0)}; 
+      Ok (Void(), Type (Num 0), sl)
+    | _ -> Error (sl, Msg.void_ty ty)
+    end
+  
+  | Eq(ty1, e1, e2) ->
+    let h1 = Placeholder.generate () in
+    let elab = elaborate global ctx lvl sl h1 vars bs ty1 in
+    begin match elab with
+    | Ok (ty1, Type n, st) -> 
+      let elab1 = elaborate global ctx lvl sl ty1 vars bs e1 in
+      let elab2 = elaborate global ctx lvl sl ty1 vars bs e2 in
+      begin match elab1, elab2 with
+      | Ok (e1, _, sa), Ok (e2, _, sb) ->
+        (* Check against the target type *)
+        begin match ty with
+        | Type (Var par) when Level.is_arbitrary_string par ->
+          (* Synthesize type levels placeholder *)
+          Ok (Eq(ty1, e1, e2), Type n, Stack.lappend st sa sb)
+        | Type m ->
+          (* Check if levels are compatible *)
+          if Level.leq n m then
+            Ok (Eq(ty1, e1, e2), Type m, Stack.lappend st sa sb)
+          else
+            Error (Stack.lappend st sa sb, Msg.eq_universe_1 ty1 e1 e2 n m)
+        | Meta k ->
+          Hashtbl.add Data.meta_store k { Data.solution = Type n};
+          Ok (Eq(ty1, e1, e2), Type n, Stack.lappend st sa sb)
+        | _ -> Error (Stack.lappend st sa sb, Msg.eq_universe_2 ty1 e1 e2 ty)
+        end
+      | Error msg, _ | _, Error msg -> Error msg
+      end
+    
+    | Ok (ty1, Meta n, st) ->
+      let elab1 = elaborate global ctx lvl sl ty1 vars bs e1 in
+      let elab2 = elaborate global ctx lvl sl ty1 vars bs e2 in
+      begin match elab1, elab2 with
+      | Ok (e1, _, sa), Ok (e2, _, sb) ->
+        (* Check against the target type *)
+        begin match ty with
+        | Type (Var par) when Level.is_arbitrary_string par ->
+          (* Synthesize type levels placeholder *)
+          Ok (Eq(ty1, e1, e2), Type (Var par), Stack.lappend st sa sb)
+        | Type m ->
+          Hashtbl.add Data.meta_store n { Data.solution = Type m};
+          Ok (Eq(ty1, e1, e2), Type m, Stack.lappend st sa sb)
+        | Meta k ->
+          Ok (Eq(ty1, e1, e2), Meta k, Stack.lappend st sa sb)
+        | _ -> Error (Stack.lappend st sa sb, Msg.eq_universe_2 ty1 e1 e2 ty)
+        end
+      | Error msg, _ | _, Error msg -> Error msg
+      end
+    
+    | Ok (ty1, _, st) ->
+      Error (st, Msg.not_a_type ty1)
+
+    | Error msg ->
+      (* Type not elaborable, needs an informative error msg *)
+      Error msg
+    end
+    
+  | Type n ->
+    begin match Level.is_declared lvl n with
+    | Ok _ ->
+      begin match ty with
+      | Type m ->
+        if Level.leq n m then 
+          Ok (Type n, Type m, sl) 
+        else if Level.is_arbitrary m then 
+          Ok (Type n, Type m, sl)
+        else
+          Error (sl, Msg.universe_inconsitency n m)
+      | Meta _ -> 
+        Ok (Type n, Type (Suc n), sl)
+      | _ -> Error (sl, Msg.type_mismatch n ty)
+      end
+    | Error msg -> 
+      Error (sl, msg)
+    end
+  
+  | Meta n ->
+    Ok (Meta n, ty, sl)
+    
+  | Wild n ->
+    let solved, used = sl in
+    (* If the placeholder has already synthesized replace it *)
+    begin match List.find_opt (fun (n', _, _) -> n = n') solved with
+    | Some (_, e', _) -> Ok (Global e', ty, sl)
+    | None ->
+      begin match find n global ctx ty lvl sl vars bs with (* false*)
+      | Ok (e', ty') ->
+        let sl' = ((n, e', ty') :: solved, used) in
+        Ok (Global e', ty, sl')
+      | Error _ -> Error (([], []), Msg.synthesis_error ty n ctx)
+      end
+    end
+
+(* Finds a variable in a context for a given type up to unification *)
+
+and find n global ctx ty lvl sl vars bs =
+  let forbidden = snd sl in
+  let rec search = function
+    | [] -> Error "Can't find match"
+    | (id, ty', _) :: ctx' ->
+      if List.mem (n, id) forbidden then search ctx'
+      else if ty' = ty then 
+        Ok (id, ty) (* syntactic equality fast path *)
+      else
+        (* We ignore their types since they are assumed to be well-typed *)
+        let h1 = Placeholder.generate () in
+        match unify global ctx lvl sl vars bs (ty, ty', h1) true with
+        | Ok uty -> Ok (id, uty)
+        | Error _ -> search ctx'
+  in
+  search ctx
+
+(* Unifies two expressions at type up to global boundary separation (gbs) *)
+(* bs tracks the intervals that gbs operates over *)
+
+and unify global ctx lvl sl vars bs x lift =
+  (* First we attempt unification locally without boundary separation in the context *)
+  match x with
+  | e, e', ty ->
+    if e = e' then
+      Ok e
+    else
+      match e, e', ty with
+      | Meta n1, Meta n2, _ ->
+        if n1 <= n2 then Ok (Meta n1) else Ok (Meta n2)
+      
+      | e , Meta n, Eq(_, _, _) ->
+        Hashtbl.add Data.meta_store n { Data.solution = e}; Ok e
+      
+      | e , _, Eq(_, _, _) ->
+        Ok e
+
+      | e , Meta n, _ | Meta n, e, _ ->
+        Hashtbl.add Data.meta_store n { Data.solution = e}; Ok e
+
+      | Pi (_, ty1, ty2), Pi (_, ty1', ty2'), ty ->
+        (* For now we just evaluate, soon we'll only evaluate if they are values *)
+        let ty1 = eval ty1 in 
+        let ty1' = eval ty1' in
+        let u1 = unify global ctx lvl sl vars bs (ty1, ty1', ty) lift in
+        begin match u1 with
+        | Ok s1 -> 
+          let v1 = Expr.init_fresh vars in
+          let ty2_open = Expr.fullsubst 0 ty1 s1 true (Expr.open_bound (Global v1) ty2) in
+          let ty2'_open = Expr.fullsubst 0 ty1' s1 true (Expr.open_bound (Global v1) ty2') in
+          let ty2_open = eval ty2_open in
+          let ty2'_open = eval ty2'_open in
+          let u2 = unify global ((v1, s1, true) :: ctx) lvl sl (vars+1) bs (ty2_open, ty2'_open, ty) lift in
+          begin match u2 with
+          | Ok s2 -> Ok (Pi (v1, s1, Expr.close_bound v1 s2))
+          | Error (_, msg) -> 
+            Error ((ty2_open, ty2'_open), Msg.unify_pi msg)
+          end
+        | Error ((e1, e2), msg) -> Error ((e1, e2), Msg.unify_pi msg)
+        end
+
+      | Eq (e, e1, e2) , Eq (e', e1', e2'), ty ->
+        let e = eval e and e' = eval e' in
+        begin match unify global ctx lvl sl vars bs (e, e', ty) lift with
+        | Ok s ->
+          let e1 = eval e1 and e1' = eval e1' in
+          let e2 = eval e2 and e2' = eval e2' in
+          let u1 = unify global ctx lvl sl vars bs (e1, e1', s) lift in
+          let u2 = unify global ctx lvl sl vars bs (e2, e2', s) lift in
+          begin match u1, u2 with
+          | Ok s1, Ok s2 ->           
+            Ok (Eq (s, s1, s2))
+          | Error (sa, msg), _ | _ , Error (sa, msg) -> 
+            Error (sa, Msg.unify_eq e e1 e2 e' e1' e2' msg)
+          end
+        | Error (sa, msg) -> 
+          Error (sa, Msg.unify_eq e e1 e2 e' e1' e2' msg)
+        end
+
+      | Lam (x, e), Lam (_, e'), Pi(_, ty1 , ty2) ->
+        if e = e' then
+          Ok (Lam (x, e))
+        else if Placeholder.is e' then
+          (* Probably want to add to hashtbl *)
+          Ok (Lam (x, e))
+        else if Placeholder.is e then
+          (* Here too *)
+          Ok (Lam (x, e'))
+        else
+          let v1 = Expr.init_fresh vars in
+          let ev1 = Expr.open_var 0 (Global v1) e in
+          let ev1' = Expr.open_var 0 (Global v1) e' in
+          let tyv1 = Expr.open_var 0 (Global v1) ty2 in
+          let u = unify global ((v1, ty1, true) :: ctx) lvl sl (vars+1) bs (ev1, ev1', tyv1) lift in
+          begin match u with
+          | Ok s -> Ok (Lam (v1, s))
+          | Error msg -> Error msg
+          end
+      
+      | App (e1, e2), App (e1', e2'), ty ->
+        let h1 = Placeholder.generate () in
+        let elab2 = elaborate global ctx lvl sl h1 vars bs e2 in
+        begin match elab2 with
+        | Ok (_, ty2, _) ->
+          let u2 = unify global ctx lvl sl vars bs (e2, e2', ty2) lift in
+          let v1 = Expr.init_fresh vars in
+          let u1 = unify global ctx lvl sl (vars+1) bs (e1, e1', Pi(v1, ty2, Expr.fullsubst 0 e2 (Local 0) true ty)) lift in
+          begin match u1, u2 with
+          | Ok s1, Ok s2 -> Ok (App (s1, s2))
+          | Error (ex, msg), _ | _, Error (ex, msg) ->
+            (* Check for metavariable application *)
+            let head, args = Eval.break_args [] (App (e1, e2)) in
+            begin match solve_meta_application args vars (App(e1', e2')) head with
+            | Some s -> Ok s
+            | None ->
+              let head, args = Eval.break_args [] (App (e1', e2')) in
+              begin match solve_meta_application args vars (App(e1, e2)) head with
+              | Some s -> Ok s
+              | None ->
+                (* Try again now by evaluating both applications *)
+                let app1 = App (e1, e2) in
+                let app2 = App (e1', e2') in
+                (* TODO: this is not ideal, to avoid re-evaluation, better store values in a hasthtable and look them up *)
+                let app1' = eval app1 in
+                let app2' = eval app2 in
+                if app1 = app1' && app2 = app2' then
+                  Error (ex, Msg.app_unify_fallback e1 e2 e1' e2' msg)
+                else
+                  unify global ctx lvl sl (vars+1) bs (app1', app2', ty) lift
+              end
+            end
+          end
+        | Error (_, msg) -> (* This case is impossible *)
+          Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
+        end
+      
+      | Reflect (p, e), Reflect (_, e'), _ ->
+        let u = unify global ctx lvl sl vars bs (e, e', Meta 0) lift in
+        begin match u with
+        | Ok e -> Ok (Reflect (p, e))
+        | Error msg -> Error msg
+        end
+
+      | Explode (p, e), Explode (_, e'), _ ->
+        let u = unify global ctx lvl sl vars bs (e, e', Meta 0) lift in
+        begin match u with
+        | Ok e -> Ok (Explode (p, e))
+        | Error msg -> Error msg
+        end
+
+      | Type m, Type n, _ ->
+        (* Helper compare function *)
+        let compare m n = if lift then if Level.leq n m then Ok (Type n) else
+            Error ((Type m, Type n), Msg.universe_unify m n)
+          else
+            Error ((Type m, Type n), Msg.universe_unify_2 m n)
+        in
+        begin match m, n with
+        | Var par, _ when Level.is_arbitrary_string par -> Ok (Type n)
+        | _, Var par when Level.is_arbitrary_string par -> Ok (Type m)
+        | m, n -> compare m n
+        end
+      
+      | Lam (x, e) , e', _ | e', Lam (x, e), _ ->
+        (* Checks for eta-equality *)
+        begin match eval e with
+        | App (e , Local 0) ->
+          if not (Expr.occurs_index 0 0 e) && not (Placeholder.has e) then
+            unify global ctx lvl sl vars bs (e, e', ty) lift
+          else
+            Error ((Lam (x, App (e , Local 0)) , e'), Msg.lam_unify x e e')
+        | _ ->
+            Error ((Lam (x, e), e'), Msg.lam_unify x e e')
+          end
+      
+      | e , e', _ -> 
+        if eval e = eval e' then 
+          Ok e 
+        else 
+          Error ((e, e'), Msg.not_syntactically_equal e e')

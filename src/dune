@@ -1,0 +1,9 @@
+(menhir
+ (flags --explain)
+ (modules syntax))
+
+(ocamllex scanner)
+
+(library
+ (name basis)
+ (libraries base))

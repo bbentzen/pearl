@@ -1,0 +1,9 @@
+(executable
+ (modes byte exe)
+ (name main)
+ (libraries frontend basis kernel context))
+
+(install
+ (section bin)
+ (files
+  (main.exe as pearl)))

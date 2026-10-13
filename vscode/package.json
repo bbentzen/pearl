@@ -1,0 +1,58 @@
+{
+  "name": "pearl-vscode",
+  "displayName": "Pearl VS Code Extension",
+  "description": "Language support and diagnostics for the Pearl theorem prover",
+  "version": "0.1.0",
+  "icon": "images/pearl-icon.png",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "repository": { "type": "git", "url": "https://github.com/bbentzen/pearl" },
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "pearl",
+        "aliases": [
+          "Pearl",
+          "pearl"
+        ],
+        "extensions": [
+          ".prl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "pearl",
+        "scopeName": "source.pearl",
+        "path": "./syntaxes/pearl.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Pearl Configuration",
+      "properties": {
+        "pearl.executablePath": {
+          "type": "string",
+          "default": "pearl",
+          "description": "Path to the Pearl compiler binary (assumes global PATH if left default)."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "@types/vscode": "^1.125.0",
+    "typescript": "^6.0.3"
+  }
+}

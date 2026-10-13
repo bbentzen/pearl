@@ -1,0 +1,55 @@
+(**
+  (c) Copyright 2019 Bruno Bentzen. All rights reserved.
+  Released under Apache 2.0 license as described in the file LICENSE.
+  
+  Desc: Handles synthesization of implicit arguments and universe levels,
+         Performs an exhaustive search on compatible types based on the context
+         The elaborator returns a pair (sl') of its current synthesization attempts and stack
+ **)
+
+open Basis
+open Eval
+open Kernel
+
+(* Iterated synthesization attempts *)
+
+let rec check global ctx lvl sl e ty max vars =
+  let e' = eval e in
+  let ty' = eval ty in
+  let elab = Elab.elaborate global ctx lvl sl ty' vars [] e' in
+  begin
+    match elab with
+    | Ok (e', ty', sl') ->
+      let e' = Placeholder.solve [] e' in
+      let ty' = Placeholder.solve [] ty' in
+      (* Double checks that there are no placeholders left in the synthesization attempts *)
+      Hashtbl.clear Data.meta_store;
+      if Attempt.trustworthy (fst sl') then
+        Ok (e', ty')
+      else
+        Error ("Untrustworthy synthesization attempt with " ^ Attempt.printfst (fst sl') ^ "\nYou should not see this message, please report.")      
+    | Error (sl', msg) ->
+      iter sl' msg global ctx lvl e ty (max+1) vars
+  end
+
+and iter sl' msg global ctx lvl e ty max vars =
+  if max > 100 then
+    Error "Maximum number of synthetization steps reached
+      \n(You should not see this message, please report)"
+  else
+    let current, past = sl' in
+    match current with
+    | [] -> Error msg
+    | (n, id, _) :: current' ->
+      let e' = Expr.fullsubst 0 (Wild n) (Global id) true e in
+      let w = check global ctx lvl ([], past) e' ty max vars in
+      begin 
+        match w with
+        | Ok (e', ty') ->
+          Ok (e', ty')
+        | Error _ ->
+          check global ctx lvl (current', (n, id) :: past) e ty max vars
+      end
+
+let init global ctx lvl e ty vars =
+  check global ctx lvl ([], []) e ty 0 vars
