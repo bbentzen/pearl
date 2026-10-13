@@ -33,6 +33,9 @@ let var_type_mismatch x xty ty msg =
 let var_error x msg = 
   "Error at type checking the variable " ^ x ^ ": " ^ msg
 
+let var_error_2 x = 
+  "Error at type checking the variable " ^ x ^ ": "
+
 let var_type_mismatch_2 x xty ty = 
   "The variable " ^ x ^ " has type\n   " ^ Pretty.printf xty ^ 
   "\nbut is expected to have type\n  " ^ Pretty.printf ty ^ "\n"

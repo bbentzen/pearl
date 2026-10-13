@@ -50,7 +50,7 @@ let single_id = function
 %token <string> ID
 %token <string> FILENAME
 %token <string> NUMBER
-%token EVAL IMPORT IND UNIVERSE DEF ABBREV PRINT INFER LBRACE RBRACE
+%token EVAL IMPORT IND UNIVERSE DEF THM ABBREV PRINT INFER LBRACE RBRACE
 %token TYPE MAX NEXT COLON
 %token ABS APP RARROW LRARROW PI
 %token LPAREN RPAREN BAR COMMA PROD SIGMA
@@ -99,7 +99,8 @@ command:
 
 decl:
   | DEF ID ctx expr COLONEQ expr                            {Prf($2, $3, $4, $6, 0)}
-  | ABBREV ID ctx expr COLONEQ expr                         {Prf($2, $3, $4, $6, 1)}
+  | THM ID ctx expr COLONEQ expr                            {Prf($2, $3, $4, $6, 1)}
+  | ABBREV ID ctx expr COLONEQ expr                         {Prf($2, $3, $4, $6, 2)}
 
 constr: 
   | BAR ID COLON expr                                       {[($2, $4)]}

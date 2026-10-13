@@ -52,7 +52,7 @@ let rec compile_proof global ind lopen filename lvl next_location cmd (id, l, ty
           begin 
             match Env.unfold_all global 0 (Implicit.convert e) with
             | Ok e' ->
-              if id <> "infer" && (Env.is_declared id global || Env.is_declared id ind) then 
+              if id <> "infer" && (Env.is_declared id global || Inductive.is_declared id ind) then 
                 failwith_at location
                   ("Naming conflict with the identifier '" ^ id ^
                    "'\nName already exists in the environment (try 'infer " ^ id ^ "' for more information)")
@@ -70,11 +70,11 @@ let rec compile_proof global ind lopen filename lvl next_location cmd (id, l, ty
                       Ok (global, ind, ("infer := " ^ Pretty.printf e1 ^ ": \n" ^ "         " ^ Pretty.printf ty1 ^ "\n", lopen))
                     else
                       (* Definition/ Theorem/ Lemma *)
-                      if attrb = 0 then
-                        compile (Env.add global id ctx' (e1, ty1)) ind lopen filename lvl next_location cmd
+                      if attrb != 2 then
+                        compile (Env.add global id ctx' (e1, ty1) attrb) ind lopen filename lvl next_location cmd
                       else
                         (* Abbreviation *)
-                        let global' = Env.add global id ctx' (e', ty1) in
+                        let global' = Env.add global id ctx' (e', ty1) attrb in
                         compile global' ind lopen filename lvl next_location cmd
                   | Error msg -> 
                     failwith_at location ("The following error was found at '" ^ id ^ "'\n" ^ msg)
@@ -150,7 +150,7 @@ and compile global ind lopen filename lvl next_location =
     let location = next_location () in
     begin
       (* Checks naming conflicts for the inductive type name *)
-      if Env.is_declared id ind || Env.is_declared id global then
+      if Inductive.is_declared id ind || Env.is_declared id global then
         failwith_at location
           ("Naming conflict with the inductive type identifier '" ^ id ^
            "'\nName already exists in the environment.")
@@ -169,7 +169,7 @@ and compile global ind lopen filename lvl next_location =
             (* Validates all constructors and stores the universes their types live in *)
             let cons_checked ind' =
               List.map (fun (c_name, c_ty_raw) ->
-                if Env.is_declared c_name ind' || Env.is_declared c_name global then
+                if Inductive.is_declared c_name ind' || Env.is_declared c_name global then
                   failwith_at location
                     ("Naming conflict with constructor '" ^ c_name ^ "'")
                 else
@@ -216,7 +216,7 @@ and compile global ind lopen filename lvl next_location =
 
             (* Generate and register the eliminator (id ^ "rec") *)
             let rec_name = Inductive.rec_name id in
-            if Env.is_declared rec_name ind_cons || Env.is_declared rec_name global then
+            if Inductive.is_declared rec_name ind_cons || Env.is_declared rec_name global then
               failwith_at location
                 ("Naming conflict: generated eliminator '" ^ rec_name ^ "' already exists.")
             else

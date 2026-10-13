@@ -10,6 +10,17 @@ open Basis
 open Ast
 open Data
 
+let is_declared x env =
+  let rec helper x = function
+    | [] -> false
+    | (id,_) :: env -> 
+      if x = id then 
+        true
+      else 
+        helper x env
+  in
+  helper x (List.rev env)
+
 (* This occurs_name function ignores bound variables *)
 
 let rec occurs_name id l = function

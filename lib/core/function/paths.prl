@@ -20,13 +20,11 @@ def apd {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) {a b : A} (p :
   eq (B a) (f a) (reflect p (f b)) :=
 reflect p (refl _)
 
-def etad {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) :
+thm etad {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) :
   eq (Π (x : A), B x) f (λ x, f x) :=
 refl _
 
-infer {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) : etad f
-
-/* def funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) (p : eq (Π (x : A), B x) f (λ x, f x)) :
+def funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) :
   (Π (x : A), eq (B x) (f x) (g x)) → eq (Π (x : A), B x) f g :=
-λh, reflect p _ */
-/* (λ x, reflect (f x) x) */
+λ h, reflect (etad f) reflect (etad g) _
+/* (λ x, (reflect (h x) (refl _)) x) */

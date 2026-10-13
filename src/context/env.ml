@@ -12,12 +12,18 @@ open Basis
 open Ast
 open Expr
 
+let rec var_type x env =
+  match env with
+  | [] -> Error()
+  | ((y, (_, ty)), _) :: env' -> 
+    if x = y then Ok ty else var_type x env'
+
 (* Determines whether a string is declared in the environment *)
 
 let is_declared x env =
   let rec helper x = function
     | [] -> false
-    | (id,_) :: env -> 
+    | ((id,_), _) :: env -> 
       if x = id then 
         true
       else 
@@ -45,28 +51,28 @@ let function_of_def id ctx (e, ty) hole =
 let rec check_def_id id = function
   | [] -> 
     Error ("No definition or theorem found for the identifier '" ^ id ^ "'") 
-  | (id', body) :: env -> 
+  | ((id', body), _) :: env -> 
     if id = id'
     then Ok body
     else check_def_id id env
 
-(* Appends a triple id * term * type to the env context *)
+(* Appends a quadruple (id * (term * type)) * attrb to the env context *)
 
-let add env id ctx elab =
+let add env id ctx elab attrb =
   match check_def_id id env with
   | Ok _ -> env
   | Error _ -> 
     Placeholder.restore 0;
-    function_of_def id ctx elab 0 :: env
+    (function_of_def id ctx elab 0, attrb) :: env
 
 (* Returns the body of a definition when given a declared env constant *)
 
 let rec unfold id = function
   | [] -> 
     Error ("No declaration found for identifier '" ^ id ^ "'")
-  | (id', (body , ty)) :: env -> 
+  | ((id', (body , ty)), attrb) :: env -> 
     if id = id' then 
-      Ok (body, ty)
+      Ok ((body, ty), attrb)
     else 
       unfold id env
 
@@ -84,13 +90,15 @@ let rec lift n = function
   | e -> e
 
 (* Unfolds all declared env constants and checks for naming conflicts *)
+(* If marked as theorem or lemma they are left as they are *)
 
 let rec unfold_all env vars = function
-  | Global x -> 
+  | Global id -> 
     begin 
-      match unfold x env with
-      | Ok (body, _) -> Ok body
-      | _ -> Ok (Global x)
+      match unfold id env with
+      | Ok ((body, _), attrb) -> 
+        if attrb = 1 then Ok (Global id) else Ok body
+      | _ -> Ok (Global id)
     end
 
   | Lam (x, e) ->

@@ -52,9 +52,10 @@ let rec elaborate global ctx lvl sl ty vars bs = function
           end
         | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
         end
-      | false, false, false, false -> 
-        begin match Env.unfold x global with
-        | Ok (_, xty) ->
+      | false, false, false, false ->
+        Error (sl, Msg.var_error_2 x)
+        (* begin match Env.unfold x global with
+        | Ok ((_, xty), _) ->
           let h1 = Placeholder.generate () in
           begin match elaborate global ctx lvl sl h1 vars bs xty with
           | Ok (_, tTy', sa) ->
@@ -66,9 +67,20 @@ let rec elaborate global ctx lvl sl ty vars bs = function
           | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
           end
         | Error msg -> Error (sl, Msg.var_error x msg)
-        end
+        end *)
       end
-    | Error _ -> Error (sl, Msg.undeclared x)
+    | Error _ ->
+      (* Check if identifier corresponds to a theorem in the global environment *)
+      begin match Env.var_type x global with
+      | Ok envty ->
+          let h1 = Placeholder.generate () in
+          begin match unify global ctx lvl sl vars bs (eval ty, envty, h1) true with
+          | Ok s ->
+            Ok (Global x, s, sl) 
+          | Error (_, msg) -> Error (([],[]), Msg.var_type_mismatch x envty ty msg)
+          end
+      | Error _ -> Error (sl, Msg.undeclared x)
+      end
     end
 
   | Lam (x, e) ->

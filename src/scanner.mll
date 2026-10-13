@@ -119,10 +119,10 @@ rule token = parse
   | "universe"         { UNIVERSE }
   | "definition"       { DEF }
   | "def"              { DEF }
-  | "lemma"            { DEF }
-  | "lem"              { DEF }
-  | "theorem"          { DEF }
-  | "thm"              { DEF }
+  | "theorem"          { THM }
+  | "thm"              { THM }
+  | "lemma"            { THM }
+  | "lem"              { THM }
   | "abbrev"           { ABBREV }
   | "abbreviation"     { ABBREV }
   | "print"            { PRINT }
