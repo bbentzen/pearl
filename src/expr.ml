@@ -59,7 +59,6 @@ let close_bound binder body =
   close_var 0 binder body
 
 (* Legacy substitution function: replaces ex with d in argument *)
-(* NOTE: remove b argument later *)
 
 let rec fullsubst k ex d = function
   | e when e = (shift 0 k ex) -> shift 0 k d
