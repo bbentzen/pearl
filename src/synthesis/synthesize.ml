@@ -16,7 +16,7 @@ open Kernel
 let rec check global ctx lvl sl e ty max vars =
   let e' = eval e in
   let ty' = eval ty in
-  let elab = Elab.elaborate global ctx lvl sl ty' vars [] e' in
+  let elab = Elab.elaborate global ctx lvl sl ty' vars e' in
   begin
     match elab with
     | Ok (e', ty', sl') ->
@@ -41,7 +41,7 @@ and iter sl' msg global ctx lvl e ty max vars =
     match current with
     | [] -> Error msg
     | (n, id, _) :: current' ->
-      let e' = Expr.fullsubst 0 (Wild n) (Global id) true e in
+      let e' = Expr.fullsubst 0 (Wild n) (Global id) e in
       let w = check global ctx lvl ([], past) e' ty max vars in
       begin 
         match w with

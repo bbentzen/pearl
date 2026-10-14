@@ -61,17 +61,32 @@ let close_bound binder body =
 (* Legacy substitution function: replaces ex with d in argument *)
 (* NOTE: remove b argument later *)
 
-let rec fullsubst k ex d b = function
+let rec fullsubst k ex d = function
   | e when e = (shift 0 k ex) -> shift 0 k d
   | Global _ | Local _ | Void _ | Type _ | Wild _ as e -> e
-  | Lam (y, e) -> Lam (y, fullsubst (k+1) ex d b e)
-  | App (e1, e2) -> App (fullsubst k ex d b e1, fullsubst k ex d b e2)
-  | Pi (y, e1, e2) -> Pi (y, fullsubst k ex d b e1, fullsubst (k+1) ex d b e2)
-  | Refl e -> Refl (fullsubst k ex d b e)
-  | Eq (e, e1, e2) -> Eq (fullsubst k ex d b e, fullsubst k ex d b e1, fullsubst k ex d b e2)
+  | Lam (y, e) -> Lam (y, fullsubst (k+1) ex d e)
+  | App (e1, e2) -> App (fullsubst k ex d e1, fullsubst k ex d e2)
+  | Pi (y, e1, e2) -> Pi (y, fullsubst k ex d e1, fullsubst (k+1) ex d e2)
+  | Refl e -> Refl (fullsubst k ex d e)
+  | Eq (e, e1, e2) -> Eq (fullsubst k ex d e, fullsubst k ex d e1, fullsubst k ex d e2)
   | Meta n -> Meta n
-  | Reflect (e1, e2) -> Reflect (fullsubst k ex d b e1, fullsubst k ex d b e2)
-  | Explode (e1, e2) -> Explode (fullsubst k ex d b e1, fullsubst k ex d b e2)
+  | Reflect (e1, e2) -> Reflect (fullsubst k ex d e1, fullsubst k ex d e2)
+  | Explode (e1, e2) -> Explode (fullsubst k ex d e1, fullsubst k ex d e2)
+
+(* Syntactical substitution ignoring bound occurrences - useful for reflection *)
+(* This must be used very carefully *)
+
+let rec reflsubst k ex d = function
+  | e when e = ex -> d
+  | Global _ | Local _ | Void _ | Type _ | Wild _ as e -> e
+  | Lam (y, e) -> Lam (y, reflsubst (k+1) ex d e)
+  | App (e1, e2) -> App (reflsubst k ex d e1, reflsubst k ex d e2)
+  | Pi (y, e1, e2) -> Pi (y, reflsubst k ex d e1, reflsubst (k+1) ex d e2)
+  | Refl e -> Refl (reflsubst k ex d e)
+  | Eq (e, e1, e2) -> Eq (reflsubst k ex d e, reflsubst k ex d e1, reflsubst k ex d e2)
+  | Meta n -> Meta n
+  | Reflect (e1, e2) -> Reflect (reflsubst k ex d e1, reflsubst k ex d e2)
+  | Explode (e1, e2) -> Explode (reflsubst k ex d e1, reflsubst k ex d e2)
 
 (* Occurrence of indices: note that the first arguments of reflect and explode are ignored *)
 (* This is useful to allow for eta-conversion *)

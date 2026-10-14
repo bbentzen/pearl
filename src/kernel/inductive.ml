@@ -142,7 +142,7 @@ let rec find_params_cons ind_fam expr = function
   | Pi (_, _, cod) ->
     find_params_cons ind_fam expr cod
   | cod ->
-    Expr.fullsubst 0 ind_fam expr true cod
+    Expr.fullsubst 0 ind_fam expr cod
 
 (* Helper to extract induction hypotheses for recursive arguments in a constructor *)
 

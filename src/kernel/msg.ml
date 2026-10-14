@@ -190,9 +190,13 @@ let refl_error_2 e ty =
   "The term\n  " ^ Pretty.printf (Refl e) ^ 
   "\nhas type\n  " ^ Pretty.printf ty ^ "\nbut is expected to have type\n  ?1? =?0? ?2?"
 
-let reflection_error e1 ty1 =
-  "Cannot resolve reflection: " ^ refl_error_2 e1 ty1
+let reflect_1 e1 ty1 =
+  "Cannot resolve reflection: The term\n  " ^ Pretty.printf e1 ^ 
+  "\nhas type\n  " ^ Pretty.printf ty1 ^ "\nbut is expected to have type\n  ?1? =?0? ?2?"
 
-let reflection_error_2 e msg =
+let reflect_2 e msg =
   "Failed to resolve reflection: Cannot check that the term\n  " ^ Pretty.printf e ^ 
   "\nhas type\n  ?1? =?0? ?2?" ^ msg
+
+  let reflect_goal ctx e2 ty msg =
+  "Failed reflection " ^ goal_msg ctx e2 ty ^ "\n" ^ msg

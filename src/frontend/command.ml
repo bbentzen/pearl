@@ -122,6 +122,7 @@ and compile global ind lopen filename lvl next_location =
       let e = of_raw_expr e_raw in
       match (Env.unfold_all global 0 e) with
       | Ok e' ->
+        (* let e' = Expr.reflsubst 0 (App (Global "f", Local 0)) (App (Global "NEW", Local 0)) (Lam ("x", (App (Global "f", Local 0)))) in  *)
         Ok (global, ind, ("eval " ^ Pretty.printf e ^ " := " ^ 
         Pretty.printf (eval e'), lopen))
       | Error msg -> 

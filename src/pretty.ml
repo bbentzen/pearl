@@ -18,8 +18,7 @@ let rec print env = function
   | App(App(App(App (Global "pair", _ ), _), e1), e2) -> 
     "(" ^ parenthesize env e1 ^ ", " ^ parenthesize env e2 ^ ") "
   | Global y -> y ^ " "
-  | Local index -> name_at index env ^ " "
-    (* "Local-" ^ (string_of_int index) ^ " " *)
+  | Local index -> name_at index env ^ " " (* "Local-" ^ (string_of_int index) ^ " " *)
     
   | Lam (x, e) ->  
     let rec iterate env = function
