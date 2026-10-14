@@ -38,8 +38,7 @@ let rec zonk st = function
   | Lam (x, e) -> Lam (x, zonk st e)
   | App (e1, e2) -> App (zonk st e1, zonk st e2)
   | Pi (x, e1, e2) -> Pi (x, zonk st e1, zonk st e2)
-  | Refl e -> Refl (zonk st e)
   | Eq (e, e1, e2) -> Eq (zonk st e, zonk st e1, zonk st e2)
   | Reflect (e1, e2) -> Reflect (zonk st e1, zonk st e2)
   | Explode (e1, e2) -> Explode (zonk st e1, zonk st e2)
-  | Local _ | Global _ | Void _ | Type _ | Wild _ as e -> e
+  | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e

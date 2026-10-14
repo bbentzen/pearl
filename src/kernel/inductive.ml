@@ -32,8 +32,7 @@ let rec occurs_name id l = function
     end
   | Lam (x, e) ->  occurs_name x l e
   | Pi (x, e1, e2) -> occurs_name x l e1 || occurs_name x l e2
-  | Void _ | Type _ | Wild _ | Meta _ -> false
-  | Refl e -> occurs_name id l e
+  | Void _ | Rfl _ | Type _ | Wild _ | Meta _ -> false
   | App (e1, e2) | Explode (e1, e2) | Reflect (e1, e2) -> occurs_name id l e1 || occurs_name id l e2
   | Eq (e, e1, e2) -> occurs_name id l e || occurs_name id l e1 || occurs_name id l e2
 

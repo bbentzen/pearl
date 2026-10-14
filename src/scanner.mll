@@ -101,7 +101,7 @@ rule token = parse
   | "¬"                { NEG }
   | "eq"               { EQ }
   | "="                { EQSYM }
-  | "refl"             { REFL }
+  | "rfl"              { RFL }
   | "_"                { WILDCARD }
   | "??"               { PLACEHOLDER }
   | ":="               { COLONEQ }

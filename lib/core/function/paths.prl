@@ -10,20 +10,20 @@ universe ℓ
 
 def ap {A B : type ℓ} (f : A → B) {a b : A} :
   eq A a b → eq B (f a) (f b) :=
-λ p, reflect p (refl _)
+λ p, reflect p rfl
 
 def eta {A B : type ℓ} (f : A → B) :
   eq (A → B) f (λ x, f x) :=
-refl _
+rfl
 
 def apd {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) {a b : A} (p : eq A a b) :
   eq (B a) (f a) (reflect p (f b)) :=
-reflect p (refl _)
+reflect p rfl
 
 thm etad {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) :
   eq (Π (x : A), B x) f (λ x, f x) :=
-refl _
+rfl
 
 def funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) :
   (Π (x : A), eq (B x) (f x) (g x)) → eq (Π (x : A), B x) f g :=
-λ h, reflect (etad f) reflect (etad g) (λ x, (reflect (h x) (refl _)) x)
+λ h, reflect (etad f) reflect (etad g) (λ x, (reflect (h x) rfl) x)

@@ -44,7 +44,6 @@ let has_placeholder term =
       | Meta _ -> true
       | Lam (_, e) -> helper (e :: rest)
       | Pi (_, e1, e2) | App (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> helper (e1 :: e2 :: rest)
-      | Refl e -> helper (e :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
       | _ -> helper rest
   in
@@ -60,7 +59,6 @@ let has_placeholder_name name term =
       | Meta _ -> false
       | Lam (_, e) -> helper (e :: rest)
       | Pi (_, e1, e2) | App (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> helper (e1 :: e2 :: rest)
-      | Refl e -> helper (e :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
       | _ -> helper rest
   in
@@ -77,8 +75,8 @@ let has term =
       | Wild _ | Meta _ -> true
       | Lam (_, e) -> helper (e :: rest)
       | Pi (_, e1, e2) | App (e1, e2) -> helper (e1 :: e2 :: rest)
-      | Refl e | Reflect (_, e) | Explode (_, e) -> helper (e :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
+      | Reflect (_, e) | Explode (_, e) -> helper (e :: rest)
       | _ -> helper rest
   in
   helper [term]
@@ -100,11 +98,10 @@ let rec solve env = function
   | Lam (x, e) -> Lam (x, solve (x :: env) e)
   | App (e1, e2) -> App (solve env e1, solve env e2)
   | Pi (x, e1, e2) -> Pi (x, solve env e1, solve env e2)
-  | Refl e -> Refl (solve env e)
   | Eq (e, e1, e2) -> Eq (solve env e, solve env e1, solve env e2)
   | Reflect (e1, e2) -> Reflect (solve env e1, solve env e2)
   | Explode (e1, e2) -> Explode (solve env e1, solve env e2)
-  | Local _ | Global _ | Void _ | Type _ | Wild _ as e -> e
+  | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
 
 (* Assigns unique positive metas to negative metas *)
 
@@ -113,7 +110,6 @@ let rec unique = function
   | Lam (x, e) -> Lam (x, unique e)
   | App (e1, e2) -> App (unique e1, unique e2)
   | Pi (x, e1, e2) -> Pi (x, unique e1, unique e2)
-  | Refl e -> Refl (unique e)
   | Eq (e, e1, e2) -> Eq (unique e, unique e1, unique e2)
   | Reflect (e1, e2) -> Reflect (unique e1, unique e2)
   | Explode (e1, e2) -> Explode (unique e1, unique e2)

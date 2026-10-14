@@ -182,13 +182,12 @@ let eq_universe_1 ty1 e1 e2 max m =
 let eq_universe_2 ty1 e1 e2 ty =
   "Type mismatch when checking that\n  " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ "\nhas type\n  " ^ Pretty.printf ty
 
-let refl_error_1 e ty msg =
+let rfl_error_1 e ty msg =
   "Failed reflexivity: could not check that the term\n  " ^ Pretty.printf e ^ 
   "\nhas type\n  " ^ Pretty.printf ty ^ msg
 
-let refl_error_2 e ty =
-  "The term\n  " ^ Pretty.printf (Refl e) ^ 
-  "\nhas type\n  " ^ Pretty.printf ty ^ "\nbut is expected to have type\n  ?1? =?0? ?2?"
+let rfl_error_2 ty =
+  "rfl has type\n  " ^ Pretty.printf ty ^ "\nbut is expected to have type\n  ?1? =?0? ?2?"
 
 let reflect_1 e1 ty1 =
   "Cannot resolve reflection: The term\n  " ^ Pretty.printf e1 ^ 

@@ -57,7 +57,7 @@ let single_id = function
 %token ZERO NAT
 %token STAR SUM
 %token EXPLODE VOID NEG
-%token EQ EQSYM REFL SYMM TRANS REFLECT
+%token EQ EQSYM RFL SYMM TRANS REFLECT
 %token WILDCARD PLACEHOLDER COLONEQ
 %token EOF
 %right EQSYM
@@ -69,7 +69,7 @@ let single_id = function
 %nonassoc NEG
 %nonassoc EXPLODE
 %left APP
-%nonassoc ID LPAREN ABS SIGMA ZERO NAT STAR VOID REFL TYPE PLACEHOLDER WILDCARD
+%nonassoc ID LPAREN ABS SIGMA ZERO NAT STAR VOID RFL TYPE PLACEHOLDER WILDCARD
 %nonassoc SYMM
 
 %start command
@@ -167,7 +167,7 @@ atom:
   | NAT                                                     { RId("nat") }
   | STAR                                                    { RId("star") }
   | VOID                                                    { RVoid() }
-  | REFL expr                                               { RRefl($2) }
+  | RFL                                                     { RRfl() }
   | TYPE level                                              { RType ($2) }
   | PLACEHOLDER NUMBER                                      { RMeta(int_of_string $2) }
   | WILDCARD                                                { RWild 0 }

@@ -21,7 +21,7 @@ type rawexpr =
   | RLam of string * rawexpr
   | RApp of rawexpr * rawexpr
   | RPi of string * rawexpr * rawexpr  
-  | RRefl of rawexpr
+  | RRfl of unit
   | REq of rawexpr * rawexpr * rawexpr
   | RVoid of unit
   | RType of rawlevel
@@ -81,7 +81,7 @@ type expr =
   | App of expr * expr
   | Pi of string * expr * expr
   | Void of unit
-  | Refl of expr
+  | Rfl of unit
   | Eq of expr * expr * expr
   | Type of level
   | Meta of int
@@ -124,7 +124,7 @@ let rec of_raw_expr_with_env env = function
   | RPi (x, e1, e2) ->
     Pi (x, of_raw_expr_with_env env e1, of_raw_expr_with_env (x :: env) e2)
   | RVoid () -> Void ()
-  | RRefl e -> Refl (of_raw_expr_with_env env e)
+  | RRfl () -> Rfl ()
   | REq (e, e1, e2) ->
     Eq (of_raw_expr_with_env env e, of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
   | RType l -> Type (level_of_raw l)
@@ -166,9 +166,7 @@ let rec of_raw_expr_with_vars env = function
     let e2', v2 = of_raw_expr_with_vars (x :: env) e2 in
     Pi (x, e1', e2'), v1 @ v2
   | RVoid () -> Void (), []
-  | RRefl e ->
-    let e', v = of_raw_expr_with_vars env e in
-    Refl e', v
+  | RRfl () -> Rfl (), []
   | REq (e, e1, e2) ->
     let e', v = of_raw_expr_with_vars env e in
     let e1', v1 = of_raw_expr_with_vars env e1 in

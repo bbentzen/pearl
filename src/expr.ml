@@ -17,7 +17,7 @@ let rec shift cutoff amount = function
   | Lam (x, e) -> Lam (x, shift (cutoff + 1) amount e)
   | App (e1, e2) -> App (shift cutoff amount e1, shift cutoff amount e2)
   | Pi (x, e1, e2) -> Pi (x, shift cutoff amount e1, shift (cutoff + 1) amount e2)
-  | Refl e -> Refl (shift cutoff amount e)
+  | Rfl () -> Rfl ()
   | Eq (e, e1, e2) ->
     Eq (shift cutoff amount e, shift cutoff amount e1, shift cutoff amount e2)
   | Reflect (e1, e2) -> Reflect (shift cutoff amount e1, shift cutoff amount e2)
@@ -30,22 +30,20 @@ let rec open_var k replace = function
     if index = k then shift 0 k replace
     else if index > k then Local (index - 1)
     else Local index
-  | Global _  | Void _ | Type _ | Wild _ | Meta _ as e -> e
+  | Global _  | Void _ | Rfl _ | Type _ | Wild _ | Meta _ as e -> e
   | Lam (x, e) -> Lam (x, open_var (k + 1) replace e)
   | App (e1, e2) -> App (open_var k replace e1, open_var k replace e2)
   | Pi (x, e1, e2) -> Pi (x, open_var k replace e1, open_var (k + 1) replace e2)
-  | Refl e -> Refl (open_var k replace e)
   | Eq (e, e1, e2) -> Eq (open_var k replace e, open_var k replace e1, open_var k replace e2)
   | Reflect (e1, e2) -> Reflect (open_var k replace e1, open_var k replace e2)
   | Explode (e1, e2) -> Explode (open_var k replace e1, open_var k replace e2)
 
 let rec close_var k x = function
   | Global y when x = y -> Local k
-  | Global _ | Local _ | Void _ | Type _ | Meta _ | Wild _ as e -> e
+  | Global _ | Local _ | Void _ | Rfl _ | Type _ | Meta _ | Wild _ as e -> e
   | Lam (y, e) -> Lam (y, close_var (k + 1) x e)
   | App (e1, e2) -> App (close_var k x e1, close_var k x e2)
   | Pi (y, e1, e2) -> Pi (y, close_var k x e1, close_var (k + 1) x e2)
-  | Refl e -> Refl (close_var k x e)
   | Eq (e, e1, e2) -> Eq (close_var k x e, close_var k x e1, close_var k x e2)
   | Reflect (e1, e2) -> Reflect (close_var k x e1, close_var k x e2)
   | Explode (e1, e2) -> Explode (close_var k x e1, close_var k x e2)
@@ -62,11 +60,10 @@ let close_bound binder body =
 
 let rec fullsubst k ex d = function
   | e when e = (shift 0 k ex) -> shift 0 k d
-  | Global _ | Local _ | Void _ | Type _ | Wild _ as e -> e
+  | Global _ | Local _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
   | Lam (y, e) -> Lam (y, fullsubst (k+1) ex d e)
   | App (e1, e2) -> App (fullsubst k ex d e1, fullsubst k ex d e2)
   | Pi (y, e1, e2) -> Pi (y, fullsubst k ex d e1, fullsubst (k+1) ex d e2)
-  | Refl e -> Refl (fullsubst k ex d e)
   | Eq (e, e1, e2) -> Eq (fullsubst k ex d e, fullsubst k ex d e1, fullsubst k ex d e2)
   | Meta n -> Meta n
   | Reflect (e1, e2) -> Reflect (fullsubst k ex d e1, fullsubst k ex d e2)
@@ -77,11 +74,10 @@ let rec fullsubst k ex d = function
 
 let rec reflsubst k ex d = function
   | e when e = ex -> d
-  | Global _ | Local _ | Void _ | Type _ | Wild _ as e -> e
+  | Global _ | Local _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
   | Lam (y, e) -> Lam (y, reflsubst (k+1) ex d e)
   | App (e1, e2) -> App (reflsubst k ex d e1, reflsubst k ex d e2)
   | Pi (y, e1, e2) -> Pi (y, reflsubst k ex d e1, reflsubst (k+1) ex d e2)
-  | Refl e -> Refl (reflsubst k ex d e)
   | Eq (e, e1, e2) -> Eq (reflsubst k ex d e, reflsubst k ex d e1, reflsubst k ex d e2)
   | Meta n -> Meta n
   | Reflect (e1, e2) -> Reflect (reflsubst k ex d e1, reflsubst k ex d e2)
@@ -92,29 +88,27 @@ let rec reflsubst k ex d = function
 
 let rec occurs_index target cutoff = function
   | Local index -> index = target + cutoff
-  | Global _ | Void _ | Type _ | Wild _ | Meta _ -> false
+  | Global _ | Void _ | Rfl _ | Type _ | Wild _ | Meta _ -> false
   | Lam (_, e)  -> occurs_index target (cutoff + 1) e
   | App (e1, e2) -> occurs_index target cutoff e1 || occurs_index target cutoff e2
   | Pi (_, e1, e2) -> occurs_index target cutoff e1 || occurs_index target (cutoff + 1) e2
-  | Refl e | Reflect (_, e) | Explode (_, e) -> occurs_index target cutoff e
   | Eq (e, e1, e2) -> occurs_index target cutoff e || occurs_index target cutoff e1 || occurs_index target cutoff e2
+  | Reflect (_, e) | Explode (_, e) -> occurs_index target cutoff e
 
 let rec occurs_name s hint = function
   | Lam (x, e) -> x = hint || occurs_name x hint e
   | Pi (x, e1, e2) -> x = hint || occurs_name x hint e1 || occurs_name x hint e2
   | Local _ -> s = hint | Global t -> t = hint
-  | Void _ | Type _ | Wild _ | Meta _ -> false
+  | Void _ | Rfl _ | Type _ | Wild _ | Meta _ -> false
   | App (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> occurs_name s hint e1 || occurs_name s hint e2
-  | Refl e -> occurs_name s hint e
   | Eq (e, e1, e2) -> occurs_name s hint e || occurs_name s hint e1 || occurs_name s hint e2
 
 let rec free_occurs_name s = function
   | Global t -> t = s  
-  | Local _ | Void _ | Type _ | Wild _ | Meta _ -> false
+  | Local _ | Void _ | Rfl _ | Type _ | Wild _ | Meta _ -> false
   | Lam (x, e) -> free_occurs_name x e
   | Pi (x, e1, e2) -> free_occurs_name x e1 || free_occurs_name x e2
   | App (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> free_occurs_name s e1 || free_occurs_name s e2
-  | Refl e -> free_occurs_name s e
   | Eq (e, e1, e2) -> free_occurs_name s e || free_occurs_name s e1 || free_occurs_name s e2
 
 (* Converts a list of expressions into a single expression by application *)
@@ -155,11 +149,10 @@ let mk_fresh var ctx =
 (* Extract realizer of a proof *)
 
 let rec realizer_of = function
-  | Global _ | Local _ | Void _ | Type _ | Wild _ as e -> e
+  | Global _ | Local _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
   | Lam (y, e) -> Lam (y, realizer_of e)
   | App (e1, e2) -> App (realizer_of e1, realizer_of e2)
   | Pi (y, e1, e2) -> Pi (y, realizer_of e1, realizer_of e2)
-  | Refl e -> Refl (realizer_of e)
   | Eq (e, e1, e2) -> Eq (realizer_of e, realizer_of e1, realizer_of e2)
   | Meta n -> Meta n
   | Reflect (_, e) | Explode (_, e) -> realizer_of e

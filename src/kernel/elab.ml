@@ -197,8 +197,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     if index < lc then Ok (Local index, ty, sl) else
       Error (sl, Msg.unexpected index ty ctx)
 
-  | Refl e ->
-    (* Note that e is never type checked at inference stage below *)
+  | Rfl () ->
     let ty = eval ty in
     begin match ty with
     | Eq (ty1, e1, e2) ->
@@ -209,22 +208,20 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         let e1 = eval e1 in 
         let e2 = eval e2 in
         begin match unify env ctx lvl lc sl vars (e1, e2, ty1) false with
-          | Ok e -> Ok (Refl e, Eq (ty1, e1, e2), Stack.append sa sb)
+          | Ok _ -> Ok (Rfl (), Eq (ty1, e1, e2), Stack.append sa sb)
           | Error (_, msg) -> Error (Stack.append sa sb, msg)
         end
-      | Error (sl, msg), _ -> Error (sl, Msg.refl_error_1 e1 ty msg)
-      |  _ , Error (sl, msg) -> Error (sl, Msg.refl_error_1 e2 ty msg)
+      | Error (sl, msg), _ -> Error (sl, Msg.rfl_error_1 e1 ty msg)
+      |  _ , Error (sl, msg) -> Error (sl, Msg.rfl_error_1 e2 ty msg)
       end
 
-    | Meta _ ->
+    | Meta n ->
       let h1 = Placeholder.generate () in
-      begin match elaborate env ctx lvl lc sl h1 vars e with
-      | Ok (e, ty1, sa) ->
-        Ok (Refl e, Eq (ty1, e, e), sa)
-      | Error (sl, msg) -> Error (sl, msg)
-      end
+      let h2 = Placeholder.generate () in
+      Hashtbl.add Data.meta_store n { Data.solution = Eq (h2, h1, h1)};
+      Ok (Rfl (), Eq (h2, h1, h1), sl)
     | _ -> 
-      Error (sl, Msg.refl_error_2 e ty)
+      Error (sl, Msg.rfl_error_2 ty)
     end
 
   | Pi(x, ty1, ty2) ->

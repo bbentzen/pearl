@@ -83,7 +83,6 @@ let rec lift n = function
   | Lam (y, e) -> Lam (y, lift n e)
   | App (e1, e2) -> App (lift n e1, lift n e2)
   | Pi (y, e1, e2) -> Pi (y, lift n e1, lift n e2)
-  | Refl e -> Refl (lift n e)
   | Eq (e, e1, e2) -> Eq (lift n e, lift n e1, lift n e2)
   | Reflect (e1, e2) -> Reflect (lift n e1, lift n e2)
   | Explode (e1, e2) -> Explode (lift n e1, lift n e2)
@@ -129,13 +128,6 @@ let rec unfold_all env vars = function
       | Ok e1', Ok e2' -> Ok (Pi (x, e1', e2'))
       | Error msg, _ | _, Error msg -> Error msg
       end
-
-  | Refl e ->
-    let u1 = unfold_all env vars e in
-    begin match u1 with
-      | Ok e' -> Ok (Refl e')
-      | Error msg -> Error msg
-    end
 
   | Eq (e, e1, e2) -> 
     let u = unfold_all env vars e in
