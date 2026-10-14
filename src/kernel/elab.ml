@@ -54,20 +54,6 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         end
       | false, false, false, false ->
         Error (sl, Msg.var_error_2 x)
-        (* begin match Env.unfold x env with
-        | Ok ((_, xty), _) ->
-          let h1 = Placeholder.generate () in
-          begin match elaborate env ctx lvl lc sl h1 vars xty with
-          | Ok (_, tTy', sa) ->
-            let u = unify env ctx lvl lc sl vars (eval xty, eval ty, tTy') true in
-            begin match u with
-            | Ok s -> Ok (Global x, s, sl) (* runs faster when not body *)
-            | _ -> Error (sa, Msg.var_type_mismatch_2 x xty ty)
-            end
-          | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
-          end
-        | Error msg -> Error (sl, Msg.var_error x msg)
-        end *)
       end
     | Error _ ->
       (* Check if identifier corresponds to a theorem in the env environment *)
@@ -203,9 +189,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
 
   | Explode (e1, e2) ->
     begin match elaborate env ctx lvl lc sl (Void()) vars e1 with
-    | Ok (e1', _, sa) -> 
-      (* Need to check later if e2 has dangling metas or _s *)
-      Ok (Explode (e1', e2), ty, sa)
+    | Ok (e1', _, sa) -> Ok (Explode (e1', e2), ty, sa)
     | Error (sa, msg) -> Error (sa, Msg.void_error e1 msg)
     end
   
