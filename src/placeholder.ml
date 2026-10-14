@@ -74,7 +74,7 @@ let has term =
     | [] -> false
     | x :: rest ->
       match x with
-       Wild _ | Meta _ -> true
+      | Wild _ | Meta _ -> true
       | Lam (_, e) -> helper (e :: rest)
       | Pi (_, e1, e2) | App (e1, e2) -> helper (e1 :: e2 :: rest)
       | Refl e | Reflect (_, e) | Explode (_, e) -> helper (e :: rest)
