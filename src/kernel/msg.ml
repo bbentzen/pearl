@@ -209,8 +209,10 @@ let reflect_2 e msg =
   "Failed to resolve reflection: Cannot check that the term\n  " ^ Pretty.printf e ^ 
   "\nhas type\n  ?1? =?0? ?2?" ^ msg
 
-  let reflect_goal ctx e2 ty msg =
-  "Failed reflection " ^ goal_msg ctx e2 ty ^ "\n" ^ msg
+let reflect_goal ctx b a e2 ty msg =
+  "Failed reflection of " ^ Pretty.printf b ^ " with " ^ Pretty.printf a ^ ": " ^ msg ^ 
+  "Despite reflection, cannot check that\n  " ^ Pretty.printf e2 ^ "\nhas the expected type\n" ^ Global.printf ctx ^ 
+  "-------------------------------------------\n ⊢ " ^ Pretty.printf ty
 
 let eq_not_a_type ty1 e1 e2 msg =
   "Cannot verify that " ^ Pretty.printf ty1 ^ " is a type in\n " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ ". " ^ msg

@@ -175,11 +175,15 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | Ok (e1, ty1, sa) ->
       begin match ty1 with
       | Eq (_, a, b) ->
-        let ty = Expr.reflsubst 0 b (ESubIn(a,b,ty)) ty in
-        let e2 = Expr.reflsubst 0 b (ESubIn(a,b,ty)) e2 in
+        (* Zonks the metavariables in boths sides *)
+        let a = Placeholder.solve [] a in
+        let b = Placeholder.solve [] b in
+        (* Explicit substitutions so we can recover the type later on *)
+        let ty = Expr.reflsubst 0 b (ESubIn(a, b, ty)) ty in
+        let e2 = Expr.reflsubst 0 b (ESubIn(a, b, ty)) e2 in
         begin match elaborate env ctx lvl lc sl ty vars e2 with
-        | Ok (e2, ty, sa) -> Ok (e2, ty, sa)
-        | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx e2 ty msg)
+        | Ok (e2, ty, sa) -> Ok (Reflect (e1, e2), ty, sa)
+        | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx b a e2 ty msg)
         end
       | ty1 ->
         Error (sa, Msg.reflect_1 e1 ty1)

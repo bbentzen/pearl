@@ -150,7 +150,7 @@ let mk_fresh var ctx =
   in
   loop 0
 
-(* Extract realizer of a proof *)
+(* Extract realizer of a proof: removes reflect, explode and revert explicit substitutions *)
 
 let rec realizer_of = function
   | Global _ | Local _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
@@ -159,4 +159,5 @@ let rec realizer_of = function
   | Pi (y, e1, e2) -> Pi (y, realizer_of e1, realizer_of e2)
   | Eq (e, e1, e2) -> Eq (realizer_of e, realizer_of e1, realizer_of e2)
   | Meta n -> Meta n
-  | Reflect (_, e) | Explode (_, e) | ESubIn (e, _, _) -> realizer_of e
+  | Reflect (_, e) | Explode (_, e) -> realizer_of e
+  | ESubIn (_, e, _) -> realizer_of e

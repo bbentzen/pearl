@@ -10,6 +10,6 @@ universe ℓ
 
 /** Proof irrelevance **/
 
-def irrel_uip {A : type ℓ} {a b : A} (p q : eq A a b) :
-  eq (eq A a b) p q :=
-rfl
+def irrel_uip {A : type ℓ} {a b : A} :
+  Π (p q : eq A a b), eq (eq A a b) p q :=
+λ p q, rfl

@@ -25,6 +25,8 @@ let rec check global ctx lvl sl e ty max vars =
       (* Double checks that there are no placeholders left in the synthesization attempts *)
       Hashtbl.clear Data.meta_store;
       if Attempt.trustworthy (fst sl') then
+        let e' = Expr.realizer_of e' in
+        let ty' = Expr.realizer_of ty' in
         Ok (e', ty')
       else
         Error ("Untrustworthy synthesization attempt with " ^ Attempt.printfst (fst sl') ^ "\nYou should not see this message, please report.")      

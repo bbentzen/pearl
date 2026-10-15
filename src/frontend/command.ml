@@ -106,7 +106,6 @@ and compile env ind lopen filename lvl next_location =
         begin 
           match compile env ind lopen filename lvl next_location cmd with
           | Ok (global', ind', (s, lopen)) ->
-            let e = Expr.realizer_of e in
             Ok (global', ind', (id ^ " := \n  " ^ Pretty.printf e ^ ": \n  " ^ 
             Pretty.printf (eval ty) ^ "\n" ^ s, lopen))
           | Error msg ->
