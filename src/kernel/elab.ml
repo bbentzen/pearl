@@ -603,10 +603,14 @@ and unify env ctx lvl lc sl vars x lift =
 
       | ESubIn(e, e2, e3) , e', ty | e', ESubIn(e, e2, e3) , ty ->
         let e = eval e and e' = eval e' in
-        let u = unify env ctx lvl lc sl vars (e, e', ty) lift in
-        begin match u with
+        begin match unify env ctx lvl lc sl vars (e, e', ty) lift with
         | Ok e -> Ok (ESubIn(e, e2, e3))
-        | Error (_, msg) -> Error ((e, e'), Msg.esubin_not_unifiable e e' msg)
+        | Error _ -> 
+          (* Error ((e, e'), Msg.esubin_not_unifiable e e' msg) *)
+          begin match unify env ctx lvl lc sl vars (e2, e', ty) lift with
+          | Ok e2 -> Ok (ESubIn(e, e2, e3))
+          | Error (_, msg) -> Error ((e2, e'), Msg.esubin_not_unifiable (ESubIn(e, e2, e3)) e' msg)
+          end
         end
       
       | e , e', _ -> 

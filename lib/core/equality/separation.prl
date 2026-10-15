@@ -13,3 +13,11 @@ universe ℓ
 def irrel_uip {A : type ℓ} {a b : A} :
   Π (p q : eq A a b), eq (eq A a b) p q :=
 λ p q, rfl
+
+def test {A : type ℓ} {a b : A} (p : eq A a b) : 
+  eq A a a :=
+reflect (p⁻¹) p
+
+/* def irrel_k {A : type ℓ} {a b : A} :
+  Π (p : eq A a b), eq (reflect (p⁻¹) (eq A a b)) p rfl :=
+λ p, reflect p rfl */

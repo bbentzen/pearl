@@ -97,7 +97,10 @@ let rec print env = function
 
   | Reflect (e1, e2) -> "reflect " ^ parenthesize env e1 ^ parenthesize env e2
   | Explode (e1, e2) -> "explode " ^ parenthesize env e1 ^ parenthesize env e2
-  | ESubIn (e, _, _) -> print env e (* for testing: "[ " ^ parenthesize env e ^ "/ " ^ parenthesize env e1 ^ " ]" *)
+  | ESubIn (e, e1, _) -> 
+    (* print env e  *)
+  (* for testing:  *)
+  "[ " ^ parenthesize env e ^ "/ " ^ parenthesize env e1 ^ " ]"
   | Meta n -> "?" ^ string_of_int (abs n) ^ "? " (* negative indices are supressed from the user *)
   | Rfl () -> "rfl "
   | Void () -> "void "

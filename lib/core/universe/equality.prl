@@ -16,8 +16,8 @@ def TEST {A A' : type ℓ₁} {B : A' → type ℓ₂} (p : eq (type ℓ₁) A A
   type ℓ₂ :=
 B (reflect p x)
 
-/* def form_function_type_2 {A A' : type ℓ₁} {B : A → type ℓ₂} (p : eq (type ℓ₁) A A') :
-  eq (type (max ℓ₁ ℓ₂)) (Π (x : A), B x) (Π (x : A'), B (reflect p x)) :=
+/* def form_function_type_2 {A A' : type ℓ₁} {B : A' → type ℓ₂} (p : eq (type ℓ₁) A A') :
+  eq (type (max ℓ₁ ℓ₂)) (Π (x : A), B (reflect p x)) (Π (x : A'), B x) :=
 reflect p rfl */
 
 def form_function_type_3 {A A' : type ℓ₁} {B B' : A → type ℓ₂} (p : eq (type ℓ₁) A A') (q : eq (A → type ℓ₂) B B') :
