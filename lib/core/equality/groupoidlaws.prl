@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ./basic.prl
+
+universe ℓ
+
+/** Strict groupoid structure **/
+
+def eq_trans_lc {A : type ℓ} {a b : A} (p : eq A a b)  :
+  eq (eq A a a) (p · p⁻¹) rfl := 
+rfl
+
+def eq_trans_rc {A : type ℓ} {a b : A} (p : eq A a b)  :
+  eq (eq A b b) (p⁻¹ · p) rfl := 
+rfl
+
+def eq_trans_lu {A : type ℓ} {a b : A} (p : eq A a b)  :
+  eq (eq A a b) p (rfl · p) := 
+rfl
+
+def eq_trans_ru {A : type ℓ} {a b : A} (p : eq A a b)  :
+  eq (eq A a b) p (p · rfl) := 
+rfl
+
+def eq_symm_inv {A : type ℓ} {a b : A} (p : eq A a b) :
+  eq (eq A a b) p (p ⁻¹⁻¹) := 
+rfl
+
+def eq_trans_assoc {A : type ℓ} {a b c d : A} (p : eq A a b) (q : eq A b c) (r : eq A c d) :
+  eq (eq A a d) (p · q · r) ((p · q) · r) := 
+rfl

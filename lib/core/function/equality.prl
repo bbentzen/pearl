@@ -13,7 +13,7 @@ def ap {A B : type ℓ} (f : A → B) {a b : A} :
 λ p, reflect p rfl
 
 def eta {A B : type ℓ} (f : A → B) :
-  eq (A → B) f (λ x, f x) :=
+  eq (A → B) (λ x, f x) f :=
 rfl
 
 def apd {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) {a b : A} (p : eq A a b) :
@@ -21,7 +21,7 @@ def apd {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) {a b : A} (p :
 reflect p rfl
 
 thm etad {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) :
-  eq (Π (x : A), B x) f (λ x, f x) :=
+  eq (Π (x : A), B x) (λ x, f x) f :=
 rfl
 
 def funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) :

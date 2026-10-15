@@ -1,0 +1,20 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ./basic.prl
+
+universe ℓ
+
+/** eq induction **/
+
+def eq_subst {A : type ℓ} (C : A → type ℓ) {a b : A} (p : eq A a b) (c : C a) :
+  C b :=
+reflect p c
+
+def eqrec {A : type ℓ} {a : A} (C : Π (x : A), eq A a x → type ℓ) {b : A} (p : eq A a b) (c : C a rfl) :
+  C b p := 
+reflect p c
+

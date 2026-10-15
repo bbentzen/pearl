@@ -175,8 +175,8 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | Ok (e1, ty1, sa) ->
       begin match ty1 with
       | Eq (_, a, b) ->
-        let ty = Expr.reflsubst 0 a b ty in
-        let e2 = Expr.reflsubst 0 a b e2 in
+        let ty = Expr.reflsubst 0 b a ty in
+        let e2 = Expr.reflsubst 0 b a e2 in
         begin match elaborate env ctx lvl lc sl ty vars e2 with
         | Ok (e2, ty, sa) -> Ok (e2, ty, sa)
         | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx e2 ty msg)

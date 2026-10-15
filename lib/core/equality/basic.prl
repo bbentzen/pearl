@@ -1,0 +1,29 @@
+/*
+ * Copyright (c) 2026 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ../function.prl
+
+universe ℓ
+
+/* Symmetry and transitivity */
+
+lem eq_symm {A : type ℓ} {a b : A} (p : eq A a b) :
+  eq A b a := 
+reflect p rfl
+
+lem eq_trans {A : type ℓ} {a b c : A} (p : eq A a b) (q : eq A b c) :
+  eq A a c := 
+reflect q p
+
+/* Other lemmas */
+
+lem eq_right {A : type ℓ} {a b c : A} (p : eq A a b) :
+  eq A a c → eq A b c :=
+reflect p id
+
+lem eq_left {A : type ℓ} {a b c : A} (p : eq A a b) :
+  eq A c a → eq A c b :=
+reflect p id
