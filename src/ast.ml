@@ -88,6 +88,7 @@ type expr =
   | Wild of int
   | Reflect of expr * expr
   | Explode of expr * expr
+  | ESubIn of expr * expr * expr
 
 (* Conversion of raw expressions into expressions *)
 

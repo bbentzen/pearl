@@ -41,4 +41,5 @@ let rec zonk st = function
   | Eq (e, e1, e2) -> Eq (zonk st e, zonk st e1, zonk st e2)
   | Reflect (e1, e2) -> Reflect (zonk st e1, zonk st e2)
   | Explode (e1, e2) -> Explode (zonk st e1, zonk st e2)
+  | ESubIn (e, e1, e2) -> ESubIn (zonk st e, zonk st e1, zonk st e2)
   | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e

@@ -175,8 +175,8 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | Ok (e1, ty1, sa) ->
       begin match ty1 with
       | Eq (_, a, b) ->
-        let ty = Expr.reflsubst 0 b a ty in
-        let e2 = Expr.reflsubst 0 b a e2 in
+        let ty = Expr.reflsubst 0 b (ESubIn(a,b,ty)) ty in
+        let e2 = Expr.reflsubst 0 b (ESubIn(a,b,ty)) e2 in
         begin match elaborate env ctx lvl lc sl ty vars e2 with
         | Ok (e2, ty, sa) -> Ok (e2, ty, sa)
         | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx e2 ty msg)
@@ -191,6 +191,12 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     begin match elaborate env ctx lvl lc sl (Void()) vars e1 with
     | Ok (e1', _, sa) -> Ok (Explode (e1', e2), ty, sa)
     | Error (sa, msg) -> Error (sa, Msg.void_error e1 msg)
+    end
+  
+  | ESubIn (e, e1, e2) ->
+    begin match elaborate env ctx lvl lc sl ty vars e with
+    | Ok (e, ty, sa) -> Ok (ESubIn (e, e1, e2), ty, sa)
+    | Error (sa, msg) -> Error (sa, Msg.esub_error msg)
     end
   
   | Local index ->
@@ -488,7 +494,7 @@ and unify env ctx lvl lc sl vars x lift =
           Error (sa, Msg.unify_eq e e1 e2 e' e1' e2' msg)
         end
 
-      | Lam (x, e), Lam (_, e'), Pi(_, ty1 , ty2) ->
+      | Lam (x, e), Lam (y, e'), Pi(_, ty1 , ty2) ->
         if e = e' then
           Ok (Lam (x, e))
         else if Placeholder.is e' then
@@ -505,7 +511,7 @@ and unify env ctx lvl lc sl vars x lift =
           let u = unify env ((v1, ty1, true) :: ctx) lvl lc sl (vars+1) (ev1, ev1', tyv1) lift in
           begin match u with
           | Ok s -> Ok (Lam (v1, s))
-          | Error msg -> Error msg
+          | Error ((e, e'), msg) -> Error ((e, e'), Msg.lam_unify_2 x e y e' msg)
           end
       
       | App (e1, e2), App (e1', e2'), ty ->
@@ -551,6 +557,13 @@ and unify env ctx lvl lc sl vars x lift =
         | Ok e -> Ok (Reflect (p, e))
         | Error msg -> Error msg
         end
+      
+      | Reflect (p, e), e', _ | e', Reflect (p, e), _->
+        let u = unify env ctx lvl lc sl vars (e, e', Meta 0) lift in
+        begin match u with
+        | Ok e -> Ok (Reflect (p, e))
+        | Error msg -> Error msg
+        end
 
       | Explode (p, e), Explode (_, e'), _ ->
         let u = unify env ctx lvl lc sl vars (e, e', Meta 0) lift in
@@ -583,6 +596,26 @@ and unify env ctx lvl lc sl vars x lift =
         | _ ->
             Error ((Lam (x, e), e'), Msg.lam_unify x e e')
           end
+      
+      | ESubIn(e, e2, e3) , ESubIn(e', _, _), ty ->
+        let e = eval e and e' = eval e' in
+        let u = unify env ctx lvl lc sl vars (e, e', ty) lift in
+        begin match u with
+        | Ok e -> Ok (ESubIn(e, e2, e3))
+        | Error (_, msg) -> Error ((e, e'), Msg.esubin_not_unifiable e e' msg)
+        end
+
+      | ESubIn(e, e2, e3) , e', ty | e', ESubIn(e, e2, e3) , ty ->
+        let e = eval e and e' = eval e' in
+        let u = unify env ctx lvl lc sl vars (e, e', ty) lift in
+        begin match u with
+        | Ok e -> Ok (ESubIn(e, e2, e3))
+        | Error (_, msg) -> Error ((e, e'), Msg.esubin_not_unifiable e e' msg)
+        end
+        (* if eval e = eval e' then
+          Ok e 
+        else
+          Error ((e, e'), Msg.esubin_not_unifiable e e') *)
       
       | e , e', _ -> 
         if eval e == eval e' then 

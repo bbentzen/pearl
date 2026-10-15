@@ -18,10 +18,10 @@ let rec shift cutoff amount = function
   | App (e1, e2) -> App (shift cutoff amount e1, shift cutoff amount e2)
   | Pi (x, e1, e2) -> Pi (x, shift cutoff amount e1, shift (cutoff + 1) amount e2)
   | Rfl () -> Rfl ()
-  | Eq (e, e1, e2) ->
-    Eq (shift cutoff amount e, shift cutoff amount e1, shift cutoff amount e2)
+  | Eq (e, e1, e2) -> Eq (shift cutoff amount e, shift cutoff amount e1, shift cutoff amount e2)
   | Reflect (e1, e2) -> Reflect (shift cutoff amount e1, shift cutoff amount e2)
   | Explode (e1, e2) -> Explode (shift cutoff amount e1, shift cutoff amount e2)
+  | ESubIn (e, e1, e2) -> ESubIn (shift cutoff amount e, shift cutoff amount e1, shift cutoff amount e2)
 
   (* Additional functions *)
 
@@ -37,6 +37,7 @@ let rec open_var k replace = function
   | Eq (e, e1, e2) -> Eq (open_var k replace e, open_var k replace e1, open_var k replace e2)
   | Reflect (e1, e2) -> Reflect (open_var k replace e1, open_var k replace e2)
   | Explode (e1, e2) -> Explode (open_var k replace e1, open_var k replace e2)
+  | ESubIn (e, e1, e2) -> ESubIn (open_var k replace e, open_var k replace e1, open_var k replace e2)
 
 let rec close_var k x = function
   | Global y when x = y -> Local k
@@ -47,6 +48,7 @@ let rec close_var k x = function
   | Eq (e, e1, e2) -> Eq (close_var k x e, close_var k x e1, close_var k x e2)
   | Reflect (e1, e2) -> Reflect (close_var k x e1, close_var k x e2)
   | Explode (e1, e2) -> Explode (close_var k x e1, close_var k x e2)
+  | ESubIn (e, e1, e2) -> ESubIn (close_var k x e, close_var k x e1, close_var k x e2)
 
 (* Abbreviations for opening and closing binders *)
 
@@ -68,6 +70,7 @@ let rec fullsubst k ex d = function
   | Meta n -> Meta n
   | Reflect (e1, e2) -> Reflect (fullsubst k ex d e1, fullsubst k ex d e2)
   | Explode (e1, e2) -> Explode (fullsubst k ex d e1, fullsubst k ex d e2)
+  | ESubIn (e, e1, e2) -> ESubIn (fullsubst k ex d e, fullsubst k ex d e1, fullsubst k ex d e2)
 
 (* Syntactical substitution ignoring bound occurrences - useful for reflection *)
 (* This must be used very carefully *)
@@ -82,6 +85,7 @@ let rec reflsubst k ex d = function
   | Meta n -> Meta n
   | Reflect (e1, e2) -> Reflect (reflsubst k ex d e1, reflsubst k ex d e2)
   | Explode (e1, e2) -> Explode (reflsubst k ex d e1, reflsubst k ex d e2)
+  | ESubIn (e, e1, e2) -> ESubIn (reflsubst k ex d e, reflsubst k ex d e1, reflsubst k ex d e2)
 
 (* Occurrence of indices: note that the first arguments of reflect and explode are ignored *)
 (* This is useful to allow for eta-conversion *)
@@ -93,7 +97,7 @@ let rec occurs_index target cutoff = function
   | App (e1, e2) -> occurs_index target cutoff e1 || occurs_index target cutoff e2
   | Pi (_, e1, e2) -> occurs_index target cutoff e1 || occurs_index target (cutoff + 1) e2
   | Eq (e, e1, e2) -> occurs_index target cutoff e || occurs_index target cutoff e1 || occurs_index target cutoff e2
-  | Reflect (_, e) | Explode (_, e) -> occurs_index target cutoff e
+  | Reflect (_, e) | Explode (_, e) | ESubIn (e, _, _) -> occurs_index target cutoff e
 
 let rec occurs_name s hint = function
   | Lam (x, e) -> x = hint || occurs_name x hint e
@@ -101,7 +105,7 @@ let rec occurs_name s hint = function
   | Local _ -> s = hint | Global t -> t = hint
   | Void _ | Rfl _ | Type _ | Wild _ | Meta _ -> false
   | App (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> occurs_name s hint e1 || occurs_name s hint e2
-  | Eq (e, e1, e2) -> occurs_name s hint e || occurs_name s hint e1 || occurs_name s hint e2
+  | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> occurs_name s hint e || occurs_name s hint e1 || occurs_name s hint e2
 
 let rec free_occurs_name s = function
   | Global t -> t = s  
@@ -109,7 +113,7 @@ let rec free_occurs_name s = function
   | Lam (x, e) -> free_occurs_name x e
   | Pi (x, e1, e2) -> free_occurs_name x e1 || free_occurs_name x e2
   | App (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> free_occurs_name s e1 || free_occurs_name s e2
-  | Eq (e, e1, e2) -> free_occurs_name s e || free_occurs_name s e1 || free_occurs_name s e2
+  | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> free_occurs_name s e || free_occurs_name s e1 || free_occurs_name s e2
 
 (* Converts a list of expressions into a single expression by application *)
 
@@ -155,4 +159,4 @@ let rec realizer_of = function
   | Pi (y, e1, e2) -> Pi (y, realizer_of e1, realizer_of e2)
   | Eq (e, e1, e2) -> Eq (realizer_of e, realizer_of e1, realizer_of e2)
   | Meta n -> Meta n
-  | Reflect (_, e) | Explode (_, e) -> realizer_of e
+  | Reflect (_, e) | Explode (_, e) | ESubIn (e, _, _) -> realizer_of e

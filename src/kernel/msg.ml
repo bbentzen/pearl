@@ -93,7 +93,11 @@ let void_error e msg =
 let void_ty ty =
 "Type mismatch when checking that\n  void\n has type\n  " ^ Pretty.printf ty
 
-(* Equality *)
+(* Explicit substitution *)
+
+let esub_error msg = 
+  "Type checking error. " ^ msg
+
 
 (* Types and universes *)
 
@@ -170,8 +174,17 @@ let lam_unify x e e' =
   "Don't know how to unify the lambda abstraction\n  " ^ 
   Pretty.printf (Lam (x, e)) ^ "\nwith the term\n  " ^ Pretty.printf e'
 
+let lam_unify_2 x e y e' msg =
+  let e = Expr.open_var 0 (Global x) e in
+  "Don't know how to unify both lambda abstractions\n  " ^ 
+  Pretty.printf (Lam (x, e)) ^ "\nand\n  " ^ Pretty.printf (Lam (y, e')) ^ ". " ^ msg
+
+  
 let not_syntactically_equal e e' =
   "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. "
+
+let esubin_not_unifiable e e' msg =
+  "Despite reflection,\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\ncannot be unified. " ^ msg
 
 (* Equality *)
 

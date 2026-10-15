@@ -101,6 +101,7 @@ let rec solve env = function
   | Eq (e, e1, e2) -> Eq (solve env e, solve env e1, solve env e2)
   | Reflect (e1, e2) -> Reflect (solve env e1, solve env e2)
   | Explode (e1, e2) -> Explode (solve env e1, solve env e2)
+  | ESubIn (e, e1, e2) -> ESubIn (solve env e, solve env e1, solve env e2)
   | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
 
 (* Assigns unique positive metas to negative metas *)
@@ -113,4 +114,5 @@ let rec unique = function
   | Eq (e, e1, e2) -> Eq (unique e, unique e1, unique e2)
   | Reflect (e1, e2) -> Reflect (unique e1, unique e2)
   | Explode (e1, e2) -> Explode (unique e1, unique e2)
+  | ESubIn (e, e1, e2) -> ESubIn (unique e, unique e1, unique e2)
   | e -> e
