@@ -350,7 +350,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         end
       | Error msg, _ | _, Error msg -> Error msg
       end
-    
+    (* The type lives in a metavariable type *)
     | Ok (ty1, Meta n, st) ->
       let elab1 = elaborate env ctx lvl lc sl ty1 vars e1 in
       let elab2 = elaborate env ctx lvl lc sl ty1 vars e2 in
@@ -370,13 +370,9 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         end
       | Error msg, _ | _, Error msg -> Error msg
       end
-    
-    | Ok (ty1, _, st) ->
-      Error (st, Msg.not_a_type ty1)
-
-    | Error msg ->
-      (* Type not elaborable, needs an informative error msg *)
-      Error msg
+    (* Type is neither a well-specified universe nor a meta *)
+    | Ok (ty1, _, st) -> Error (st, Msg.not_a_type ty1)
+    | Error (sa, msg) -> Error (sa, Msg.eq_not_a_type ty1 e1 e2 msg)
     end
     
   | Type n ->
@@ -398,8 +394,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       Error (sl, msg)
     end
   
-  | Meta n ->
-    Ok (Meta n, ty, sl)
+  | Meta n -> Ok (Meta n, ty, sl)
     
   | Wild n ->
     let solved, used = sl in
@@ -445,9 +440,6 @@ and unify env ctx lvl lc sl vars x lift =
       match e, e', ty with
       | Meta n1, Meta n2, _ ->
         if n1 <= n2 then Ok (Meta n1) else Ok (Meta n2)
-      
-      (* | e , Meta n, Eq(_, _, _) ->
-        Hashtbl.add Data.meta_store n { Data.solution = e}; Ok e *)
 
       | e , Meta n, _ | Meta n, e, _ ->
         Hashtbl.add Data.meta_store n { Data.solution = e}; Ok e
@@ -612,10 +604,6 @@ and unify env ctx lvl lc sl vars x lift =
         | Ok e -> Ok (ESubIn(e, e2, e3))
         | Error (_, msg) -> Error ((e, e'), Msg.esubin_not_unifiable e e' msg)
         end
-        (* if eval e = eval e' then
-          Ok e 
-        else
-          Error ((e, e'), Msg.esubin_not_unifiable e e') *)
       
       | e , e', _ -> 
         if eval e == eval e' then 

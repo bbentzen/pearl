@@ -211,3 +211,7 @@ let reflect_2 e msg =
 
   let reflect_goal ctx e2 ty msg =
   "Failed reflection " ^ goal_msg ctx e2 ty ^ "\n" ^ msg
+
+let eq_not_a_type ty1 e1 e2 msg =
+  "Cannot verify that " ^ Pretty.printf ty1 ^ " is a type in\n " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ ". " ^ msg
+
