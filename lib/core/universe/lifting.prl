@@ -1,0 +1,25 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+universe ℓ₁ ℓ₂
+
+/** Lifting **/
+
+def lift {f : type (max ℓ₁ ℓ₂) → type ℓ₂} {A : type ℓ₁} :
+  type ℓ₂ := 
+f A
+
+def next_lvl :
+  type (next ℓ₂) :=
+type ℓ₂
+
+def max_left :
+  type (max ℓ₁ ℓ₂) :=
+type ℓ₁
+
+def max_right :
+  type (max ℓ₁ ℓ₂) :=
+type ℓ₂

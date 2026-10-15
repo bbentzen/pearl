@@ -211,8 +211,8 @@ let rec elaborate env ctx lvl lc sl ty vars = function
           | Ok _ -> Ok (Rfl (), Eq (ty1, e1, e2), Stack.append sa sb)
           | Error (_, msg) -> Error (Stack.append sa sb, msg)
         end
-      | Error (sl, msg), _ -> Error (sl, Msg.rfl_error_1 e1 ty msg)
-      |  _ , Error (sl, msg) -> Error (sl, Msg.rfl_error_1 e2 ty msg)
+      | Error (sl, msg), _ -> Error (sl, Msg.rfl_error_1 ty msg)
+      |  _ , Error (sl, msg) -> Error (sl, Msg.rfl_error_1 ty msg)
       end
 
     | Meta n ->
