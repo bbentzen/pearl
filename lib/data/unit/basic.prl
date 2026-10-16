@@ -1,0 +1,16 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+universe ℓ
+
+/* Unit type, constructors and eliminator */
+
+inductive unit : type 0 :=
+| star : unit
+
+abbrev let {C : unit → type ℓ} :
+  Π (u : unit) (c : C ()), C u :=
+λ u c, unitrec _ c u

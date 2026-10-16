@@ -1,0 +1,13 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ./basic.prl
+
+/* Paths */
+
+def unit_eq (u : unit) :
+  eq unit u () :=
+let u rfl
