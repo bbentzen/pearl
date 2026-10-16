@@ -6,23 +6,27 @@
 
 universe ℓ₁ ℓ₂
  
-/* Congruence of type formers */
+/* Congruence rules for dependent function type */
 
 def form_function_type_1 {A : type ℓ₁} {B B' : A → type ℓ₂} (q : eq (A → type ℓ₂) B B') :
   eq (type (max ℓ₁ ℓ₂)) (Π (x : A), B x) (Π (x : A), B' x) :=
 reflect q rfl
 
-def TEST {A A' : type ℓ₁} {B : A' → type ℓ₂} (p : eq (type ℓ₁) A A') (x : A) :
-  type ℓ₂ :=
-B (reflect p x)
-
-/* def form_function_type_2 {A A' : type ℓ₁} {B : A' → type ℓ₂} (p : eq (type ℓ₁) A A') :
+def form_function_type_2 {A A' : type ℓ₁} {B : A' → type ℓ₂} (p : eq (type ℓ₁) A A') :
   eq (type (max ℓ₁ ℓ₂)) (Π (x : A), B (reflect p x)) (Π (x : A'), B x) :=
-reflect p rfl */
+reflect p rfl
 
 def form_function_type_3 {A A' : type ℓ₁} {B B' : A → type ℓ₂} (p : eq (type ℓ₁) A A') (q : eq (A → type ℓ₂) B B') :
   eq (type (max ℓ₁ ℓ₂)) (Π (x : A), B x) (reflect p (Π (x : A'), B' x)) :=
 reflect q rfl
 
-print form_function_type_1
+/* Congruence rules for the equality type */
 
+def form_equality_type_1 {A : type ℓ₁} {a b a' b' : A} (p : eq A a a') (q : eq A b b') :
+  eq (type ℓ₁) (eq A a b) (eq A a' b') :=
+reflect p reflect q rfl
+
+def form_equality_type_2 {A A' : type ℓ₁} {a b : A} {a' b' : A'} 
+  (p : eq (type ℓ₁) A A') (q : eq A' (reflect p a) a') (r : eq A' (reflect p b) b') :
+  eq (type ℓ₁) (eq A a b) (eq (reflect p A') a' b') :=
+reflect q reflect r rfl
