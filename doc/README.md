@@ -4,15 +4,19 @@ Pearl implements a variant of computational type theory like NuPRL [[1](#NuPRL)]
 
 We began the present implementation [here](https://github.com/bbentzen/cube) in 2019 using cubical features. After a long break due to research on the philosophical roots of computational type theory, the project was resumed in the summer of 2026 due to a confluence of reasons. The most important motivation is the completion of the monograph "Philosophical Type Theory" [[8](#BEN27)], which contains the most systematic exposition and defense of computational type theory to date, building on some key insights of Brouwer and Bishop on anti-formalism and human cognition. Pearl is an implementation of this dialect of computational type theory. Moreover, as Christoph Kreitz explains [here](https://proofassistants.stackexchange.com/q/2346/1048), the NuPRL group has disbanded and the original system is no longer easily accessible. RedPRL remains an excellent alternative, but we believe that cubical features may present a distraction from the premathematical essence of the computational view of type theory. Indeed, Pearl owes its very existence to the realization that the original implementation mentioned above, which was based on a cubical alternative to extensional type theory, could be decubicalized in a practical way.
 
-As a result, the main distinctive feature of Pearl is that it operates without a top-level layer of proof refinment logic as NuPRL. Instead, Peal is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[9](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for the manipulation of reflection and explosion. As a case in point, note that this allows Pearl to prove function extensionality in a rather convenient way, in contrast to its status as a primitive in NuPRL or postulate in Andromeda.
+As a result, the main distinctive feature of Pearl is that it operates without a top-level layer of proof refinment logic as NuPRL. Instead, Peal is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[9](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for reflection and explosion. As a case in point, note that this allows Pearl to prove function extensionality directly, in contrast to its usual status as a primitive rule in systems like NuPRL or Andromeda:
+
+<p align="center">
+  <img src="https://github.com/bbentzen/pearl/blob/main/doc/assets/funext.png?raw=true" />
+</p>
 
 Below you will find a short reference manual on the basics of Pearl. 
 
 ## The type theory of Pearl
 
-For a more comprehensive account of the computatonal type theory implemented in Pearl we refer the reader to [[6](#BEN27), ch. 2]. Formally speaking, Pearl runs on a version of extensional type theory [[5](#CMCP)], a dependently typed theory with equality reflection. To keep the kernel as small as possible, the type theory of Pearl supports user-defined inductive type families and only runs on built-in type formers for dependent functions, the equality type, the empty type, and a cumulative hierarchy of universes à la Russell. 
+For a more comprehensive account of the computatonal type theory implemented in Pearl we refer users to [[6](#BEN27), ch. 2]. Formally speaking, Pearl runs on a version of extensional type theory [[5](#CMCP)], a dependently typed theory with equality reflection. To keep the kernel as small as possible, the type theory of Pearl supports user-defined inductive type families and only runs on built-in type formers for dependent functions, the equality type, the empty type, and a cumulative hierarchy of universes à la Russell. Pearl's raw language is based on a Curry-style version of the untyped lambda-calculus extended with constants for type formers and their constructors and eliminators (when they exist).
 
-- **Inductive type families** are defined by prescribing how to construct realizers for the type using the `inductive` environment, with their equality conditions and and eliminators derived automatically by the system.
+- **Inductive type families** are defined by prescribing how to construct realizers for the type using the `inductive` environment, with their equality conditions and and eliminators derived automatically by the system. The language of Pearl is open-ended in the spirit of [[6](#BEN27), §9]. Every successful inductive definition of a type family introduces new constants for the type former, constructors, and eliminators. Note that eliminators are automatically generated under the name `foorec` for a type `foo`. 
 
 - **Dependent function types** embody implications, functions, universal quantification, and indexed products with the given as `∏(x : M), N`,
 where all free occurrences of `x` in `N` are bound. The constructor is given by
@@ -42,8 +46,7 @@ The syntax for defining an indexed inductive type is:
 ...
 | constructorn : ... → foo
 ```
-
-Recursors are automatically generated under the name `foorec`. 
+To avoid redundency, Pearl does not allow for empty inductive type declarations given that the empty type is already taken as primitive.
 
 ### Proof environment
 
@@ -56,7 +59,6 @@ The proof environment is the main command where definitions are stated and theor
 
 Contexts are lists of variable declarations. Explicit variables are enclosed with `(` and `)` and must be passed as parameters when the definition or theorem is reused later. Implicit variables are enclosed with curly braces `{` and `}` and can be inferred by the elaborator. Multiple variables of the same type can be declared at the same time.
 
-Types and their terms are determined by Pearl's raw language, which is based on a Curry-style version of the untyped lambda-calculus extended with constants for type formers and their constructors and eliminators (when they exist). To keep the size of the kernel to a minimum, the only built-in types are dependent function type, equality type, empty type, and universe types:
 
 Primitive types | Notation | Constructors | Eliminators
 ------------ | ------------- | ------------- | -------------
@@ -66,8 +68,6 @@ Empty type | void | |
 Universe type | type n | 
 
 In addition, the user can also have `_` and `?` as placeholders in any expression. The former is used to synthesize an implicit assumption or fail after a number of steps, evaluating and displaying the type of the current goal. The latter is used to display the type of current goal directly without evaluation.
-
-
 
 ### Type inference
 

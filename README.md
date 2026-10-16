@@ -9,13 +9,7 @@
   <a href="https://github.com/ocaml/ocaml" target="_blank"><img src="https://img.shields.io/badge/Ocaml-4.14.2-blue" alt="OCaml"></a>
 </p>
 
-Pearl is an experimental interactive theorem prover for the formalization of mathematics from the computational view of type theory most recently advocated by Bentzen [[1](#BEN27)] following in the footsteps of Constable, Bickford, Allen, Harper, Sterling, Angiuli, and others. Pearl implements a version of extensional type theory with user-defined inductive type families inspired by NuPRL and its descendents [[2](#NuPRL), [3](#MetaPRL), [4](#RedPRL)], but without a proof refinement logic. Instead, Pearl focuses on proof terms in a style reminiscent of Andromeda [[5](#Andromeda)], except that instead of a explicitly typed language of algebraic effects and handlers, Pearl is based on a untyped programming language of realizers extended with only two opaque operations for reflection and explosion. For example, this makes possible a convenient proof of function extensionality in Pearl:
-
-<p align="center">
-  <img src="https://github.com/bbentzen/pearl/blob/main/doc/assets/funext.png?raw=true" />
-</p>
-
-Please see the [documentation](https://github.com/bbentzen/pearl/tree/main/doc) for more information on the underlying formal system.
+Pearl is an experimental interactive theorem prover for the formalization of mathematics from the computational view of type theory most recently advocated by Bentzen [[1](#BEN27)] following in the footsteps of Constable, Bickford, Allen, Harper, Sterling, Angiuli, and others. Pearl implements a version of extensional type theory with user-defined inductive type families inspired by NuPRL and its descendents [[2](#NuPRL), [3](#MetaPRL), [4](#RedPRL)], but without a proof refinement logic. Instead, Pearl focuses on proof terms in a style reminiscent of Andromeda [[5](#Andromeda)], except that instead of a explicitly typed language of algebraic effects and handlers, Pearl is based on a untyped programming language of realizers extended with only two opaque operations for reflection and explosion. Please see the [documentation](https://github.com/bbentzen/pearl/tree/main/doc) for more information on the underlying formal system.
 
 ## Installation
 
