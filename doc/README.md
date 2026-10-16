@@ -3,15 +3,11 @@
 Pearl implements a variant of computational type theory like NuPRL [[1](#NuPRL)] and its descendents [[2](#MetaPRL), [3](#JonPRL), [4](#RedPRL)]. More precisely, the system serves as a "window on the truth" with respect to an intended informal realizability semantics defined independently of any formal theory. Inspired by Martin-Löf's early work [[5](#CMCP)], computational type theory views programs as realizers and not as formal proofs in a fixed and necessarily incomplete formal theory. See [[6](#CON09), [7](#STE15)] for accessible introductions. 
 We began the present implementation [here](https://github.com/bbentzen/cube) in 2019 using cubical features. After a long break due to research on the philosophical roots of computational type theory, the project was resumed in the summer of 2026 due to a confluence of reasons. The most important motivation is the completion of the monograph "Philosophical Type Theory" [[8](#BEN27)], which contains the most systematic exposition and defense of computational type theory to date, building on some key insights of Brouwer and Bishop on anti-formalism and human cognition. Pearl is an implementation of this dialect of computational type theory. Moreover, as Christoph Kreitz explains [here](https://proofassistants.stackexchange.com/q/2346/1048), the NuPRL group has in effect been disbanded and the original system is no longer easily accessible. RedPRL remains an excellent alternative, but we believe that cubical features may present a distraction from the premathematical essence of the computational view of type theory. Indeed, Pearl owes its very existence to the realization that the original implementation mentioned above, which was based on a cubical alternative to extensional type theory, could be decubicalized in a practical way.
 
-**Feature Summary.** Although inspired by NuPRL, Pearl deviates from it in two important ways. 
+**Feature Summary.** Although inspired by NuPRL, Pearl deviates from it in two important ways: 
 
 1. Pearl is intended to be consistent with classical reasoning in Bishop-style, while the latest versions of NuPRL ultimately favored the formalization of intuitionistic mathematics, including the accommodation of continuity principles, free choice sequences, and elements of Brouwer's creating subject arguments [[10](#RBC17), [11](#BCC18), [12](#CON20)]. We believe that this incompatibility with classical mathematics is orthogonal to the computational view of type theory [[8](#BEN27)]. 
 
-2. 
-
-3. Pearl operates without a top-level layer of proof refinment logic as NuPRL, where users decompose proof goals into subgoals by means of refinement rules to extract realizers. Instead, Pearl is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[9](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for reflection and explosion. 
-
-As a case in point, note that this allows Pearl to prove function extensionality directly, in contrast to its usual status as a primitive rule in systems like NuPRL or Andromeda:
+2. Pearl operates without a top-level layer of proof refinment logic as NuPRL, where users decompose proof goals into subgoals by means of refinement rules to extract realizers. Instead, Pearl is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[9](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for reflection and explosion. As a case in point, note that this allows Pearl to prove function extensionality directly, in contrast to its usual status as a primitive rule in systems like NuPRL or Andromeda:
 
 <p align="center">
   <img src="https://github.com/bbentzen/pearl/blob/main/doc/assets/funext.png?raw=true" />
@@ -41,23 +37,24 @@ formulation of universes à la Russell.
 
 ## Usage
 
-There are a number of commands for inductively defining type families, entering the proof environment, type inference, term evaluation, importing files for the modularizion of proofs, declaring universe levels, and extracting and priting terms from definitions and theorems:
+We recommend using the [pearl-vscode extension](https://github.com/bbentzen/pearl/tree/main/vscode) for verification support. Once you are all set, note that you can use the following commands for inductively defining type families, entering the proof environment, type inference, term evaluation, importing files for the modularizion of proofs, declaring universe levels, and extracting and priting terms from definitions and theorems:
 
 ### Inductive environment
 
+This environment is used to introduce inductively defined type families. Inductive type declarations must be predicative, meaning that the target type must not live in a universe level that is lower than a universe level occurring as a parameter or argument. They must also be strictly positive, in that roughly the defined type never occurs in a ill-founded way. Finally, to avoid redundency, Pearl does not allow for empty inductive type declarations given that the empty type is already taken as primitive.
+
 The syntax for defining an indexed inductive type is:
 
-```inductive foo : type l
+```inductive foo [context] : type l
 | constructor1 : ... → foo
 | constructor2 : ... → foo
 ...
 | constructorn : ... → foo
 ```
-To avoid redundency, Pearl does not allow for empty inductive type declarations given that the empty type is already taken as primitive.
 
 ### Proof environment
 
-The proof environment is the main command where definitions are stated and theorems and lemmas are proven. Syntactically speaking, there is no difference between defintitions and theorems and lemmas. Users can use `def`, `definition`, `thm`, `theorem`, `lem`, and `lemma` interchangeably.
+The proof environment is the main command where definitions are stated and theorems and lemmas are proven. Users can use the labels `def`, `definition`, `abbrev`, `abbreviation` for definitions and `thm`, `theorem`, `lem`, and `lemma` for theorems. There is a subtle difference between definitions and theorems. Defined terms will always unfold at elaboration time, but not proofs of theorems. 
 
 ```
   def [name-of-theorem] [context] :
@@ -65,14 +62,6 @@ The proof environment is the main command where definitions are stated and theor
 ```
 
 Contexts are lists of variable declarations. Explicit variables are enclosed with `(` and `)` and must be passed as parameters when the definition or theorem is reused later. Implicit variables are enclosed with curly braces `{` and `}` and can be inferred by the elaborator. Multiple variables of the same type can be declared at the same time.
-
-
-Primitive types | Notation | Constructors | Eliminators
------------- | ------------- | ------------- | -------------
-Dependent function type	| Π (x : M), N | λ x , M | M N
-Equality type | eq K M N | refl M | 
-Empty type | void | | 
-Universe type | type n | 
 
 In addition, the user can also have `_` and `?` as placeholders in any expression. The former is used to synthesize an implicit assumption or fail after a number of steps, evaluating and displaying the type of the current goal. The latter is used to display the type of current goal directly without evaluation.
 
@@ -86,11 +75,13 @@ The syntax for type inference is:
 
 ### Evaluation
 
-Pearl does not rely on normalization-by-evaluation. Instead, evaluation is untyped due to philosophical reasons having to do with closer adherence to the meaning explanations of type theory. The syntax for term evaluation is:
+Pearl does not rely on normalization-by-evaluation. Instead, evaluation is untyped due to philosophical reasons having to do with closer adherence to the computational view of type theory. The syntax for term evaluation is:
 
 ```
   eval foo
 ```
+
+Like NuPRL, Pearl's notion of evaluation only relies on beta-reduction. Eta-conversion is handled at elaboration time.
 
 ### File import
 
@@ -100,7 +91,7 @@ This command imports a specified file into the current file. The syntax is
 
 ### Universe declaration 
 
-This declares a universe level variable according to the syntax 
+This declares a universe level variable according to the syntax:
 
 `universe [id]`
 
