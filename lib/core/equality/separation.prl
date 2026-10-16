@@ -18,6 +18,6 @@ def test {A : type ℓ} {a b : A} (p : eq A a b) :
   eq A a a :=
 reflect (p⁻¹) p
 
-/* def irrel_k {A : type ℓ} {a b : A} :
+def irrel_k {A : type ℓ} {a b : A} :
   Π (p : eq A a b), eq (reflect (p⁻¹) (eq A a b)) p rfl :=
-λ p, reflect p rfl */
+λ p, reflect p rfl

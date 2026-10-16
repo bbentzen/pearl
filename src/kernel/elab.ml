@@ -209,7 +209,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
 
   | Rfl () ->
     let ty = eval ty in
-    begin match ty with
+    begin match (Expr.type_of ty) with
     | Eq (ty1, e1, e2) ->
       let elab1 = elaborate env ctx lvl lc sl ty1 vars e1 in
       let elab2 = elaborate env ctx lvl lc sl ty1 vars e2 in
@@ -217,7 +217,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       | Ok (e1, _, sa), Ok (e2, _, sb) ->
         let e1 = eval e1 in 
         let e2 = eval e2 in
-        begin match unify env ctx lvl lc sl vars (e1, e2, ty1) false with
+        begin match unify env ctx lvl lc sl vars (e1, e2, (Expr.type_of ty1)) false with
           | Ok _ -> Ok (Rfl (), Eq (ty1, e1, e2), Stack.append sa sb)
           | Error (_, msg) -> Error (Stack.append sa sb, msg)
         end

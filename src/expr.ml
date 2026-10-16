@@ -161,3 +161,11 @@ let rec realizer_of = function
   | Meta n -> Meta n
   | Reflect (_, e) | Explode (_, e) -> realizer_of e
   | ESubIn (_, e, _) -> realizer_of e
+
+(* Weak head realizer extraction useful for pattern matching at elaboration *)
+
+let rec type_of = function
+  | App (e1, e2) -> App (type_of e1, type_of e2)
+  | Reflect (_, e) | Explode (_, e) -> type_of e
+  | ESubIn (_, e, _) -> type_of e
+  | e -> e
