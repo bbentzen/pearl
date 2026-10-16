@@ -10,7 +10,7 @@ universe ℓ
 
 /** J equality induction **/
 
-def eq_subst {A : type ℓ} (C : A → type ℓ) {a b : A} :
+thm transport {A : type ℓ} (C : A → type ℓ) {a b : A} :
   Π (p : eq A a b) (ca : C a), C b :=
 λ p ca, reflect p ca
 

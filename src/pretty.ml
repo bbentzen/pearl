@@ -13,6 +13,7 @@ open Expr
 (* A simple pretty printer *)
 
 let rec print env = function
+  | Global("star") -> "() "
   | Global("zero") -> "0 "
   | Global("nat") -> "ℕ "
   | App(App(App(App (Global "pair", _ ), _), e1), e2) -> 

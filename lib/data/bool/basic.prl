@@ -22,8 +22,7 @@ boolrec _ ct cf b
  
 def bneg :
   bool → bool :=
-/* λ b, if b false true */
-boolrec (λ _, bool) false true
+λ b, if b false true
 
 def band :
   bool → bool → bool :=

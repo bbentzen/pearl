@@ -81,8 +81,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         let ty2' = Expr.open_var 0 (Global v1) ty2 in
         let elab = elaborate env ((v1, ty1, true) :: ctx) lvl lc sl ty2' (vars+1) e' in
         begin match elab with
-        | Ok (e', ty2', sa) -> 
-          Ok (Lam (v1, Expr.close_bound v1 e'), Pi (v1, ty1, Expr.close_bound v1 ty2'), sa)
+        | Ok (e', ty2', sa) -> Ok (Lam (v1, Expr.close_bound v1 e'), Pi (v1, ty1, Expr.close_bound v1 ty2'), sa)
         | Error (sa, msg) -> Error (sa, msg)
         end
       | Meta _ ->
@@ -96,7 +95,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     (* First, we isolate Lam (x, App (e1 x)) and check for eta-conversion *)
     begin match e with
     | App (e, Local 0) ->
-      if not (Expr.occurs_index 0 0 e) then 
+      if not (Expr.occurs_index 0 0 e) && not (Placeholder.has e) then 
         (* Elaborate e1 against ty without expecting a function type *)
         (* Flag the toleration of dangling local when reflecting or exploding *)
         begin match elaborate env ctx lvl (lc+1) sl ty vars e with

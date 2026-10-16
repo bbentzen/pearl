@@ -104,13 +104,6 @@ let reduce_recursor rec_spec args =
    the raw syntax *)
 
 let rec reduce = function
-  (* eta reduction *)
-  (* | Lam (x, App (e , Local 0)) -> 
-    if not (occurs_index 0 0 e) && not (Placeholder.has e) then
-      reduce (shift 0 (-1) e) 
-    else
-      Lam (x, App (e , Local 0)) *)
-  
   | App (e1, e2) -> 
     let e1' = reduce e1 in
     (* First we attempt beta reduction *)
