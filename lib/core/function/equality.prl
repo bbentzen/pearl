@@ -24,6 +24,6 @@ thm etad {A : type ℓ} {B : A → type ℓ} (f : Π (x : A), B x) :
   eq (Π (x : A), B x) (λ x, f x) f :=
 rfl
 
-def funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) :
+thm funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) :
   (Π (x : A), eq (B x) (f x) (g x)) → eq (Π (x : A), B x) f g :=
 λ h, reflect (etad f) reflect (etad g) (λ x, (reflect (h x) rfl) x)

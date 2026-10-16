@@ -4,11 +4,7 @@ Pearl implements a variant of computational type theory like NuPRL [[1](#NuPRL)]
 
 We began the present implementation [here](https://github.com/bbentzen/cube) in 2019 using cubical features. After a long break due to research on the philosophical roots of computational type theory, the project was resumed in the summer of 2026 due to a confluence of reasons. The most important motivation is the completion of the monograph "Philosophical Type Theory" [[8](#BEN27)], which contains the most systematic exposition and defense of computational type theory to date, building on some key insights of Brouwer and Bishop on anti-formalism and human cognition. Pearl is an implementation of this dialect of computational type theory. Moreover, as Christoph Kreitz explains [here](https://proofassistants.stackexchange.com/q/2346/1048), the NuPRL group has disbanded and the original system is no longer easily accessible. RedPRL remains an excellent alternative, but we believe that cubical features may present a distraction from the premathematical essence of the computational view of type theory. Indeed, Pearl owes its very existence to the realization that the original implementation mentioned above, which was based on a cubical alternative to extensional type theory, could be decubicalized in a practical way.
 
-As a result, the main distinctive feature of Pearl is that it operates without a top-level layer of proof refinment logic as NuPRL. Instead, Peal is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[9](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for the manipulation of reflection and explosion. As a case in point, note that this allows Pearl to prove function extensionality in a rather convenient way, in contrast to its primitive status in NuPRL or Andromeda:
-
-<p align="center">
-  <img src="https://github.com/bbentzen/pearl/blob/main/doc/assets/funext.png?raw=true" width="600"/>
-</p>
+As a result, the main distinctive feature of Pearl is that it operates without a top-level layer of proof refinment logic as NuPRL. Instead, Peal is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[9](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for the manipulation of reflection and explosion. As a case in point, note that this allows Pearl to prove function extensionality in a rather convenient way, in contrast to its status as a primitive in NuPRL or postulate in Andromeda.
 
 Below you will find a short reference manual on the basics of Pearl. 
 
@@ -26,7 +22,11 @@ distinguish between the choice of bound variables in an expression. To be exact,
 
 - **Equality type** express equality statements as `M = K N` or `eq K M N` and its constructor is given by the reflexivity constant `rfl`. As explained in [[7](#STE15), [8](#BEN27)], there is no need for a constant witnessing its elimination rule from the computational view of type theory: the semantics justifies a more general rule of inference on the level of judgments. This is the so-called reflection rule, which states that when the equality type is inhabited the two expressions are judgmentally equal at their type. When the user types `reflect M N` when proving a theorem and `M` realizes an equality type, the elaborator rewrites `N` and the current goal so that the terms are syntactically indistinguishable for unification purposes. This is achieved internally using explicit substitutions to keep track of reflected terms.
 
-- **The Empty type** expresses absurdity and empty collections as `void`. This type has no constructors and no eliminators. Again, there is no need for a constant witnessing ex falso. Computationally, explosion is well-justified on the level of judgments. Thus, when the user types `explode M N`  when proving a theorem and `M` realizes the empty type, the elaborator aborts the proof leaving `N` left as its realizer.
+- **Empty type** expresses absurdity and empty collections as `void`. This type has no constructors and no eliminators. Again, there is no need for a constant witnessing ex falso. Computationally, explosion is well-justified on the level of judgments. Thus, when the user types `explode M N`  when proving a theorem and `M` realizes the empty type, the elaborator aborts the proof leaving `N` left as its realizer.
+
+- **Universe types** are inhabited by types. Given the propositions-as-types, correspondence, there is no distinction between sets and propositions. Universe types are written as `type ℓ`, where `ℓ` is the level it lives in. There is a cumulative hierarchy of them, with type formers `type 0`, `type 1`, ... There are
+no constructors and eliminators, as a consequence of Pearl's preferred
+formulation of universes à la Russell.
 
 ## Usage
 
@@ -107,13 +107,13 @@ This extracts and prints the realizer corresponding to a definition or theorem w
 
 ## References
 
-<a name="NuPRL">[2]</a>
+<a name="NuPRL">[1]</a>
 R. L. Constable, S. F. Allen, H. M. Bromley, W. R. Cleaveland, J. F.
 Cremer, R. W. Harper, D. J. Howe, T. B. Knoblock, N. P. Mendler,
 P. Panangaden, J. T. Sasaki, and S. F Smith. Implementing Mathematics
 with The Nuprl Proof Development System. Prentice-Hall, 1986. URL [https://www.nuprl.org/book/](https://www.nuprl.org/book/).
 
-<a name="MetaPRL">[3]</a>
+<a name="MetaPRL">[2]</a>
 Jason J. Hickey. The MetaPRL Logical Programming Environment. PhD thesis,
 Cornell University, Ithaca, NY, January 2001. URL [https://dl.acm.org/doi/book/10.5555/932618](https://dl.acm.org/doi/book/10.5555/932618)
 
