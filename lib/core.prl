@@ -6,4 +6,5 @@
 
 import ./core/function.prl
 import ./core/equality.prl
+import ./core/quotient.prl
 import ./core/universe.prl

@@ -1,10 +1,21 @@
 # The Pearl documentation
 
-Pearl runs on a variant of computational type theory without a top-level layer of proof refinment logic like NuPRL and its descendents [[2](#NuPRL), [3](#MetaPRL), [4](#RedPRL)], meaning that it is intended as a "window on the truth" with respect to a intended semantics defined independently of a proof system. The philosophy behind this semantics has its most systematic exposition in [[4](#BEN27), §§9–37]. Roughly, the idea is that the terms of a program behave as realizers and not formal proofs in a fixed and necessarily incomplete formal theory. Below you will find a short reference manual on the basics of Pearl. See [[5](#CON09), [4](#BEN27), [6](#STE15)] for some friendly introductions to computatonal type theory.
+Pearl implements a variant of computational type theory like NuPRL [[1](#NuPRL)] and its descendents [[2](#MetaPRL), [3](#JonPRL), [4](#RedPRL)]. More precisely, the system serves as a "window on the truth" with respect to an intended informal realizability semantics which is defined independently of any particular formal theory. Inspired by Martin-Löf's early work [[5](#CMCP)], computational type theory views programs as realizers and not as formal proofs in a fixed and necessarily incomplete formal theory. We began the present implementation [here](https://github.com/bbentzen/cube) in 2019 using cubical features. After a long break due to research on the philosophical roots of computational type theory, the project was resumed in the summer of 2026 due to a confluence of reasons. The most important motivation is the completion of the monograph "Philosophical Type Theory" [[6](#BEN27)], which contains the most systematic exposition and defense of computational type theory to date, building on some key insights of Brouwer and Bishop on anti-formalism and human cognition. Pearl is an implementation of this dialect of computational type theory. Moreover, as Christoph Kreitz explains [here](https://proofassistants.stackexchange.com/q/2346/1048), the NuPRL group has disbanded and the original system is no longer easily accessible. RedPRL remains an excellent alternative, but we believe that cubical features may present a distraction from the premathematical essence of the computational view of type theory. Indeed, Pearl owes its very existence to the realization that the original implementation mentioned above, which was based on a cubical alternative to extensional type theory, could be decubicalized in a practical way.
+
+As a result, the main distinctive feature of Pearl is that it operates without a top-level layer of proof refinment logic as NuPRL. Instead, Peal is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[7](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for the manipulation of reflection and explosion. As a case in point, note that this allows Pearl to prove function extensionality in a rather convenient way, in contrast to its primitive status in NuPRL or Andromeda:
+
+<p align="center">
+  <img src="https://github.com/bbentzen/pearl/blob/main/doc/assets/funext.png?raw=true" width="600"/>
+</p>
+
+Below you will find a short reference manual on the basics of Pearl. 
+
 
 ## The type theory of Pearl
 
-To be more precise, Pearl implements a variant of extensional type theory [[7](#CMCP). Currently, the main difference is that the type theory of Pearl supports user-defined inductive type families and only runs on built-in type formers for dependent functions, the equality type, the empty type, and a cumulative hierarchy of universes à la Russell. 
+To be more precise, Pearl runs on a version of extensional type theory [[8](#CMCP)], a dependently typed theory with equality reflection. Currently, the main difference is that the type theory of Pearl supports user-defined inductive type families and only runs on built-in type formers for dependent functions, the equality type, the empty type, and a cumulative hierarchy of universes à la Russell. 
+
+See [[7](#CON09), [6](#BEN27), [8](#STE15)] for some friendly introductions to computatonal type theory.
 
 ## Usage
 
@@ -90,36 +101,45 @@ This extracts and prints the realizer corresponding to a definition or theorem w
 
 ## References
 
-<a name="NuPRL">[1]</a>
+<a name="NuPRL">[2]</a>
 R. L. Constable, S. F. Allen, H. M. Bromley, W. R. Cleaveland, J. F.
 Cremer, R. W. Harper, D. J. Howe, T. B. Knoblock, N. P. Mendler,
 P. Panangaden, J. T. Sasaki, and S. F Smith. Implementing Mathematics
 with The Nuprl Proof Development System. Prentice-Hall, 1986. URL [https://www.nuprl.org/book/](https://www.nuprl.org/book/).
 
-<a name="MetaPRL">[2]</a>
+<a name="MetaPRL">[3]</a>
 Jason J. Hickey. The MetaPRL Logical Programming Environment. PhD thesis,
 Cornell University, Ithaca, NY, January 2001. URL [https://dl.acm.org/doi/book/10.5555/932618](https://dl.acm.org/doi/book/10.5555/932618)
 
-<a name="RedPRL">[3]</a>
+<a name="JonPRL">[3]</a>
+Jonathan Sterling. JonPRL. 
+[https://github.com/jonsterling/JonPRL](https://github.com/jonsterling/JonPRL).
+
+<a name="RedPRL">[4]</a>
 Carlo Angiuli, Evan Cavallo, Kuen-Bang Hou (Favonia), Robert Harper, and Jonathan Sterling. The RedPRL Proof Assistant (Invited Paper). In Proceedings of the 13th International Workshop
 on Logical Frameworks and Meta-Languages: Theory and Practice, LFMTP@FSCD 2018,
 Oxford, UK, 7th July 2018., pages 1–10, 2018. URL: 10.4204/EPTCS.274.1. URL [http://dx.doi.org/10.4204/EPTCS.274.1](http://dx.doi.org/10.4204/EPTCS.274.1).
 
-<a name="BEN27">[4]</a>
-Bruno Bentzen. Philosophical type theory. 
-Logic, Epistemology, and the Unity of Science, volume 68. Springer, Cham. 202x.
-URL [https://link.springer.com/book/9783032419392](https://link.springer.com/book/9783032419392).
-
-<a name="CON09">[5]</a>
-Robert L. Constable. Computational type theory. Scholarpedia, 4(2):7618,
-2009. URL [http://dx.doi.org/10.4249/scholarpedia.7618](http://dx.doi.org/10.4249/scholarpedia.7618.).
-
-<a name="STER15">[6]</a>
-Jonathan Sterling. Type theory and its meaning explanations. Unpublished
-note, 2015. URL [https://arxiv.org/abs/1512.01837](https://arxiv.org/abs/1512.01837).
-
-<a name="CMCP">[7]</a>
+<a name="CMCP">[5]</a>
 Per Martin-Löf. Constructive mathematics and computer programming.
 In Logic, methodology and philosophy of science, VI (Hannover, 1979),
 volume 104 of Stud. Logic Found. Math., pages 153–175. North-
 Holland, Amsterdam, 1982. URL [https://doi.org/10.1016/S0049-237X(09)70189-2](https://doi.org/10.1016/S0049-237X(09)70189-2).
+
+<a name="BEN27">[6]</a>
+Bruno Bentzen. Philosophical type theory. 
+Logic, Epistemology, and the Unity of Science, volume 68. Springer, Cham. 202x.
+URL [https://link.springer.com/book/9783032419392](https://link.springer.com/book/9783032419392).
+
+<a name="Andromeda">[7]</a>
+Andrej Bauer, Gaëtan Gilbert, Philipp Haselwarter, Matija Pretnar, and Christopher A. Stone. Design and implementation of the Andromeda proof assistant. TYPES, 2016. URL [http://www.types2016.uns.ac.rs/images/abstracts/bauer2.pdf](http://www.types2016.uns.ac.rs/images/abstracts/bauer2.pdf).
+
+
+<a name="CON09">[7]</a>
+Robert L. Constable. Computational type theory. Scholarpedia, 4(2):7618,
+2009. URL [http://dx.doi.org/10.4249/scholarpedia.7618](http://dx.doi.org/10.4249/scholarpedia.7618.).
+
+<a name="STER15">[8]</a>
+Jonathan Sterling. Type theory and its meaning explanations. Unpublished
+note, 2015. URL [https://arxiv.org/abs/1512.01837](https://arxiv.org/abs/1512.01837).
+
