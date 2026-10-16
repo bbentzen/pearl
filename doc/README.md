@@ -1,15 +1,15 @@
 # The Pearl documentation
 
-Pearl implements a variant of computational type theory like NuPRL [[1](#NuPRL)] and its descendents [[2](#MetaPRL), [3](#JonPRL), [4](#RedPRL)]. More precisely, the system serves as a "window on the truth" with respect to an intended informal realizability semantics which is defined independently of any formal theory. Inspired by Martin-Löf's early work [[5](#CMCP)], computational type theory views programs as realizers and not as formal proofs in a fixed and necessarily incomplete formal theory. See [[6](#CON09), [7](#STE15)] for accessible introductions.
+Pearl implements a variant of computational type theory like NuPRL [[1](#NuPRL)] and its descendents [[2](#MetaPRL), [3](#JonPRL), [4](#RedPRL)]. More precisely, the system serves as a "window on the truth" with respect to an intended informal realizability semantics defined independently of any formal theory. Inspired by Martin-Löf's early work [[5](#CMCP)], computational type theory views programs as realizers and not as formal proofs in a fixed and necessarily incomplete formal theory. See [[6](#CON09), [7](#STE15)] for accessible introductions. 
+We began the present implementation [here](https://github.com/bbentzen/cube) in 2019 using cubical features. After a long break due to research on the philosophical roots of computational type theory, the project was resumed in the summer of 2026 due to a confluence of reasons. The most important motivation is the completion of the monograph "Philosophical Type Theory" [[8](#BEN27)], which contains the most systematic exposition and defense of computational type theory to date, building on some key insights of Brouwer and Bishop on anti-formalism and human cognition. Pearl is an implementation of this dialect of computational type theory. Moreover, as Christoph Kreitz explains [here](https://proofassistants.stackexchange.com/q/2346/1048), the NuPRL group has in effect been disbanded and the original system is no longer easily accessible. RedPRL remains an excellent alternative, but we believe that cubical features may present a distraction from the premathematical essence of the computational view of type theory. Indeed, Pearl owes its very existence to the realization that the original implementation mentioned above, which was based on a cubical alternative to extensional type theory, could be decubicalized in a practical way.
 
-We began the present implementation [here](https://github.com/bbentzen/cube) in 2019 using cubical features. After a long break due to research on the philosophical roots of computational type theory, the project was resumed in the summer of 2026 due to a confluence of reasons. The most important motivation is the completion of the monograph "Philosophical Type Theory" [[8](#BEN27)], which contains the most systematic exposition and defense of computational type theory to date, building on some key insights of Brouwer and Bishop on anti-formalism and human cognition. Pearl is an implementation of this dialect of computational type theory. Moreover, as Christoph Kreitz explains [here](https://proofassistants.stackexchange.com/q/2346/1048), the NuPRL group has disbanded and the original system is no longer easily accessible. RedPRL remains an excellent alternative, but we believe that cubical features may present a distraction from the premathematical essence of the computational view of type theory. Indeed, Pearl owes its very existence to the realization that the original implementation mentioned above, which was based on a cubical alternative to extensional type theory, could be decubicalized in a practical way.
+**Feature Summary.** Although inspired by NuPRL, Pearl deviates from it in two important ways. 
 
-Although inspired by NuPRL, Pearl deviates from it in two important ways. 
+1. Pearl is intended to be consistent with classical reasoning in Bishop-style, while the latest versions of NuPRL ultimately favored the formalization of intuitionistic mathematics, including the accommodation of continuity principles, free choice sequences, and elements of Brouwer's creating subject arguments [[10](#RBC17), [11](#BCC18), [12](#CON20)]. We believe that this incompatibility with classical mathematics is orthogonal to the computational view of type theory [[8](#BEN27)]. 
 
-1. Pearl is intended to be consistent with classical reasoning in Bishop-style, while NuPRL ultimatitely favored the formalization of intuitionistic mathematics, 
-including continuity principle, free choice sequences. and elements of Brouwer's creating subject arguments [[10](#BCC18), [11](#CON20)]. 
+2. 
 
-2. The main distinctive feature of Pearl is that it operates without a top-level layer of proof refinment logic as NuPRL, where users decompose proof goals into subgoals by means of refinement rules to extract realizers. Instead, Pearl is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[9](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for reflection and explosion. 
+3. Pearl operates without a top-level layer of proof refinment logic as NuPRL, where users decompose proof goals into subgoals by means of refinement rules to extract realizers. Instead, Pearl is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda [[9](#Andromeda)]. But while Andromeda is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for reflection and explosion. 
 
 As a case in point, note that this allows Pearl to prove function extensionality directly, in contrast to its usual status as a primitive rule in systems like NuPRL or Andromeda:
 
@@ -125,7 +125,7 @@ Jason J. Hickey. The MetaPRL Logical Programming Environment. PhD thesis,
 Cornell University, Ithaca, NY, January 2001. URL [https://dl.acm.org/doi/book/10.5555/932618](https://dl.acm.org/doi/book/10.5555/932618)
 
 <a name="JonPRL">[3]</a>
-Jonathan Sterling. JonPRL. 
+Jonathan Sterling, Daniel Gratzer, Vincent Rahli. JonPRL. 
 [https://github.com/jonsterling/JonPRL](https://github.com/jonsterling/JonPRL).
 
 <a name="RedPRL">[4]</a>
@@ -155,11 +155,15 @@ URL [https://link.springer.com/book/9783032419392](https://link.springer.com/boo
 <a name="Andromeda">[9]</a>
 Andrej Bauer, Gaëtan Gilbert, Philipp Haselwarter, Matija Pretnar, and Christopher A. Stone. Design and implementation of the Andromeda proof assistant. TYPES, 2016. URL [http://www.types2016.uns.ac.rs/images/abstracts/bauer2.pdf](http://www.types2016.uns.ac.rs/images/abstracts/bauer2.pdf).
 
-<a name="BCC18">[10]</a>
+<a name="RBC17">[10]</a>
+Vincent Rahli, Mark Bickford, and Robert L. Constable. Bar induction: The good, the bad, and the ugly. 2017 32nd Annual ACM/IEEE Symposium on Logic in Computer Science (LICS). IEEE, 2017.
+[https://vrahli.github.io/articles/bar-induction-lics-short.pdf](https://vrahli.github.io/articles/bar-induction-lics-short.pdf)
+
+<a name="BCC18">[11]</a>
 Mark Bickford, Liron Cohen, Robert L. Constable, and Vincent Rahli. Computability beyond Church-Turing via choice sequences. In Proceedings of the 33rd Annual
 ACM/IEEE Symposium on Logic in Computer Science, LICS ’18, pages 245–254, New
 York, NY, USA, 2018. ACM. URL [https://dl.acm.org/doi/10.1145/3209108.3209200](https://dl.acm.org/doi/10.1145/3209108.3209200)
 
-<a name="CON20">[11]</a>
+<a name="CON20">[12]</a>
 Robert Constable. Computational Complexity and Brouwer's Continuum. Unpublished note, 2020.
 URL [https://nuprl-web.cs.cornell.edu/documents/Constable/The-Continuum.pdf](https://nuprl-web.cs.cornell.edu/documents/Constable/The-Continuum.pdf).
