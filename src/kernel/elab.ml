@@ -44,7 +44,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         let h1 = Placeholder.generate () in
         begin match elaborate env ctx lvl lc sl h1 vars xty with
         | Ok (_, tTy', sa) ->
-          let u = unify env ctx lvl lc sl vars (eval ty, eval xty, tTy') true in
+          let u = unify env ctx lvl lc sl vars (ty, xty, (Expr.type_of  tTy')) true in
           begin match u with
           | Ok s -> 
             Ok (Global x, s, sl) 
@@ -74,7 +74,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let ty = eval ty in
     (* When there is no eta-conversion we expect a function type *)
     let lam_check x e ty =
-      begin match ty with
+      begin match (Expr.type_of ty) with
       | Pi (_, ty1, ty2) ->
         let v1 = Expr.mk_fresh x ctx in
         let e' = Expr.open_var 0 (Global v1) e in
@@ -173,7 +173,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let h1 = Placeholder.generate () in
     begin match elaborate env ctx lvl lc sl h1 vars e1 with
     | Ok (e1, ty1, sa) ->
-      begin match ty1 with
+      begin match (Expr.type_of ty1) with
       | Eq (_, a, b) ->
         (* Zonks the metavariables in boths sides *)
         let a = Placeholder.solve [] a in
@@ -245,7 +245,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     begin match elab1, elab2 with
     | Ok (ty1', Type n1, sa1), Ok (ty2', Type n2, sa2) -> 
       let max = Level.reduce (Max(n1, n2)) in
-      begin match ty with
+      begin match (Expr.type_of ty) with
       | Type (Var par) when Level.is_arbitrary_string par ->
         (* Synthesize type levels placeholder *)
         Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type (Suc(max)), Stack.append sa1 sa2)
@@ -263,7 +263,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     (* Store these Ok'd metas? *)
     | Ok (ty1', Type n, sa), Ok (ty2', Meta _, _) 
     | Ok (ty1', Meta _, sa), Ok (ty2', Type n, _) -> 
-      begin match ty with
+      begin match (Expr.type_of ty) with
       | Type m ->
         if Level.leq n m then 
           Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type m, sa) 
@@ -277,7 +277,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       end
     
     | Ok (ty1', Type n, sa), Ok (Meta k, _, _) -> 
-      begin match ty with
+      begin match (Expr.type_of ty) with
       | Type m ->
         if Level.leq n m then 
           Ok (Pi(x, ty1', Meta k), Type m, sa) 
@@ -290,7 +290,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
       end
     | Ok (Meta k, _, _), Ok (ty2', Type n, sa) -> 
-      begin match ty with
+      begin match (Expr.type_of ty) with
       | Type m ->
         if Level.leq n m then 
           Ok (Pi(x, Meta k, Expr.close_bound x ty2'), Type m, sa) 
@@ -303,7 +303,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
       end
     | Ok (Meta k1, _, _), Ok (Meta k2, _, _) ->
-      begin match ty with
+      begin match (Expr.type_of ty) with
       | Type m -> Ok (Pi(x, Meta k1, Meta k2), Type m, sl) 
       | Meta k -> Ok (Pi(x, Meta k1, Meta k2), Meta k, sl)
       | _ -> Error (sl, Msg.pi_universe_2 x ty1 ty2 ty)
@@ -319,7 +319,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
 
   | Void() ->
     let ty = eval ty in
-    begin match ty with
+    begin match (Expr.type_of ty) with
     | Type m -> Ok (Void(), Type m, sl)
     | Meta k -> 
       Hashtbl.add Data.meta_store k { Data.solution = Type (Num 0)}; 
@@ -337,7 +337,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       begin match elab1, elab2 with
       | Ok (e1, _, sa), Ok (e2, _, sb) ->
         (* Check against the target type *)
-        begin match ty with
+        begin match (Expr.type_of ty) with
         | Type (Var par) when Level.is_arbitrary_string par ->
           (* Synthesize type levels placeholder *)
           Ok (Eq(ty1, e1, e2), Type n, Stack.lappend st sa sb)
@@ -361,7 +361,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       begin match elab1, elab2 with
       | Ok (e1, _, sa), Ok (e2, _, sb) ->
         (* Check against the target type *)
-        begin match ty with
+        begin match (Expr.type_of ty) with
         | Type (Var par) when Level.is_arbitrary_string par ->
           (* Synthesize type levels placeholder *)
           Ok (Eq(ty1, e1, e2), Type (Var par), Stack.lappend st sa sb)
@@ -382,7 +382,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
   | Type n ->
     begin match Level.is_declared lvl n with
     | Ok _ ->
-      begin match ty with
+      begin match (Expr.type_of ty) with
       | Type m ->
         if Level.leq n m then 
           Ok (Type n, Type m, sl) 
