@@ -1,0 +1,26 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ./laws.prl
+import ../sigma/lemmas.prl
+
+/* Equality structure (code-decode) */
+
+def bool_code (b b' : bool) :
+  type 1 :=
+if b (if b' (eq bool true true) void) (if b' void (eq bool false false))
+
+thm bool_code_of_eq (b b' : bool) :
+  eq bool b b' → bool_code b b' :=
+if b (if b' id bool_neq) (if b' bool_neq' id)
+
+thm bool_eq_of_code (b b' : bool) :
+  bool_code b b' → eq bool b b' :=
+if b (if b' id absurd) (if b' absurd id)
+
+thm bool_eq_iff_code (b b' : bool) :
+  eq bool b b' ↔ bool_code b b' :=
+(bool_code_of_eq b b', bool_eq_of_code b b')

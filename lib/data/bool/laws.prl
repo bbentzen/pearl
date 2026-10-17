@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ../unit.prl 
+import ./basic.prl
+import ../../core/equality/induction.prl
+
+/* Boolean equations */
+
+universe ℓ
+
+thm bool_neq :
+  ¬ eq bool true false :=
+λ p, transport (λ b, if b unit void) p ()
+
+thm bool_neq' :
+  ¬ eq bool false true :=
+λ p, bool_neq (p⁻¹)
+
+thm bneg_inv (b : bool) :
+  eq bool (bneg (bneg b)) b :=
+if b rfl rfl
+
+thm band_comm (b b' : bool) :
+  eq bool (band b b') (band b' b) :=
+if b (if b' rfl rfl) (if b' rfl rfl)
+
+thm band_assoc (b b' b'' : bool) :
+  eq bool (band b (band b' b'')) (band (band b b') b'') :=
+if b 
+  (if b' (if b'' rfl rfl) (if b'' rfl rfl)) 
+  (if b' (if b'' rfl rfl) (if b'' rfl rfl))
+
+thm bor_comm (b b' : bool) :
+  eq bool (bor b b') (bor b' b) :=
+if b (if b' rfl rfl) (if b' rfl rfl)
+
+thm bor_assoc (b b' b'' : bool) :
+  eq bool (bor b (bor b' b'')) (bor (bor b b') b'') :=
+if b 
+  (if b' (if b'' rfl rfl) (if b'' rfl rfl)) 
+  (if b' (if b'' rfl rfl) (if b'' rfl rfl))
+
+thm band_distr (b b' b'' : bool) :
+  eq bool (band b (bor b' b'')) (bor (band b b') (band b b'')) :=
+if b (if b' (if b'' rfl rfl) (if b'' rfl rfl))
+  (if b' (if b'' rfl rfl) (if b'' rfl rfl))
+
+thm bor_distr (b b' b'' : bool) :
+  eq bool (bor b (band b' b'')) (band (bor b b') (bor b b'')) :=
+if b (if b' (if b'' rfl rfl) (if b'' rfl rfl))
+  (if b' (if b'' rfl rfl) (if b'' rfl rfl))
