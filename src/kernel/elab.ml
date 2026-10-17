@@ -139,10 +139,9 @@ let rec elaborate env ctx lvl lc sl ty vars = function
             let ty2' = eval (Expr.open_var 0 e2' ty2) in
             begin match unify env ctx lvl lc sl (vars+1) (ty, ty2', h3) true with
             | Ok _ -> Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
-            | Error (_, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_1 e2' ty1' msg)
+            | Error (_, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_1 e1' e2' ty2' ty msg)
             end
-          | Error (sa2, msg) -> 
-            Error (Stack.append sa1 sa2, Msg.app_fail_2 e2 ty1' msg)
+          | Error (sa2, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_2 e1 e2 ty1' msg)
           end
         | Ok (e1', ty1', sa1) -> 
           begin match elaborate env ctx lvl lc sl h1 (vars+1) e2 with
@@ -155,10 +154,8 @@ let rec elaborate env ctx lvl lc sl ty vars = function
             let ty2' = eval (Expr.open_var 0 e2' h2) in
             (* Delay unification *)
             Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
-          | Error (sa2, msg) -> 
-            Error (Stack.append sa1 sa2, Msg.app_fail_2 e2 ty1' msg)
+          | Error (sa2, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_2 e1 e2 ty1' msg)
           end
-          (* Error (sa1, Msg.app_wrong_ty1 e1' (Pi(v1, h1, h2)) ty1') *)
         | Error (sa, msg) -> 
           Error (sa, Msg.app_wrong_ty2 e1 msg)
         end
@@ -324,6 +321,9 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     end
   
   | Eq(ty1, e1, e2) ->
+    let ty1 = eval ty1 in
+    let e1 = eval e1 in
+    let e2 = eval e2 in
     let h1 = Placeholder.generate () in
     let elab = elaborate env ctx lvl lc sl h1 vars ty1 in
     begin match elab with

@@ -46,13 +46,16 @@ let lam_error x e ty =
   "The term\n  " ^ Pretty.printf (Lam (x, e)) ^ 
   "\nhas type\n  " ^ Pretty.printf ty ^ "\nbut is expected to have type\n  Π (v? : ?0?) ?1?"
 
-let app_fail_1 e2' ty1' msg = 
-  "Error at application: the term in the argument position \n  " ^ Pretty.printf e2' ^ 
-  "\nis expected to have type\n  " ^ Pretty.printf ty1' ^ "\n" ^ msg
+let app_fail_1 e1 e2 ty2 ty msg = 
+  "Function application has the wrong type: the result of applying the function\n  " ^
+  Pretty.printf e1 ^ "\nto the argument " ^ Pretty.printf e2 ^
+  " was found to have the type\n  " ^ Pretty.printf ty2 ^ 
+  "\nand not the expected type\n  " ^ Pretty.printf ty ^ "\n" ^ msg
 
-let app_fail_2 e2 ty1' msg = 
-  "Failed application: the term in the argument\n  " ^ Pretty.printf e2 ^ 
-  "\nis expected to have type\n  " ^ Pretty.printf ty1' ^ "\n" ^ msg
+let app_fail_2 e1 e2 ty1' msg = 
+  "Cannot apply the function\n  " ^
+  Pretty.printf e1 ^ "\nto the argument\n  " ^ Pretty.printf e2 ^ 
+  "\nbecause the argument does not have the expected type\n  " ^ Pretty.printf ty1' ^ "\n" ^ msg
 
 let app_wrong_ty1 e1' h2 ty1' =
   "Failed application: the term in function position\n  " ^ Pretty.printf e1' ^ 
