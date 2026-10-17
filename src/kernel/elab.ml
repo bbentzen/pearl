@@ -137,12 +137,9 @@ let rec elaborate env ctx lvl lc sl ty vars = function
           | Ok (e2', _, sa2) ->
             (* Otherwise unify both types possibly lifting the universe levels *)
             let ty2' = eval (Expr.open_var 0 e2' ty2) in
-            let u = unify env ctx lvl lc sl (vars+1) (ty, ty2', h3) true in
-            begin match u with
-            | Ok _ -> 
-              Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
-            | Error (_, msg) ->
-              Error (Stack.append sa1 sa2, Msg.app_fail_1 e2' ty1' msg)
+            begin match unify env ctx lvl lc sl (vars+1) (ty, ty2', h3) true with
+            | Ok _ -> Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
+            | Error (_, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_1 e2' ty1' msg)
             end
           | Error (sa2, msg) -> 
             Error (Stack.append sa1 sa2, Msg.app_fail_2 e2 ty1' msg)
@@ -612,8 +609,16 @@ and unify env ctx lvl lc sl vars x lift =
           end
         end
       
-      | e , e', _ -> 
-        if eval e == eval e' then 
-          Ok e 
-        else 
+      | e , e', _ ->
+        (* As a last resort we zonk and try again *)
+        let e1 = Placeholder.solve [] e in
+        let e2 = Placeholder.solve [] e' in
+        if e1 = e && e2 = e' then
+          (* Stop and return error if there are no metas to zonk *)
           Error ((e, e'), Msg.not_syntactically_equal e e')
+        else
+          let e1 = eval e1 and e2 = eval e2 in
+          begin match unify env ctx lvl lc sl vars (e1, e2, ty) lift with
+          | Ok e -> Ok e
+          | Error (_, msg) -> Error ((e, e'), Msg.zonking_fal msg)
+          end

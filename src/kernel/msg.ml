@@ -47,7 +47,7 @@ let lam_error x e ty =
   "\nhas type\n  " ^ Pretty.printf ty ^ "\nbut is expected to have type\n  Π (v? : ?0?) ?1?"
 
 let app_fail_1 e2' ty1' msg = 
-  "Failed application: the term in the argument position \n  " ^ Pretty.printf e2' ^ 
+  "Error at application: the term in the argument position \n  " ^ Pretty.printf e2' ^ 
   "\nis expected to have type\n  " ^ Pretty.printf ty1' ^ "\n" ^ msg
 
 let app_fail_2 e2 ty1' msg = 
@@ -182,6 +182,10 @@ let lam_unify_2 x e y e' msg =
   
 let not_syntactically_equal e e' =
   "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. "
+
+let zonking_fal msg =
+  "Unification failed after zonking: " ^ msg
+
 
 let esubin_not_unifiable e e' msg =
   "Despite reflection,\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\ncannot be unified. " ^ msg
