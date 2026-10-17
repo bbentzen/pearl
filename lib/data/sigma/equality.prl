@@ -27,6 +27,11 @@ thm pair_to_eq {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') → eq A a a' × eq B b b' :=
 λ p, (pair_eq_fst p, pair_eq_snd p)
 
+thm pair_itooff_eq {A B : type ℓ} {a a' : A} {b b' : B} :
+  (eq A a a' × eq B b b') → eq (A × B) (a, b) (a', b') :=
+λ w, reflect (sigmarec _ _ (λ _, eq A a a') (λ x _, x) w) 
+(reflect (sigmarec _ _ (λ _, eq B b b') (λ _ y, y) w) rfl)
+
 /* TODO:  */
 /* def pair_iff_eq {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') ↔ eq A a a' × eq B b b' :=

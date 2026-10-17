@@ -340,7 +340,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       begin match elab1, elab2 with
       | Ok (e1, _, sa), Ok (e2, _, sb) ->
         (* Check against the target type *)
-        begin match (Expr.type_of ty) with
+        begin match eval (Expr.type_of ty) with
         | Type (Var par) when Level.is_arbitrary_string par ->
           (* Synthesize type levels placeholder *)
           Ok (Eq(ty1, e1, e2), Type n, Stack.lappend st sa sb)
@@ -353,7 +353,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         | Meta k ->
           Hashtbl.add Data.meta_store k { Data.solution = Type n};
           Ok (Eq(ty1, e1, e2), Type n, Stack.lappend st sa sb)
-        | _ -> Error (Stack.lappend st sa sb, Msg.eq_universe_2 ty1 e1 e2 ty)
+        | _ -> Error (Stack.lappend st sa sb, Msg.eq_universe_2 ty1 e1 e2 (eval (Expr.type_of ty)))
         end
       | Error (sl, msg), _  -> Error (sl, Msg.eq_left_mismatch ty1 e1 e2 msg)
       | _, Error (sl, msg) -> Error (sl, Msg.eq_right_mismatch ty1 e1 e2 msg)

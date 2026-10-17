@@ -1,0 +1,41 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ../sigma/lemmas.prl
+import ../unit/basic.prl
+import ./lemmas.prl
+import ../../core/equality/induction.prl
+
+universe ℓ
+
+/* Equality over sums */
+
+thm sum_eq_inl {A B : type ℓ} {a a' : A} :
+  eq (A + B) (inl A B a) (inl A B a') → eq A a a' :=
+λ p, ap (λ w, sumrec _ _ _ id (λ _, a) w) p
+
+thm sum_eq_inr {A B : type ℓ} {b b' : B} :
+  eq (A + B) (inr A B b) (inr A B b') → eq B b b' :=
+λ p, ap (λ w, sumrec _ _ _ (λ _, b) id w) p
+
+thm sum_neq {A B : type ℓ} {a : A} {b : B} :
+  ¬ eq (A + B) (inl A B a) (inr A B b) :=
+λ p, transport (λ v, sumrec _ _ _ (λ _, unit) (λ _, void) v) p ()
+
+thm sum_neq' {A B : type ℓ} {a : A} {b : B} :
+  ¬ eq (A + B) (inr A B b) (inl A B a) :=
+λ p, transport (λ v, sumrec _ _ _ (λ _, void) (λ _, unit) v) p ()
+
+def sum_code (A B : type ℓ) (v v' : A + B) :
+  type ℓ :=
+sumrec _ _ _ (λ x, sumrec _ _ _ (λ x', eq (A + B) (inl A B x) (inl A B x')) (λ _, void) v') 
+(λ y, sumrec _ _ _ (λ _, void) (λ y', eq (A + B) (inr A B y) (inr A B y')) v') v
+
+thm sum_eq {A B : type ℓ} (v v' : A + B) :
+  eq (A + B) v v' ↔ sum_code A B v v' :=
+sumrec _ _ _
+  (λ y, sumrec _ _ _  (λ y', id_iff_id) (λ y', (sum_neq, absurd)) v') 
+  (λ y, sumrec _ _ _ (λ y', (sum_neq', absurd)) (λ x', id_iff_id) v') v

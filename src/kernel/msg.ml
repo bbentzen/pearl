@@ -207,7 +207,7 @@ let eq_universe_1 ty1 e1 e2 max m =
   "\nof type \n  " ^ Pretty.printf (Type max) ^ "\nhas type\n  " ^ Pretty.printf (Type m)
 
 let eq_universe_2 ty1 e1 e2 ty =
-  "Type mismatch when checking that\n  " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ "\nhas type\n  " ^ Pretty.printf ty
+  "Type mismatch when checking that the equality type\n  " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ "\nhas type\n  " ^ Pretty.printf ty
 
 let rfl_error_1 ty msg =
   "Failed reflexivity: could not unify both sides of \n  " ^ Pretty.printf ty ^ ".\n" ^ msg
