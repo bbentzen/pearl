@@ -13,3 +13,13 @@ import ./basic.prl
 def lem_unit :
   unit + ¬unit :=
 inl unit (¬unit) ()
+
+/* Interaction with units */
+
+def unit_to_bool :
+  (unit + unit) → bool :=
+λ v, sumrec _ _ _ (λ u, let u true) (λ u, let u false) v
+
+theorem bool_to_unit :
+  bool → (unit + unit) :=
+λ b, if b (inl unit unit ()) (inr unit unit ())
