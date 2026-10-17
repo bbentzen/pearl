@@ -150,10 +150,16 @@ let mk_fresh var ctx =
   in
   loop 0
 
-(* Extract realizer of a proof: removes reflect, explode and revert explicit substitutions *)
+(* Extract realizer of a proof: removes reflect, explode, revert explicit substitutions *)
+(* Importantly, this also generalizes universe levels --- to save computational power we do this all in one go*)
+
+let parametrize = function
+    | Var par -> 
+      if String.length par > 0 && par.[0] = '?' then Var par else
+      Var ("?" ^ par)
+    | l -> l
 
 let rec realizer_of = function
-  | Global _ | Local _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
   | Lam (y, e) -> Lam (y, realizer_of e)
   | App (e1, e2) -> App (realizer_of e1, realizer_of e2)
   | Pi (y, e1, e2) -> Pi (y, realizer_of e1, realizer_of e2)
@@ -161,6 +167,8 @@ let rec realizer_of = function
   | Meta n -> Meta n
   | Reflect (_, e) | Explode (_, e) -> realizer_of e
   | ESubIn (_, e, _) -> realizer_of e
+  | Type l -> Type (parametrize l)
+  | Global _ | Local _ | Void _ | Rfl _ | Wild _ as e -> e
 
 (* Weak head realizer extraction useful for pattern matching at elaboration *)
 

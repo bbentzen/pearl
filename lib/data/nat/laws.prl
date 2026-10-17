@@ -1,0 +1,116 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ../../core/equality.prl
+import ../sigma/basic.prl
+import ../unit.prl
+import ./basic.prl
+
+/* Some numerical equations */
+
+thm add_zero (m : nat) :
+  eq nat (add 0 m) m :=
+natrec _ rfl (λ n p, reflect p rfl) m
+
+thm eq_of_succ {n m : nat} :
+  eq nat (succ n) (succ m) → eq nat n m :=
+λ p, ap (λ x, natrec _ n (λ k _, k) x) p
+
+thm succ_of_eq {n m : nat} :
+  eq nat n m → eq nat (succ n) (succ m) :=
+λ p, reflect p rfl
+
+thm succ_iff_eq {n m : nat} :
+  eq nat (succ n) (succ m) ↔ eq nat n m :=
+(eq_of_succ, succ_of_eq)
+
+thm pred_succ {n : nat} :
+  eq nat (pred (succ n)) n :=
+rfl
+
+/* thm succ_pred {n : nat} (w : Σ (k : nat), eq nat (succ k) n) :
+  eq nat (succ (pred n)) n :=
+coe i0 i1 (λ i, eq nat (succ (pred ((snd w) @ i))) ((snd w) @ i)) 
+(<_> succ (fst w)) */
+
+/* Inequalities */
+
+thm nat_neq {n : nat} :
+  ¬ eq nat 0 (succ n) :=
+λ p, transport (λ n, natrec _ unit (λ _ _, void) n) p ()
+
+/* 
+def nat_neq' {n : nat} :
+  ¬ eq nat (succ n) 0 :=
+λ p, coe i1 i0 (λ i, natrec _ unit (λ _ _, void) (p @ i) ) () */
+
+/* Basic arithmetical laws */
+
+/* def add_assoc (m n k : ℕ) :
+  eq ℕ (add (add m n) k) (add m (add n k)) :=
+natrec _ (<_> add m n) (λ k ih, eq_to_succ ih) k
+
+def add_comm_zero (m : ℕ) :
+  eq ℕ m (add 0 m) :=
+natrec _ (<_> 0) (λ k ih, eq_to_succ ih) m
+
+def add_comm_succ (l n : ℕ) :
+  eq ℕ (add (succ l) n) (succ (add l n)) :=
+natrec _ (<_> succ l) (λ _ ih, eq_to_succ ih) n 
+
+def add_comm (m n : ℕ) :
+  eq ℕ (add m n) (add n m) :=
+natrec _ (add_zero n) (λ k ih, (add_comm_succ k n) · (eq_to_succ ih)) m
+
+def add_num_left {m n : ℕ} (k : ℕ) :
+  eq ℕ m n → eq ℕ (add k m) (add k n) :=
+λ p, <i> add k (p @ i)
+
+def add_num_right {m n : ℕ} (k : ℕ) :
+  eq ℕ m n → eq ℕ (add m k) (add n k) :=
+λ p, <i> add (p @ i) k
+
+def add_eq_left {m n k l : ℕ} (p : eq ℕ k l) :
+  eq ℕ m n → eq ℕ (add k m) (add l n) :=
+λ q, <j> (add_num_left (p @ j) q) @ j
+
+def add_eq_right {m n k l : ℕ} (p : eq ℕ k l) :
+  eq ℕ m n → eq ℕ (add m k) (add n l) :=
+λ q, <j> (add_num_right (p @ j) q) @ j
+
+def add_two {m n k l : ℕ} :
+  eq ℕ m n → eq ℕ k l → eq ℕ (add m k) (add n l) :=
+λ p q, <i> add (p @ i) (q @ i)
+
+def add_num_inj {m n k : ℕ} :
+  eq ℕ (add m k) (add n k) → eq ℕ m n :=
+natrec _ id (λ i ih p, ih (succ_to_eq p)) k
+
+def add_eq_inj {m n k l : ℕ} (p : eq ℕ k l) :
+  eq ℕ (add m k) (add n l) → eq ℕ m n :=
+λ q, add_num_inj (coe i1 i0 (λ i', eq ℕ (add m k) (add n (p @ i'))) q)
+
+def add_comm2 (m n k : ℕ) :
+  eq ℕ (add (add m n) k) (add (add m k) n) :=
+(add_assoc m n k) · (add_num_left m (add_comm n k)) · (add_assoc m k n)⁻¹
+
+def add_pair_symm (m n : ℕ) {x y : ℕ} :
+  eq ℕ (add (add m x) (add n y))  (add (add m n) (add x y)) :=
+((add_assoc m x (add n y)) · (add_num_left m (add_assoc x n y)⁻¹)) ·
+((add_num_left m (add_num_right y (add_comm x n))) · (add_assoc m (add n x) y)⁻¹) ·
+ ((add_assoc (add m n) x y)⁻¹ · (add_assoc (add m n) x y)) */
+
+/* Code-decode */
+
+/* def nat_code (n m : nat) :
+  type 1 :=
+natrec _ (natrec _ (eq nat 0 0) (λ _ _, void) m) 
+(λ n' C, natrec _ void (λ m' _, eq nat (succ n') (succ m')) m) n
+ 
+def nat_eq {n m : nat} :
+  eq nat n m ↔ nat_code n m :=
+natrec _ (natrec _ id_iff_id (λ k _, (nat_neq, absurd)) m)
+(λ k _, natrec _ (nat_neq', absurd) (λ k' _, id_iff_id) m) n  */

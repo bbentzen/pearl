@@ -40,7 +40,7 @@ def cocurry {A B C : type ℓ} :
   (A → (B × C)) → (A → B → C) :=
 λ f, (λ x _, snd (f x))
 
-def lnc {A B : type ℓ} :
+def lnc {A : type ℓ} :
   ¬ (A × ¬A) :=
 λ f, (snd f) (fst f)
 

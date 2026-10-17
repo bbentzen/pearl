@@ -37,6 +37,7 @@ let function_of_def id ctx (e, ty) hole =
   let rec helper h' = function
     | [] -> e, ty
     | (x, ty, true) :: ctx ->
+      let ty = Expr.realizer_of ty in
       let e', ty' = helper h' ctx in
       Lam (x, close_var 0 x e'), 
       Pi (x, ty, close_var 0 x ty')
