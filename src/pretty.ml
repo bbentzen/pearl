@@ -66,20 +66,18 @@ let rec print env = function
             String.concat "" ["("; x'; " : "; print env e1'; ") "; iterate (x' :: env) e2']
           else
             String.concat "" [tparenthesize env e1'; "× "; print (x' :: env) e2']
-        | e' -> print env e'
+        | e' -> ", " ^ print env e'
       in
       "Σ (" ^ x ^ " : " ^ print env e1 ^ ") " ^ iterate (x :: env) e2
       end
     else
       let rec iterate env = function
-        (* | Sigma (x', e1', e2') -> *)
         | App(App (Global "sigma", e1'), Lam(x', e2')) ->
           if occurs_index 0 0 e2' then
             String.concat "" ["Σ ("; x'; " : "; print env e1'; ") "; print (x' :: env) e2']
           else
             String.concat "" [tparenthesize env e1'; "× "; iterate (x' :: env) e2']
-        | e' ->
-          ", " ^ print env e'
+        | e' -> print env e'
       in
       tparenthesize env e1 ^ "× " ^ iterate (x :: env) e2
 
