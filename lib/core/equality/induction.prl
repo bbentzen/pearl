@@ -14,10 +14,10 @@ thm transport {A : type ℓ} (C : A → type ℓ) {a b : A} :
   Π (p : eq A a b) (ca : C a), C b :=
 λ p ca, reflect p ca
 
-def eq_subst_inv {A : type ℓ} {C : A → type ℓ} {a b : A} :
+thm eq_subst_inv {A : type ℓ} {C : A → type ℓ} {a b : A} :
   Π (p : eq A a b) (c : C b), C a :=
 λ p cb, reflect (p⁻¹) cb
 
-def eqrec {A : type ℓ} {a : A} {b : A} :
+thm eqrec {A : type ℓ} {a : A} {b : A} :
   Π (C : Π (x : A), eq A a x → type ℓ) (p : eq A a b) (c : C a rfl), C b p := 
 λ C p c, reflect p c
