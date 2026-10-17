@@ -1,0 +1,12 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+/* import ./data/sigma.prl */
+/* import ./data/nat.prl */
+/* import ./data/sum.prl */
+import ./data/unit.prl 
+import ./data/bool.prl 
+/* import ./data/eq.prl */

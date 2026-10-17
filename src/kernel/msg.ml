@@ -132,7 +132,7 @@ let type_mismatch n ty =
 
 let synthesis_error ty n ctx =
   "Failed to synthesize placeholder for ?" ^ string_of_int n ^ "? in the current goal:\n" ^ 
-  Global.printf ctx ^ "-------------------------------------------\n ⊢ " ^ Pretty.printf (Eval.eval ty)
+  Global.printf ctx ^ "-------------------------------------------\n ⊢ " ^ Pretty.printf (Eval.eval ty) ^ "\n"
 
 let display_goal ctx ty =
   "The current goal:\n" ^ Global.printf ctx ^ 
@@ -221,12 +221,12 @@ let reflect_1 e1 ty1 =
 
 let reflect_2 e msg =
   "Failed to resolve reflection: Cannot check that the term\n  " ^ Pretty.printf e ^ 
-  "\nhas type\n  ?1? =?0? ?2?" ^ msg
+  "\nhas type\n  ?1? =?0? ?2?" ^ "\n" ^ msg
 
 let reflect_goal ctx b a e2 ty msg =
   "Failed reflection of " ^ Pretty.printf b ^ " with " ^ Pretty.printf a ^ ": " ^ msg ^ 
   "Despite reflection, cannot check that\n  " ^ Pretty.printf e2 ^ "\nhas the expected type\n" ^ Global.printf ctx ^ 
-  "-------------------------------------------\n ⊢ " ^ Pretty.printf ty
+  "-------------------------------------------\n ⊢ " ^ Pretty.printf ty ^ "\n"
 
 let eq_not_a_type ty1 e1 e2 msg =
   "Cannot verify that " ^ Pretty.printf ty1 ^ " is a type in\n " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ ". " ^ msg

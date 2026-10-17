@@ -46,7 +46,13 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         | Ok (_, tTy', sa) ->
           begin match unify env ctx lvl lc sl vars (ty, ty', (Expr.type_of tTy')) true with
           | Ok s -> Ok (Global x, s, sl) 
-          | Error (_, msg) -> Error (sa, Msg.var_type_mismatch x ty' ty msg)
+          | Error _ ->
+            (* Try again after evaluating both types *)
+            let ty = eval ty and ty' = eval ty' in
+            begin match unify env ctx lvl lc sl vars (eval ty, eval ty', (Expr.type_of tTy')) true with
+            | Ok s -> Ok (Global x, s, sl) 
+            | Error (_, msg) -> Error (sa, Msg.var_type_mismatch x ty' ty msg)
+            end
           end
         | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
         end
@@ -163,7 +169,9 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let e1 = eval e1 in
     let e2 = eval e2 in
     let h1 = Placeholder.generate () in
-    begin match elaborate env ctx lvl lc sl h1 vars e1 with
+    let h2 = Placeholder.generate () in
+    let h3 = Placeholder.generate () in
+    begin match elaborate env ctx lvl lc sl (Eq (h1, h2, h3)) vars e1 with
     | Ok (e1, ty1, sa) ->
       let ty1 = Placeholder.solve [] ty1 in
       begin match (Expr.type_of ty1) with
