@@ -31,24 +31,22 @@ let solve_meta_application args vars body = function
 let rec elaborate env ctx lvl lc sl ty vars = function
   | Global x ->
     begin match Global.var_type x ctx with
-    | Ok xty ->
+    | Ok ty' ->
       let ty = eval ty in
       let c = Global.check_var_ty x ty ctx in
       let h = Placeholder.is ty in 
-      let h' = Placeholder.is xty in 
+      let h' = Placeholder.is ty' in 
       let d = Global.is_declared x ctx in
       begin match c, h, h', d with
       | true , _, _ , _ | _ , _, true , _ -> Ok (Global x, ty, sl)
-      | _ , true, _ , _ -> Ok (Global x, xty, sl)
+      | _ , true, _ , _ -> Ok (Global x, ty', sl)
       | false , false, false , true ->
         let h1 = Placeholder.generate () in
-        begin match elaborate env ctx lvl lc sl h1 vars xty with
+        begin match elaborate env ctx lvl lc sl h1 vars ty' with
         | Ok (_, tTy', sa) ->
-          let u = unify env ctx lvl lc sl vars (ty, xty, (Expr.type_of  tTy')) true in
-          begin match u with
-          | Ok s -> 
-            Ok (Global x, s, sl) 
-          | Error (_, msg) -> Error (sa, Msg.var_type_mismatch x xty ty msg)
+          begin match unify env ctx lvl lc sl vars (ty, ty', (Expr.type_of tTy')) true with
+          | Ok s -> Ok (Global x, s, sl) 
+          | Error (_, msg) -> Error (sa, Msg.var_type_mismatch x ty' ty msg)
           end
         | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
         end
@@ -610,12 +608,13 @@ and unify env ctx lvl lc sl vars x lift =
         end
       
       | e , e', _ ->
-        (* As a last resort we zonk and try again *)
+        (* As a last resort we zonk and check their values again *)
         let e1 = Placeholder.solve [] e in
         let e2 = Placeholder.solve [] e' in
         if e1 = e && e2 = e' then
-          (* Stop and return error if there are no metas to zonk *)
-          Error ((e, e'), Msg.not_syntactically_equal e e')
+          (* Stop and return error when there are no metas to zonk in their values *)
+          if eval e = eval e' then Ok e else
+            Error ((e, e'), Msg.not_syntactically_equal e e')
         else
           let e1 = eval e1 and e2 = eval e2 in
           begin match unify env ctx lvl lc sl vars (e1, e2, ty) lift with
