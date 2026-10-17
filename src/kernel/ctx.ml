@@ -25,12 +25,10 @@ let check global ind ctx lvl =
             "'\nIt occurs as a definition/theorem name but is declared as a local variable")
         else
           Ok ((x, eval (fst elab), b) :: ctx'')
-      | Error msg, _ -> 
-        Error ("The specified context is invalid: " ^ msg)
+      | Error msg, _ -> Error ("The specified context has a type mismatch: " ^ msg)
       | _ , Error msg -> Error msg
       end
-    | Error msg ->
-      Error ("The specified context is invalid: " ^ msg)
+    | Error msg -> Error ("The specified context is invalid: " ^ msg)
     end
   in
   helper (List.rev ctx)
@@ -49,12 +47,10 @@ let check_with_universe global ctx lvl =
             "'\nIt occurs as a definition/theorem name but is declared as a local variable")
         else
           Ok (((x, eval ty', b) :: ctx1), ((x, eval univ, b) :: ctx2))
-      | Error msg, _ -> 
-        Error ("The specified context is invalid: " ^ msg)
+      | Error msg, _ -> Error ("The specified context is invalid: " ^ msg)
       | _ , Error msg -> Error msg
       end
-    | Error msg ->
-      Error ("The specified context is invalid: " ^ msg)
+    | Error msg -> Error ("The specified context is invalid: " ^ msg)
     end
   in
   helper (List.rev ctx)

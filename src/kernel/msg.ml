@@ -27,17 +27,17 @@ let undeclared x =
   "No declaration for the variable " ^ x
 
 let var_type_mismatch x xty ty msg = 
-  "The variable " ^ x ^ " has type\n   " ^ Pretty.printf xty ^ 
+  Pretty.printf (Global x) ^ " has type\n   " ^ Pretty.printf xty ^ 
   "\nbut is expected to have type\n  " ^ Pretty.printf ty ^ "\n" ^ msg
 
 let var_error x msg = 
-  "Error at type checking the variable " ^ x ^ ": " ^ msg
+  "The following error was encountered when type checking " ^ Pretty.printf (Global x) ^ ": " ^ msg
 
 let var_error_2 x = 
-  "Error at type checking the variable " ^ x ^ ": "
+  "Error at type checking " ^ Pretty.printf (Global x) ^ ": "
 
 let var_type_mismatch_2 x xty ty = 
-  "The variable " ^ x ^ " has type\n   " ^ Pretty.printf xty ^ 
+  Pretty.printf (Global x) ^ " has type\n   " ^ Pretty.printf xty ^ 
   "\nbut is expected to have type\n  " ^ Pretty.printf ty ^ "\n"
 
 (* Function type checking error messages *)
@@ -182,18 +182,22 @@ let lam_unify_2 x e y e' msg =
   "Don't know how to unify both lambda abstractions\n  " ^ 
   Pretty.printf (Lam (x, e)) ^ "\nand\n  " ^ Pretty.printf (Lam (y, e')) ^ ". " ^ msg
 
-  
 let not_syntactically_equal e e' =
   "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. "
 
 let zonking_fal msg =
   "Unification failed after zonking: " ^ msg
 
-
 let esubin_not_unifiable e e' msg =
   "Despite reflection,\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\ncannot be unified. " ^ msg
 
 (* Equality *)
+
+let eq_left_mismatch ty1 e1 e2 msg =
+  "Cannot check that " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ " is a type: the left-hand side term " ^ Pretty.printf e1 ^ " does not have type " ^ Pretty.printf ty1 ^ "\n" ^ msg
+
+let eq_right_mismatch ty1 e1 e2 msg =
+  "Cannot check that " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ " is a type: the right-hand side term " ^ Pretty.printf e2 ^ " does not have type " ^ Pretty.printf ty1 ^ "\n" ^ msg
 
 let eq_universe_1 ty1 e1 e2 max m =
   "Universe level mismatch when checking that the type\n  " ^ Pretty.printf (Eq(ty1, e1, e2)) ^

@@ -16,17 +16,11 @@ let check global ctx lvl ty =
   | _ ->
     let ty' = eval ty in
     Placeholder.restore 0;
-    let elab = Elab.elaborate global ctx lvl 0 ([], []) (Meta 0) 1 ty' in
-    match elab with
+    match Elab.elaborate global ctx lvl 0 ([], []) (Meta 0) 1 ty' with
     | Ok (ty', tTy, _) ->
-      begin
-        match tTy with
-        | Type _ ->
-          Ok (ty', tTy)
-        | Meta _ -> (* Meta _ has been added for tests *)
-          Ok (ty', tTy)
-        | _ -> 
-          Error ("Failed to prove that \n  " ^ Pretty.printf ty' ^ "\nis a type")
+      begin match tTy with
+        | Type _ -> Ok (ty', tTy)
+        | Meta _ -> Ok (ty', tTy) (* Meta _ has been added for tests *)
+        | _ -> Error ("Failed to prove that \n  " ^ Pretty.printf ty' ^ "\nis a type")
       end
-    | Error (_, msg) -> 
-      Error msg
+    | Error (_, msg) -> Error ("Failed typehood check. \n" ^ msg)

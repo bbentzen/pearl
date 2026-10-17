@@ -154,8 +154,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
             Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
           | Error (sa2, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_2 e1 e2 ty1' msg)
           end
-        | Error (sa, msg) -> 
-          Error (sa, Msg.app_wrong_ty2 e1 msg)
+        | Error (sa, msg) -> Error (sa, Msg.app_wrong_ty2 e1 msg)
         end
       end
     end
@@ -346,7 +345,8 @@ let rec elaborate env ctx lvl lc sl ty vars = function
           Ok (Eq(ty1, e1, e2), Type n, Stack.lappend st sa sb)
         | _ -> Error (Stack.lappend st sa sb, Msg.eq_universe_2 ty1 e1 e2 ty)
         end
-      | Error msg, _ | _, Error msg -> Error msg
+      | Error (sl, msg), _  -> Error (sl, Msg.eq_left_mismatch ty1 e1 e2 msg)
+      | _, Error (sl, msg) -> Error (sl, Msg.eq_right_mismatch ty1 e1 e2 msg)
       end
     (* The type lives in a metavariable type *)
     | Ok (ty1, Meta n, st) ->
