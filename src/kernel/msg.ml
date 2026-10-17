@@ -26,8 +26,8 @@ let goal_msg ctx e ty =
 let undeclared x =
   "No declaration for the variable " ^ x
 
-let var_type_mismatch x xty ty msg = 
-  Pretty.printf (Global x) ^ " has type\n   " ^ Pretty.printf xty ^ 
+let var_type_mismatch x ty' ty msg = 
+  Pretty.printf (Global x) ^ " has type\n   " ^ Pretty.printf ty' ^ 
   "\nbut is expected to have type\n  " ^ Pretty.printf ty ^ "\n" ^ msg
 
 let var_error x msg = 
@@ -138,6 +138,9 @@ let display_goal ctx ty =
   "The current goal:\n" ^ Global.printf ctx ^ 
   "-------------------------------------------\n ⊢ " ^ 
   Pretty.printf ty
+
+let display_ctx ctx =
+  "The current context:\n" ^ Global.printf ctx
 
 (* Unification error messages for all expressions *)
 

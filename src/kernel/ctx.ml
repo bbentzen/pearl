@@ -16,8 +16,8 @@ let check global ind ctx lvl =
   | (x, ty, b) :: ctx' ->
     begin match Env.unfold_all global 0 ty with
     | Ok ty' ->
-      (* Dumps inductive type data into the context *)
-      let ind_ctx = List.map (fun (id, ty) -> (id, ty, true)) ind @ ctx' in
+      (* Dumps inductive type data into the context (reversed to preserve its order ) *)
+      let ind_ctx = List.map (fun (id, ty) -> (id, ty, true)) ind @ (List.rev ctx') in
       begin match Type.check global ind_ctx lvl ty', helper ctx' with
       | Ok elab, Ok ctx'' -> 
         if Env.is_declared x global then
