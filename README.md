@@ -42,7 +42,7 @@ Please see the reference manual on [doc/README.md](https://github.com/bbentzen/p
 
 ## AI Statement
 
-We firmly believe that mathematics is built on the exercise of human judgment [[1](#BEN27), §6]. This has been embraced as a core tenet of mathematical constructivism by Brouwer and Bishop from the very beginning [[6](#BEN24)] long before mathematicians became aware of the serious threats presently posed by AI. We are fully committed to their shared vision and the preservation of human understanding without the reliance on AI-generating tools, echoing Bishop's words: 
+We firmly believe that mathematics is built on the exercise of human judgment [[1](#BEN27), §6]. This has been embraced as a core tenet of mathematical constructivism by Brouwer and Bishop from the very beginning [[6](#BEN24)] long before mathematicians became aware of the serious threats presently posed by AI. We are fully committed to the preservation of human understanding without any relevant use of AI-generative tools. In fact, the spirit of our computational view of type theory is most beautifully expressed in Bishop's words:
 
 > Mathematics that has computational meaning may require the exercise
 of judgment before that meaning is discharged. Whether a given rule
