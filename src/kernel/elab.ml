@@ -160,9 +160,12 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     end
   
   | Reflect (e1, e2) ->
+    let e1 = eval e1 in
+    let e2 = eval e2 in
     let h1 = Placeholder.generate () in
     begin match elaborate env ctx lvl lc sl h1 vars e1 with
     | Ok (e1, ty1, sa) ->
+      let ty1 = Placeholder.solve [] ty1 in
       begin match (Expr.type_of ty1) with
       | Eq (_, a, b) ->
         (* Zonks the metavariables in boths sides *)
@@ -175,8 +178,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         | Ok (e2, ty, sa) -> Ok (Reflect (e1, e2), ty, sa)
         | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx b a e2 ty msg)
         end
-      | ty1 ->
-        Error (sa, Msg.reflect_1 e1 ty1)
+      | ty1 -> Error (sa, Msg.reflect_1 e1 ty1)
       end
     | Error (sa, msg) -> Error (sa, Msg.reflect_2 e1 msg)
     end

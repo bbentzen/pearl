@@ -8,7 +8,7 @@ universe ℓ
 
 /* Function application and extensionality */
 
-def ap {A B : type ℓ} (f : A → B) {a b : A} :
+thm ap {A B : type ℓ} (f : A → B) {a b : A} :
   eq A a b → eq B (f a) (f b) :=
 λ p, reflect p rfl
 

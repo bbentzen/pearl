@@ -4,15 +4,28 @@
  * Author: Bruno Bentzen
  */
 
+import ../../core/function/equality.prl
 import ./lemmas.prl
 
 universe ℓ
 
 /* Equalities over pairs */
 
-def prod_eta (A B : type ℓ) (w : A × B) :
+thm prod_eta (A B : type ℓ) (w : A × B) :
   eq (A × B) w (fst w, snd w) :=
 sigmarec A (λ _, B) _ (λ x y, rfl) w
+
+thm pair_eq_fst {A B : type ℓ} {a a' : A} {b b' : B} :
+  eq (A × B) (a, b) (a', b') → eq A a a' :=
+λ p, ap (λ w, fst w) p
+
+thm pair_eq_snd {A B : type ℓ} {a a' : A} {b b' : B} :
+  eq (A × B) (a, b) (a', b') → eq B b b' :=
+λ p, ap (λ w, snd w) p
+
+thm pair_to_eq {A B : type ℓ} {a a' : A} {b b' : B} :
+  eq (A × B) (a, b) (a', b') → eq A a a' × eq B b b' :=
+λ p, (pair_eq_fst p, pair_eq_snd p)
 
 /* TODO:  */
 /* def pair_iff_eq {A B : type ℓ} {a a' : A} {b b' : B} :
