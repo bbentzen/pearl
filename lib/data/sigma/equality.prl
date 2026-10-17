@@ -1,0 +1,33 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ./lemmas.prl
+
+universe ℓ
+
+/* Equalities over pairs */
+
+def prod_eta (A B : type ℓ) (w : A × B) :
+  eq (A × B) w (fst w, snd w) :=
+sigmarec A (λ _, B) _ (λ x y, rfl) w
+
+/* TODO:  */
+/* def pair_iff_eq {A B : type ℓ} {a a' : A} {b b' : B} :
+  eq (A × B) (a, b) (a', b') ↔ eq A a a' × eq B b b' :=
+(λ p, (<i> fst (p @ i), <j> snd (p @ j)),
+ λ w, <i> ((fst w) @ i, (snd w) @ i)) */
+
+/* def pair_to_eq {A B : type ℓ} {a a' : A} {b b' : B} :
+  eq (A × B) (a, b) (a', b') → eq A a a' × eq B b b' :=
+fst (eq (A × B) (a, b) (a', b')) (λ _, eq A a a' × eq B b b') pair_iff_eq
+
+def eq_to_pair {A B : type ℓ} {a a' : A} {b b' : B} :
+  eq A a a' × eq B b b' → eq (A × B) (a, b) (a', b') :=
+snd (eq (A × B) (a, b) (a', b')) (λ _, eq A a a' × eq B b b') pair_iff_eq */
+
+def eq_bs {A : type 1} {a b : A} (p q : eq A a b) {C : eq A a b → type 1} :
+  C p ↔ C q :=
+id_iff_id
