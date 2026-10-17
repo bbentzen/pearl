@@ -21,9 +21,9 @@ let rec print env = function
   | Global y -> y ^ " "
   | Local index -> name_at index env ^ " " (* "Local-" ^ (string_of_int index) ^ " " *)
     
-  | Lam (x, e) ->  
+  | Lam (x, e) -> 
     let rec iterate env = function
-      | Lam (x', e') -> " " ^ x' ^ iterate (x' :: env)  e'
+      | Lam (x', e') -> " " ^ x' ^ iterate (x' :: env) e'
       | e' -> ", " ^ print env e'
     in
     "λ " ^ x ^ iterate (x :: env) e
@@ -99,8 +99,8 @@ let rec print env = function
   | Reflect (e1, e2) -> "reflect " ^ parenthesize env e1 ^ parenthesize env e2
   | Explode (e1, e2) -> "explode " ^ parenthesize env e1 ^ parenthesize env e2
   | ESubIn (e, e1, _) -> 
-    (* print env e  *)
-  (* for testing:  *)
+    (* print env e *)
+  (* for testing: *)
   "[ " ^ parenthesize env e ^ "/ " ^ parenthesize env e1 ^ " ]"
   | Meta n -> "?" ^ string_of_int (abs n) ^ "? " (* negative indices are supressed from the user *)
   | Rfl () -> "rfl "
@@ -110,7 +110,7 @@ let rec print env = function
 and parenthesize env e = 
   let helper = function
     | Lam _ | Pi _ 
-    | Reflect _ | Explode _ | App _   
+    | Reflect _ | Explode _ | App _
     | Eq _ -> true
     | _ -> false
   in
