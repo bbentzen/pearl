@@ -9,7 +9,7 @@
   <a href="https://github.com/ocaml/ocaml" target="_blank"><img src="https://img.shields.io/badge/Ocaml-4.14.2-blue" alt="OCaml"></a>
 </p>
 
-Pearl is an experimental interactive theorem prover for the formalization of mathematics from the computational view of type theory most recently advocated by Bentzen [[1](#BEN27)] following in the footsteps of Constable, Bickford, Allen, Harper, Sterling, Angiuli, and others. Pearl implements a version of extensional type theory with user-defined inductive type families inspired by NuPRL and its descendents [[2](#NuPRL), [3](#MetaPRL), [4](#RedPRL)], but without a proof refinement logic. Instead, Pearl focuses on proof terms in a style reminiscent of Andromeda [[5](#Andromeda)], except that instead of a explicitly typed language of algebraic effects and handlers, Pearl is based on a untyped programming language of realizers extended with only two opaque operations for reflection and explosion. Please see the [documentation](https://github.com/bbentzen/pearl/tree/main/doc) for more information on the underlying formal system.
+Pearl is an experimental interactive theorem prover for the formalization of mathematics from the computational view of type theory most recently advocated by Bentzen [[1](#BEN27)] following in the footsteps of Constable, Bickford, Allen, Harper, Sterling, Angiuli, and others. This view is built on the vision shared by Brouwer and Bishop that mathematics is a human activity practiced independently of any formal theory. Pearl implements a version of computational type theory with user-defined inductive type families inspired by NuPRL and its descendents [[2](#NuPRL), [3](#MetaPRL), [4](#RedPRL)], but without a proof refinement logic. Instead, Pearl focuses on proof terms in a style reminiscent of Andromeda [[5](#Andromeda)], except that instead of a explicitly typed language of algebraic effects and handlers, Pearl is based on a untyped programming language of realizers extended with only two opaque operations for reflection and explosion. Please see the [documentation](https://github.com/bbentzen/pearl/tree/main/doc) for more information on the underlying formal system.
 
 ## Installation
 
@@ -39,6 +39,10 @@ However, we recommend using the pearl-vscode extension for verification support.
 ## Usage
 
 Please see the reference manual on [doc/README.md](https://github.com/bbentzen/pearl/blob/main/doc/README.md).
+
+## AI Statement and Contributions
+
+We believe that mathematics is built on the exercise of human judgment. This has always been embraced as the core tenet of the constructism by Brouwer and Bishop [[1](#BEN27), §6] even before the serious threats presently posed by AI. We are fully committed to their shared vision and the preservation of human understanding without the reliance on AI-generating tools. If you are a human programmer and would like to contribute to the project, please check [contribution guidelines](https://github.com/bbentzen/pearl/blob/main/CONTRIBUTING.md) for an outline of the process.
 
 ## Support
 
