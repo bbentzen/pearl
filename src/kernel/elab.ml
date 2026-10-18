@@ -57,8 +57,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
           end
         | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
         end
-      | false, false, false, false ->
-        Error (sl, Msg.var_error_2 x)
+      | false, false, false, false -> Error (sl, Msg.var_error_2 x)
       end
     | Error _ ->
       (* Check if identifier corresponds to a theorem in the env environment *)
@@ -93,8 +92,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         let h1 = Placeholder.generate () in
         let h2 = Placeholder.generate () in
         elaborate env ctx lvl lc sl (Pi(x, h1, h2)) vars (Lam (x, e))
-      | _ -> 
-        Error (sl, Msg.lam_error x e ty)
+      | _ -> Error (sl, Msg.lam_error x e ty)
       end
     in
     (* First, we isolate Lam (x, App (e1 x)) and check for eta-conversion *)
@@ -170,16 +168,14 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let e1 = eval e1 in
     let e2 = eval e2 in
     let h1 = Placeholder.generate () in
-    let h2 = Placeholder.generate () in
-    let h3 = Placeholder.generate () in
-    begin match elaborate env ctx lvl lc sl (Eq (h1, h2, h3)) vars e1 with
+    begin match elaborate env ctx lvl lc sl h1 vars e1 with
     | Ok (e1, ty1, sa) ->
       let ty1 = Placeholder.solve [] ty1 in
-      begin match (Expr.type_of ty1) with
+      begin match eval (Expr.type_of ty1) with
       | Eq (_, a, b) ->
         (* Zonks the metavariables in boths sides *)
-        let a = Placeholder.solve [] a in
-        let b = Placeholder.solve [] b in
+        let a = Placeholder.solve [] a and b = Placeholder.solve [] b in
+        let a = eval a and b = eval b in
         (* Explicit substitutions so we can recover the type later on *)
         let ty = Expr.reflsubst 0 b (ESubIn(a, b, ty)) ty in
         let e2 = Expr.reflsubst 0 b (ESubIn(a, b, ty)) e2 in
@@ -231,8 +227,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       let h2 = Placeholder.generate () in
       Hashtbl.add Data.meta_store n { Data.solution = Eq (h2, h1, h1)};
       Ok (Rfl (), Eq (h2, h1, h1), sl)
-    | _ -> 
-      Error (sl, Msg.rfl_error_2 ty)
+    | _ -> Error (sl, Msg.rfl_error_2 ty)
     end
 
   | Pi(x, ty1, ty2) ->
@@ -273,8 +268,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       | Meta k -> 
         Hashtbl.add Data.meta_store k { Data.solution = Type n}; 
         Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type n, sa)
-      | _ -> 
-        Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
+      | _ -> Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
       end
     
     | Ok (ty1', Type n, sa), Ok (Meta k, _, _) -> 
@@ -287,8 +281,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       | Meta l ->
         Hashtbl.add Data.meta_store l { Data.solution = Type n}; 
         Ok (Pi(x, ty1', Meta k), Type n, sa) (* TODO: hole might live in a higher universe *)
-      | _ -> 
-        Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
+      | _ -> Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
       end
     | Ok (Meta k, _, _), Ok (ty2', Type n, sa) -> 
       begin match (Expr.type_of ty) with
@@ -300,8 +293,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       | Meta l ->
         Hashtbl.add Data.meta_store l { Data.solution = Type n}; 
         Ok (Pi(x, Meta k, Expr.close_bound x ty2'), Type n, sa) (* TODO: hole might have live in a higher universe *)
-      | _ ->
-        Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
+      | _ -> Error (sa, Msg.pi_universe_2 x ty1 ty2 ty)
       end
     | Ok (Meta k1, _, _), Ok (Meta k2, _, _) ->
       begin match (Expr.type_of ty) with
@@ -312,10 +304,8 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     
     | Ok (_, Type _, sa), Error (sb, msg) -> Error (Stack.append sa sb, Msg.pi_codomain ty2' msg)
     | _, Error (sb, msg) -> Error (sb, Msg.pi_codomain ty2' msg)
-    | Error (sa, msg), _ -> 
-      Error (sa, Msg.pi_domain ty1 msg)
-    | Ok (ty1', u1, _), Ok (ty2', u2, _) -> 
-      Error (sl, Msg.pi_unexpected x ty1 ty2 ty ty1' u1 ty2' u2)
+    | Error (sa, msg), _ -> Error (sa, Msg.pi_domain ty1 msg)
+    | Ok (ty1', u1, _), Ok (ty2', u2, _) -> Error (sl, Msg.pi_unexpected x ty1 ty2 ty ty1' u1 ty2' u2)
     end
 
   | Void() ->
@@ -399,8 +389,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         Ok (Type n, Type (Suc n), sl)
       | _ -> Error (sl, Msg.type_mismatch n ty)
       end
-    | Error msg -> 
-      Error (sl, msg)
+    | Error msg -> Error (sl, msg)
     end
   
   | Meta n -> Ok (Meta n, ty, sl)
@@ -471,8 +460,7 @@ and unify env ctx lvl lc sl vars x lift =
           let u2 = unify env ((v1, s1, true) :: ctx) lvl lc sl (vars+1) (ty2_open, ty2'_open, ty) lift in
           begin match u2 with
           | Ok s2 -> Ok (Pi (v1, s1, Expr.close_bound v1 s2))
-          | Error (_, msg) -> 
-            Error ((ty2_open, ty2'_open), Msg.unify_pi msg)
+          | Error (_, msg) -> Error ((ty2_open, ty2'_open), Msg.unify_pi msg)
           end
         | Error ((e1, e2), msg) -> Error ((e1, e2), Msg.unify_pi msg)
         end
@@ -488,11 +476,9 @@ and unify env ctx lvl lc sl vars x lift =
           begin match u1, u2 with
           | Ok s1, Ok s2 ->           
             Ok (Eq (s, s1, s2))
-          | Error (sa, msg), _ | _ , Error (sa, msg) -> 
-            Error (sa, Msg.unify_eq e e1 e2 e' e1' e2' msg)
+          | Error (sa, msg), _ | _ , Error (sa, msg) -> Error (sa, Msg.unify_eq e e1 e2 e' e1' e2' msg)
           end
-        | Error (sa, msg) -> 
-          Error (sa, Msg.unify_eq e e1 e2 e' e1' e2' msg)
+        | Error (sa, msg) -> Error (sa, Msg.unify_eq e e1 e2 e' e1' e2' msg)
         end
 
       | Lam (x, e), Lam (y, e'), Pi(_, ty1 , ty2) ->
@@ -548,8 +534,7 @@ and unify env ctx lvl lc sl vars x lift =
               end
             end
           end
-        | Error (_, msg) -> (* This case is impossible *)
-          Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
+        | Error (_, msg) -> Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
         end
       
       | Reflect (p, e), Reflect (_, e'), _ ->
@@ -594,8 +579,7 @@ and unify env ctx lvl lc sl vars x lift =
             unify env ctx lvl lc sl vars (e, e', ty) lift
           else
             Error ((Lam (x, App (e , Local 0)) , e'), Msg.lam_unify x e e')
-        | _ ->
-            Error ((Lam (x, e), e'), Msg.lam_unify x e e')
+        | _ -> Error ((Lam (x, e), e'), Msg.lam_unify x e e')
           end
       
       | ESubIn(e, e2, e3) , ESubIn(e', _, _), ty ->

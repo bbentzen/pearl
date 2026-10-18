@@ -1,0 +1,18 @@
+/*
+ * Copyright (c) 2019 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ../sigma/basic.prl
+import ./laws.prl
+
+/* Some numerical inequalities */
+ 
+def leq (m n : ℕ) :
+  type 1 :=
+Σ (i : ℕ), eq ℕ (add m i) n
+
+thm leq_add (m n k : ℕ) :
+  leq m n → leq (add m k) (add n k) :=
+λ p, (fst p, (add_comm2 m k (fst p)) · ap (λ i, add i k) (snd p))

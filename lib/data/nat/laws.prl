@@ -27,14 +27,14 @@ thm succ_iff_eq {n m : nat} :
   eq nat (succ n) (succ m) ↔ eq nat n m :=
 (eq_of_succ, succ_of_eq)
 
-thm pred_succ {n : nat} :
+thm pred_succ (n : nat) :
   eq nat (pred (succ n)) n :=
 rfl
 
-/* thm succ_pred {n : nat} (w : Σ (k : nat), eq nat (succ k) n) :
-  eq nat (succ (pred n)) n :=
-coe i0 i1 (λ i, eq nat (succ (pred ((snd w) @ i))) ((snd w) @ i)) 
-(<_> succ (fst w)) */
+thm succ_pred {n : nat} :
+  (Σ (k : nat), eq nat (succ k) n) → eq nat (succ (pred n)) n :=
+λ w, reflect (sigmarec _ _ (λ w, eq nat (succ (sigmarec _ _ _ (λ x _, x) w)) n) (λ _ y, y) w) 
+(ap succ (pred_succ (sigmarec _ _ _ (λ x _, x) w)))
 
 /* Inequalities */
 

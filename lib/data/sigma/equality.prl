@@ -23,28 +23,18 @@ thm pair_eq_snd {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') → eq B b b' :=
 λ p, ap (λ w, snd w) p
 
-thm pair_to_eq_pair {A B : type ℓ} {a a' : A} {b b' : B} :
+thm pair_eq_of_eq_pair {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') → eq A a a' × eq B b b' :=
 λ p, (pair_eq_fst p, pair_eq_snd p)
 
-thm pair_iff_eq {A B : type ℓ} {a a' : A} {b b' : B} :
+thm eq_pair_of_pair_eq {A B : type ℓ} {a a' : A} {b b' : B} :
   (eq A a a' × eq B b b') → eq (A × B) (a, b) (a', b') :=
 λ w, reflect (sigmarec _ _ (λ _, eq A a a') (λ x _, x) w) 
 (reflect (sigmarec _ _ (λ _, eq B b b') (λ _ y, y) w) rfl)
 
-/* TODO:  */
-/* def pair_iff_eq {A B : type ℓ} {a a' : A} {b b' : B} :
+thm pair_eq_iff_eq_pair {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') ↔ eq A a a' × eq B b b' :=
-(λ p, (<i> fst (p @ i), <j> snd (p @ j)),
- λ w, <i> ((fst w) @ i, (snd w) @ i)) */
-
-/* def pair_to_eq {A B : type ℓ} {a a' : A} {b b' : B} :
-  eq (A × B) (a, b) (a', b') → eq A a a' × eq B b b' :=
-fst (eq (A × B) (a, b) (a', b')) (λ _, eq A a a' × eq B b b') pair_iff_eq
-
-def eq_to_pair {A B : type ℓ} {a a' : A} {b b' : B} :
-  eq A a a' × eq B b b' → eq (A × B) (a, b) (a', b') :=
-snd (eq (A × B) (a, b) (a', b')) (λ _, eq A a a' × eq B b b') pair_iff_eq */
+(pair_eq_of_eq_pair, eq_pair_of_pair_eq)
 
 def eq_bs {A : type 1} {a b : A} (p q : eq A a b) {C : eq A a b → type 1} :
   C p ↔ C q :=

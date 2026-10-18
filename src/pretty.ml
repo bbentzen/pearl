@@ -12,6 +12,9 @@ open Expr
 
 (* A simple pretty printer *)
 
+(* TO DO: support user definitions. Here's an idea: first try to match expression with an 
+   already defined expression (label def) in the global environment, proceed as usual if that fails *)
+
 let rec print env = function
   | Global("star") -> "() "
   | Global("zero") -> "0 "
