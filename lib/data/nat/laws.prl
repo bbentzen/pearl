@@ -33,8 +33,8 @@ rfl
 
 thm succ_pred {n : nat} :
   (Σ (k : nat), eq nat (succ k) n) → eq nat (succ (pred n)) n :=
-λ w, reflect (sigmarec _ _ (λ w, eq nat (succ (sigmarec _ _ _ (λ x _, x) w)) n) (λ _ y, y) w) 
-(ap succ (pred_succ (sigmarec _ _ _ (λ x _, x) w)))
+λ w, reflect (sigmarec _ _ (λ v, eq nat (succ (sigmarec _ _ _ (λ x _, x) v)) n) (λ _ y, y) w) 
+(ap succ (pred_succ (fst w)))
 
 /* Inequalities */
 

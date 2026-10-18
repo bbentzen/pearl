@@ -19,11 +19,11 @@ def pairing {A : type ℓ} {B : A → type ℓ} :
 
 /* Sigma type projections and eliminator (as abbreviations) */
 
-abbrev fst {A : type ℓ} {B : A → type ℓ} :
+def fst {A : type ℓ} {B : A → type ℓ} :
   (Σ (x : A), B x) → A :=
 λ w, sigmarec _ _ (λ _, A) (λ x _, x) w
 
-abbrev snd {A : type ℓ} {B : A → type ℓ} :
+def snd {A : type ℓ} {B : A → type ℓ} :
   Π (w : Σ (x : A), B x), B (fst w) :=
 λ w, sigmarec _ _ (λ w, B (fst w)) (λ _ y, y) w
 
