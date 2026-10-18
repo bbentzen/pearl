@@ -3,7 +3,6 @@
 //  * Desc: Monitors when a .pearl file is saved, runs the compiler binary, and 
 //          interprets standard OCaml error messages via regular expressions
 //          to highlight lines in VS Code.
- 
 
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
