@@ -6,7 +6,12 @@
 
 *.install
 
-/lib/tests
+*.aux
+*.blg
+*.log
+*.out
+*.toc
+*.synctex.gz
 
 /vscode/node_modules
 /vscode/out

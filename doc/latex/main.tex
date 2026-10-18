@@ -1,0 +1,239 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% (c) Copyright 2026 Bruno Bentzen. All rights reserved.
+% Released under Apache 2.0 license as described in the file LICENSE.
+%
+% Desc: This is the main file for the generation of a simple documentation in PDF. 
+%       Please refer to https://github.com/bbentzen/pearl/tree/main/doc for general 
+%		instructions on how to compile it.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[a4paper]{article}
+
+\include{preamble}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Paper details
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{\bfseries{Pearl Reference Manual and User's Guide}}
+
+\author[1]{Bruno Bentzen}
+
+\affil[1]{Zhejiang University, \protect\\ Hangzhou, 310058, P. R. China}
+\affil[ ]{\texttt{bbentzen@zju.edu.cn}}
+
+\date{}
+
+%% Header
+
+\makeatletter
+\newcommand\Author{Bruno Bentzen}
+\let\Title\@title
+\def\ps@mystyle{%
+	\let\@oddfoot\@empty\let\@evenfoot\@empty
+	\def\@oddhead{%
+		\ifodd\value{page}\relax
+		\hfill{Pearl Reference Manual and User's Guide}\hfill\makebox[0pt][l]{\thepage}%
+		\else
+		\makebox[0pt][l]{\thepage}\hfill\Author\hfill%
+		\fi%
+	}%
+	\let\@mkboth\markboth}
+\makeatother
+\pagestyle{mystyle}
+
+%%
+
+\begin{document}
+	
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Abstract
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract}
+	\noindent Pearl is an experimental proof assistant for the formalization of mathematics in line with the computational tradition established by Constable, Bickford, Allen, Harper, Rahli, Sterling, Angiuli and many others. Pearl implements the dialect of computational type theory systematically developed by Bentzen~\cite{bentzen2026book}. Although inspired by NuPRL and its descendents, Pearl is not oriented around a proof refinement logic for the demonstration of judgments. Instead, Pearl focuses on the manipulation of proof terms in a style reminiscent of Andromeda, except that instead of a explicitly typed language of algebraic effects and handlers, Pearl is based on a untyped programming language of realizers extended with only two opaque operations for performing reflection and explosion. 
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Text of the paper
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction} \label{intro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Pearl is an experimental proof assistant for the formalization of mathematics in line with the computational tradition of type theory established by Constable, Bickford, Allen, Harper, Rahli, Sterling, Angiuli and many others. More precisely, the system serves as a ``window on the truth" with respect to an intended realizability semantics that is defined independently of any background formal theory, viewing programs as realizers and not derivations in a fixed and necessarily incomplete proof systems. Echoing the downplay of formal systems and the insistence on human cognition advocated by Brouwer and Bishop, ``computational type theory'' is an umbrella term for any type theory based on this semantic view ~\cite{constable2009computational, angiuli2017chdtt,bentzen2026book}. Pearl implements the dialect of computational type theory systematically developed by Bentzen~\cite{bentzen2026book} in order to provide by purely premathematical means a philosophically robust account of the metamathematical PER semantics that underlies earlier proof assistants based on computational type theory like NuPRL~\cite{nuprl} and its descendents~\cite{hickey2001metaprl,jonprl,angiuli2018redprl}. This informal semantics is in effect a refinement of the computational version of the meaning explanations known as the ``program explanations''~\cite{bentzen2026book} to emphasize its role as a generalization of the Brouwer--Heyting--Kolmogorov proof explanation of the intuitionistic logical connectives~\cite{troelstravandalen1988constructivism}. 
+Pearl is built on the conviction that an informal, intuitive, premathematical semantics is the only route to the justificatory autonomy of any putative foundation for mathematics~\cite{linnebo2011category,ladymanpresnell2017hottfoundation}. The justificatory value of theorem proving in a proof assistant is predicated on its own justification. In what follows we elaborate on the motivation behind the development Pearl, present the type theory implemented by Pearl, and document some of Pearl's features.
+
+%Pearl implements a variant of computational type theory like NuPRL~\cite{nuprl} and its descendents~\cite{hickey2001metaprl,jonprl,angiuli2018redprl}. More precisely, the system serves as a "window on the truth" with respect to an intended informal realizability semantics defined independently of any formal theory. Inspired by Martin-Löf's early work~\cite{martinlof1982constructive}, computational type theory views programs as realizers and not as formal proofs in a fixed and necessarily incomplete formal theory. See~\cite{constable2009computational,sterling2015typetheory} for accessible introductions. 
+
+%-----------------------------------------------------------------------------------------------------------------
+\section{Highlights of Pearl} \label{sec:motivation}
+%-----------------------------------------------------------------------------------------------------------------
+
+
+Although inspired by NuPRL, Pearl deviates from it in two important ways. First, it is intended to be consistent with classical reasoning in adherence to Bishop's band of constructivism mathematics~\cite{bishop1967foundations}, while the latest versions of NuPRL~\cite{rahli2017bar, bickford2018computability, constable2020continuum} gradually came to favor the formalization of intuitionistic mathematics, including the accommodation of continuity principles, free choice sequences, and elements of Brouwer's creating subject arguments that prove classically false theorems~\cite{bentzen2025iep}. But this incompatibility with classical mathematics is a design choice that is orthogonal to the view that computation is prior to typing~\cite{bentzen2026book}. The computational type theory that underlies Pearl rests on an open-ended ontology of untyped programs. It is not possible to tell in advance when an expression not used so far might be introduced and given an operational semantics to serve as a realizer of a type [ibid. \S11]. The law of excluded middle cannot be refuted because we cannot rule out the possibility that an oracle deciding whether any type is inhabitable might find its way as a program. 
+
+Second, Pearl operates without a proof refinement logic as NuPRL does, where users decompose proof goals into subgoals by means of refinement rules exclusively operating on the level of judgments to extract realizers. Pearl is designed to get around the difficulties involving undecidable extensional equality without going too far beyond a proof term language in a style reminiscent of Andromeda~\cite{bauer2018design}. But while the latter is based on an explicitly typed language of algebraic effects and handlers intended to accommodate different user-definable rules for equality in general, Pearl is specifically based on a untyped programming language for computational type theory extended with only two opaque operations for reflection and explosion. As an example, we remark that, in contrast to the usual status of function extensionality as a primitive rule in systems like NuPRL or Andromeda, it is straightforward to prove function extensionality in Pearl using only equality reflection and $\eta$-conversion: 
+
+Istari~\cite{istari}
+
+\begin{lstlisting}[style=pearl]
+thm funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) :
+  (Π (x : A), eq (B x) (f x) (g x)) → eq (Π (x : A), B x) f g :=
+λ h, reflect (etad f) reflect (etad g) (λ x, (reflect (h x) rfl) x)
+\end{lstlisting}
+
+In sum, Pearl deviates from NuPRL in its attempt to be more inclusive. Although it implements a variant of extensional type theory~\cite{martinlof1982constructive} to be described in \Cref{sec:typetheory}, Pearl is specifically designed so that, when the full expressive power of extensional equality is not needed, it emulates the feel of a mainstream intensional-type-theory proof assistant such as Agda~\cite{norell2009agda},  Lean~\cite{demoura2021lean}, or Rocq~\cite{barras1997coq}. To give a simple example, consider the following proof of Peano's first axiom in Pearl:
+
+\begin{lstlisting}[style=pearl]
+thm nat_neq {n : nat} :
+  ¬ eq nat 0 (succ n) :=
+λ p, transport (λ n, natrec _ unit (λ _ _, void) n) p ()
+\end{lstlisting}
+
+This hybrid approach is meant to make computational type theory more accessible to users familiar with those proof assistants, while, at the same time, overcoming the difficult computational challenges of working with intensional equality in practice, which often leads users to postulate axioms and break the computational content of their theorems. Because Pearl prioritizes computation over typing, there is no way to verify that types are inhabited without computing. All of this is made possible by embracing the undecidability of type checking, which, in our view, makes little difference in practice, since we want proof assistants to be able to elaborate omitted information in our syntax and type inference is undecidable. Lean already has undecidable judgmental equality and type checking.
+
+
+
+
+%... leads users to postulate axioms and break the computational content of their theorems. Because Pearl prioritizes computation over typing, there is no way to verify that types are inhabited without computing. All of this is made possible by embracing undecidability. which in practice makes little difference
+
+%-----------------------------------------------------------------------------------------------------------------
+\section{Motivation} \label{sec:motivation}
+%-----------------------------------------------------------------------------------------------------------------
+
+
+
+As reported by Christoph Kreitz~\cite{kreitz2023answer}, the NuPRL group has in effect been disbanded and the original system is no longer so easily accessible. Of course, RedPRL~\cite{angiuli2018redprl} remains an excellent alternative, but we believe that cubical features may present a distraction from the premathematical essence of the computational type theory. While the theory is justified by a cubical generalization of the PER semantics~\cite{angiuli2018meaning}, such meaning explanations rely on the mathematical concept of cubical set, so it is unclear whether they qualify as a justification in the philosophical sense~\cite{bentzen2019what,bentzen2026book}. This is in no way meant to diminish the practical value of their work. As a matter of fact, we began in 2019 the earliest iteration of the present project~\cite{cube} as an implementation of a cubical alternative to extensional type theory known as XTT~\cite{sterling2019xtt}. After a long break devoted to research on the philosophical roots of  type theory, that project was resumed in the summer of 2026 due to a confluence of reasons. Pearl owes its very existence to the realization that this original implementation could be decubicalized in a practical way to match the spirit of computational type theory more closely.
+
+
+The most fundamental motivation behind the present development of Pearl is the appearance of Bentzen's ``Philosophical Type Theory''~\cite{bentzen2026book}, the book that consolidates the guiding philosophy of computational type theory. It founds mathematics on the exercise of human judgment~\cite[\S\S5--6]{bentzen2026book}. This has been embraced as a core tenet of mathematical constructivism by Brouwer and Bishop from the very beginning long before mathematicians became aware of the serious threats posed by AI today.  
+
+
+
+%-----------------------------------------------------------------------------------------------------------------
+\section{The type theory of Pearl} \label{sec:typetheory}
+%-----------------------------------------------------------------------------------------------------------------
+
+Below you will find a short reference manual on the basics of Pearl. 
+
+For a more comprehensive account of the computatonal type theory implemented in Pearl we refer users to \cite[ch.~2]{bentzen2026book}. Formally speaking, Pearl runs on a version of extensional type theory~\cite{martinlof1982constructive}, a dependently typed theory with equality reflection. To keep the kernel as small as possible, the type theory of Pearl supports user-defined inductive type families and only runs on built-in type formers for dependent functions, the equality type, the empty type, and a cumulative hierarchy of universes à la Russell. Pearl's raw language is based on a Curry-style version of the untyped lambda-calculus extended with constants for type formers and their constructors and eliminators (when they exist).
+
+\begin{itemize}
+	\item Inductive type families are defined by prescribing how to construct realizers for the type using the `inductive` environment, with their equality conditions and and eliminators derived automatically by the system. The language of Pearl is open-ended in the spirit of \cite[\S9]{bentzen2026book}. Every successful inductive definition of a type family introduces new constants for the type former, constructors, and eliminators. Note that eliminators are automatically generated under the name `foorec` for a type `foo`. 
+	
+	\item Dependent function types embody implications, functions, universal quantification, and indexed products with the given as `∏(x : M), N`,
+	where all free occurrences of `x` in `N` are bound. The constructor is given by
+	lambda abstraction `λ x.M`, and eliminator by application `M N`.
+	As usual, all free occurrences of `x` in `M` are bound in `λ x.M`. Since bound variables are represented using de Bruijin indices internally, we never
+	distinguish between the choice of bound variables in an expression. To be exact, the syntax of Pearl is based on locally nameless representation.
+	
+	\item Equality type express equality statements as `M = K N` or `eq K M N` and its constructor is given by the reflexivity constant `rfl`. As explained in \cite{sterling2015typetheory,bentzen2026book}, there is no need for a constant witnessing its elimination rule from the computational view of type theory: the semantics justifies a more general rule of inference on the level of judgments. This is the so-called reflection rule, which states that when the equality type is inhabited the two expressions are judgmentally equal at their type. When the user types `reflect M N` when proving a theorem and `M` realizes an equality type, the elaborator rewrites `N` and the current goal so that the terms are syntactically indistinguishable for unification purposes. This is achieved internally using explicit substitutions to keep track of reflected terms.
+	
+	\item Empty type expresses absurdity and empty collections as `void`. This type has no constructors and no eliminators. Again, there is no need for a constant witnessing ex falso. Computationally, explosion is well-justified on the level of judgments. Thus, when the user types `explode M N`  when proving a theorem and `M` realizes the empty type, the elaborator aborts the proof leaving `N` left as its realizer.
+	
+	\item Universe types are inhabited by types. Given the propositions-as-types, correspondence, there is no distinction between sets and propositions. Universe types are written as `type ℓ`, where `ℓ` is the level it lives in. There is a cumulative hierarchy of them, with type formers `type 0`, `type 1`, ... There are
+	no constructors and eliminators, as a consequence of Pearl's preferred
+	formulation of universes à la Russell.
+\end{itemize}
+
+\section{Usage}
+
+We recommend using the \href{URL}{https://github.com/bbentzen/pearl/tree/main/vscode}{pearl-vscode extension} for verification support. Once you are all set, note that you can use the following commands for inductively defining type families, entering the proof environment, type inference, term evaluation, importing files for the modularizion of proofs, declaring universe levels, and extracting and printing terms from definitions and theorems:
+
+\section{Inductive environment}
+
+This environment is used to introduce inductively defined type families. Inductive type declarations must be predicative, meaning that the target type must not live in a universe level that is lower than a universe level occurring as a parameter or argument. They must also be strictly positive, in that roughly the defined type never occurs in a ill-founded way. Finally, to avoid redundency, Pearl does not allow for empty inductive type declarations given that the empty type is already taken as primitive.
+
+The syntax for defining an indexed inductive type is:
+
+\begin{lstlisting}[style=pearl]
+inductive foo [context] : type $\ell$
+| constructor1 : ... → foo
+| constructor2 : ... → foo
+...
+| constructorn : ... → foo
+\end{lstlisting}
+
+
+
+\section{Proof environment}
+
+The proof environment is the main command where definitions are stated and theorems and lemmas are proven. Users can use the labels `def`, `definition`, `abbrev`, `abbreviation` for definitions and `thm`, `theorem`, `lem`, and `lemma` for theorems. There is a subtle difference between definitions and theorems. Defined terms will always unfold at elaboration time, but not proofs of theorems. 
+
+
+\begin{lstlisting}[style=pearl]
+def [id] [context] : [type] := [term]
+\end{lstlisting}
+
+
+Contexts are lists of variable declarations. Explicit variables are enclosed with `(` and `)` and must be passed as parameters when the definition or theorem is reused later. Implicit variables are enclosed with curly braces `{` and `}` and can be inferred by the elaborator. Multiple variables of the same type can be declared at the same time.
+
+In addition, the user can also have `\_` and `?` as placeholders in any expression. The former is used to synthesize an implicit assumption or fail after a number of steps, evaluating and displaying the type of the current goal. The latter is used to display the type of current goal directly without evaluation.
+
+\section{Type inference}
+
+The syntax for type inference is:
+
+\begin{lstlisting}[style=pearl]
+infer [context] : foo
+\end{lstlisting}
+
+\section{Evaluation}
+
+Pearl does not rely on normalization-by-evaluation. Instead, evaluation is untyped due to philosophical reasons having to do with closer adherence to the computational view of type theory. The syntax for term evaluation is:
+
+\begin{lstlisting}[style=pearl]
+eval foo
+\end{lstlisting}
+
+Like NuPRL, Pearl's notion of evaluation only relies on beta-reduction. Eta-conversion is handled at elaboration time.
+
+\section{File import}
+
+This command imports a specified file into the current file. The syntax is 
+
+\begin{lstlisting}[style=pearl]
+import [filename]
+\end{lstlisting}
+
+\section{Universe declaration }
+
+This declares a universe level variable according to the syntax:
+
+\begin{lstlisting}[style=pearl]
+universe [id]
+\end{lstlisting}
+
+Note that if you are using the VS Code Extension you may type the small script ell `ℓ` with `\\ell`.
+
+\section{Term extraction} 
+
+This extracts and prints the realizer corresponding to a definition or theorem with the syntax 
+
+\begin{lstlisting}[style=pearl]
+print [name]
+\end{lstlisting}
+
+\section{Semantics}
+
+Computational type theory is inspired by Martin-Löf's early idea of justifying type-theoretic reasoning by means of untyped computation~\cite{martinlof1982constructive}. After he came to abandon the approach in favor of syntax-driven meaning explanations, computational type theory was
+
+is remarkably different from his late work.
+
+See~\cite{constable2009computational,sterling2015typetheory} for accessible introductions. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% References
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\bibliography{../../../../mybib.bib}
+\bibliographystyle{plain}
+
+\end{document}

@@ -1,0 +1,162 @@
+\begin{thebibliography}{10}
+
+\bibitem{angiuli2018redprl}
+Carlo Angiuli, Evan Cavallo, Kuen-Bang Hou~(Favonia), Robert Harper, and
+  Jonathan Sterling.
+\newblock The {RedPRL} proof assistant (invited paper).
+\newblock {\em Electronic Proceedings in Theoretical Computer Science},
+  274:1--10, 2018.
+
+\bibitem{angiuli2018meaning}
+Carlo Angiuli and Robert Harper.
+\newblock Meaning explanations at higher dimension.
+\newblock {\em Indagationes Mathematicae}, 29(1):135--149, 2018.
+
+\bibitem{angiuli2017chdtt}
+Carlo Angiuli, Robert Harper, and Todd Wilson.
+\newblock Computational higher-dimensional type theory.
+\newblock {\em Proceedings of the 44th Annual ACM SIGPLAN-SIGACT Symposium on
+  Principles of Programming Languages, POPL '17}, 52(1):680--693, 2017.
+
+\bibitem{barras1997coq}
+Bruno Barras, Samuel Boutin, Cristina Cornes, Judica{\"e}l Courant,
+  Jean-Christophe Filliatre, Eduardo Gimenez, Hugo Herbelin, Gerard Huet, Cesar
+  Munoz, Chetan Murthy, et~al.
+\newblock {The Coq proof assistant reference manual: Version 6.1}, 1997.
+
+\bibitem{bauer2018design}
+Andrej Bauer, Ga\"{e}tan Gilbert, Philipp~G. Haselwarter, Matija Pretnar, and
+  Christopher~A. Stone.
+\newblock {Design and Implementation of the Andromeda Proof Assistant}.
+\newblock In Silvia Ghilezan, Herman Geuvers, and Jelena Ivetic, editors, {\em
+  22nd International Conference on Types for Proofs and Programs (TYPES 2016)},
+  volume~97 of {\em Leibniz International Proceedings in Informatics (LIPIcs)},
+  pages 5:1--5:31, Dagstuhl, Germany, 2018. Schloss Dagstuhl -- Leibniz-Zentrum
+  f{\"u}r Informatik.
+
+\bibitem{bentzen2019what}
+Bruno Bentzen.
+\newblock What types should not be.
+\newblock {\em Philosophia Mathematica}, 28(1):60--76, 2020.
+
+\bibitem{bentzen2025iep}
+Bruno Bentzen.
+\newblock Intuitionism in mathematics.
+\newblock In James Fieser and Bradley Dowden, editors, {\em The {Internet}
+  Encyclopedia of Philosophy}. 2025.
+
+\bibitem{cube}
+Bruno Bentzen.
+\newblock Cube.
+\newblock URL \url{https://github.com/bbentzen/cube}, 2026.
+\newblock Experimental proof assistant for cubical type theory with proof
+  irrelevance. Originally named ``Cubo''.
+
+\bibitem{bentzen2026book}
+Bruno Bentzen.
+\newblock {\em Philosophical type theory}, volume~68 of {\em Logic,
+  Epistemology, and the Unity of Science}.
+\newblock Springer, Cham, 202x.
+
+\bibitem{bickford2018computability}
+Mark Bickford, Liron Cohen, Robert~L Constable, and Vincent Rahli.
+\newblock Computability beyond church-turing via choice sequences.
+\newblock In {\em Proceedings of the 33rd Annual {ACM/IEEE} Symposium on Logic
+  in Computer Science}, pages 245--254, New York, NY, USA, 2018. ACM.
+
+\bibitem{bishop1967foundations}
+Errett Bishop.
+\newblock {\em Foundations of Constructive Analysis}.
+\newblock Academic Press, New York, 1967.
+
+\bibitem{nuprl}
+R.~L. Constable, S.~F. Allen, H.~M. Bromley, W.~R. Cleaveland, J.~F. Cremer,
+  R.~W. Harper, D.~J. Howe, T.~B. Knoblock, N.~P. Mendler, P.~Panangaden, J.~T.
+  Sasaki, and S.~F Smith.
+\newblock {\em Implementing Mathematics with The Nuprl Proof Development
+  System}.
+\newblock Prentice-Hall, 1985.
+
+\bibitem{constable2009computational}
+Robert~L. Constable.
+\newblock Computational type theory.
+\newblock {\em Scholarpedia}, 4(2):7618, 2009.
+
+\bibitem{constable2020continuum}
+Robert~L Constable.
+\newblock Computational complexity and brouwer’s continuum, 2020.
+\newblock Unpublished note.
+
+\bibitem{istari}
+Karl Crary.
+\newblock {The Istari proof assistant}.
+\newblock URL \url{https://istarilogic.org}, 2025.
+
+\bibitem{hickey2001metaprl}
+Jason~J. Hickey.
+\newblock {\em The MetaPRL Logical Programming Environment}.
+\newblock PhD thesis, Cornell University, Ithaca, NY, 2001.
+
+\bibitem{jonprl}
+Vincent~Rahli Jonathan~Sterling, Daniel~Gratzer.
+\newblock Jonprl.
+\newblock URL \url{https://github.com/jonsterling/JonPRL}, 2018.
+\newblock An proof refinement logic for computational type theory. Inspired by
+  Nuprl.
+
+\bibitem{kreitz2023answer}
+Christoph Kreitz.
+\newblock {Answer to ``What is the state of Nuprl and Extensional Type
+  Theory?", Proof Assistants Stack Exchange}.
+\newblock Licensed under CC BY-SA 3.0.
+
+\bibitem{ladymanpresnell2017hottfoundation}
+James Ladyman and Stuart Presnell.
+\newblock Does homotopy type theory provide a foundation for mathematics?
+\newblock {\em The British Journal for the Philosophy of Science}, 69(2), 2016.
+
+\bibitem{linnebo2011category}
+{\O}ystein Linnebo and Richard Pettigrew.
+\newblock Category theory as an autonomous foundation.
+\newblock {\em Philosophia Mathematica}, 19(3):227--254, 2011.
+
+\bibitem{martinlof1982constructive}
+Per Martin-L{\"o}f.
+\newblock Constructive mathematics and computer programming.
+\newblock In {\em Logic, methodology and philosophy of science, {VI}
+  ({H}annover, 1979)}, volume 104 of {\em Stud. Logic Found. Math.}, pages
+  153--175. North-Holland, Amsterdam, 1982.
+
+\bibitem{demoura2021lean}
+Leonardo~de Moura and Sebastian Ullrich.
+\newblock The {Lean 4} theorem prover and programming language.
+\newblock In {\em International Conference on Automated Deduction}, pages
+  625--635. Springer, 2021.
+
+\bibitem{norell2009agda}
+Ulf Norell.
+\newblock {\em Dependently Typed Programming in {Agda}}, pages 230--266.
+\newblock Springer Berlin Heidelberg, Berlin, Heidelberg, 2009.
+
+\bibitem{rahli2017bar}
+Vincent Rahli, Mark Bickford, and Robert~L Constable.
+\newblock Bar induction: The good, the bad, and the ugly.
+\newblock In {\em 2017 32nd Annual ACM/IEEE Symposium on Logic in Computer
+  Science (LICS)}, pages 1--12. IEEE, 2017.
+
+\bibitem{sterling2015typetheory}
+Jonathan Sterling.
+\newblock Type theory and its meaning explanations.
+\newblock Unpublished note, 2015.
+
+\bibitem{sterling2019xtt}
+Jonathan Sterling, Carlo Angiuli, and Daniel Gratzer.
+\newblock {Cubical Syntax for Reflection-Free Extensional Equality}, 2019.
+
+\bibitem{troelstravandalen1988constructivism}
+Anne~S. Troelstra and Dirk van Dalen.
+\newblock {\em Constructivism in mathematics. Vol. I}, volume 121 of {\em
+  Studies in Logic and the Foundations of Mathematics}.
+\newblock North-Holland, Amsterdam, 1988.
+
+\end{thebibliography}

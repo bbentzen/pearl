@@ -1,0 +1,253 @@
+\usepackage[LGR,T1]{fontenc}
+\usepackage[toc,page]{appendix} 	% appendices
+\usepackage{mathptmx}
+\usepackage{mathtools,amssymb,amsthm,amsfonts,amsmath}
+\usepackage{enumerate} 	
+\usepackage{float}
+\usepackage[shortlabels]{enumitem}			
+\usepackage[hidelinks]{hyperref} 	
+\usepackage{bussproofs}				% proof trees
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{authblk} % for affiliation
+\usepackage{enumerate} % roman enumeration
+\usepackage[hidelinks]{hyperref} % hyperref without ugly box borders
+\usepackage{cleveref} % for cross-referencing
+\usepackage{textgreek}				% greek letters
+\usepackage{chngcntr}				% continuous section numbers
+
+\allowdisplaybreaks
+
+\newcommand{\red}[1]{{\color{red} #1}}
+
+\newcommand{\textgreek}[1]{\begingroup\fontencoding{LGR}\selectfont#1\endgroup}
+
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n} % for regular mathcal font
+
+
+%\usepackage[
+%	paperwidth=6.10in,
+%	paperheight=9.25in,
+%	left=1.0in,
+%	right=1.0in,
+%	top=1.0in,
+%	bottom=1.0in,
+%]{geometry}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}{Remark}
+\newtheorem{exercise}[theorem]{Exercise}
+
+
+%
+%
+%\usepackage{parskip}
+%\setlength{\parskip}{\baselineskip}
+%%\setlength{\parskip}{2em}
+%\linespread{1.20} 
+
+\usepackage{stmaryrd} % for llbrackets and rrbrackets
+
+\usepackage[table,dvipsnames]{xcolor}
+
+\usepackage{tikz-cd}
+\usetikzlibrary{patterns}
+\tikzcdset{every label/.append style = {font = \small}} %changes label size
+\usetikzlibrary{decorations.markings}
+
+\usepackage{setspace}				% for spacing
+
+% my commands
+
+\renewcommand{\phi}{\varphi}
+
+\newcommand{\J}{\mathcal{J}}
+
+\newcommand{\gga}{\textit{Grundgesetze}}
+\newcommand{\bs}{{\it Begriffsschrift}}
+\newcommand{\gla}{\textit{Grundlagen}}
+\newcommand{\wiss}{\textit{Wissenschaftslehre}}
+\newcommand{\zfc}{\textsf{ZF}}
+
+\newcommand{\LU}{\textit{Logische Untersuchungen}}
+\newcommand{\FuB}{\textit{Funktion und Begriff}}
+
+
+
+\newcommand{\prop}{\> \mathsf{prop}}
+\newcommand{\type}{\> \mathsf{type}}
+\newcommand{\true}{\> \mathsf{true}}
+\newcommand{\val}{\> \mathsf{val}}
+\newcommand{\ctx}{\> \mathsf{ctx}}
+\newcommand{\pitype}[1]{\Pi_{(#1)}}
+\newcommand{\funtype}[2]{#1\to#2}
+\newcommand{\infuntype}[2]{(#1\to#2)}
+
+\newcommand{\hypjdg}[2]{#1 \gg #2} %{#2 \; (#1)}
+
+\newcommand{\fun}[1]{\lambda #1.}
+
+\newcommand{\app}{\mathsf{app}}
+\newcommand{\void}{\mathsf{void}}
+\newcommand{\unit}{\mathsf{unit}}
+\renewcommand{\succ}{\mathsf{s}}
+
+\newcommand{\expr}{\mathsf{expr}}
+\newcommand{\var}{\mathsf{var}}
+
+\newcommand{\bool}{\mathsf{bool}}
+
+
+\newcommand{\nat}{\mathsf{nat}}%{\mathbb{N}}
+\newcommand{\zero}{\mathsf{0}}
+\newcommand{\W}{\mathsf{W}} %\mathsf{nat}
+%\newcommand{\natrec}{\mathsf{natrec}}
+
+
+%\newcommand{\refl}{\mathsf{refl}}
+\newcommand{\eqrec}{\mathsf{eqrec}}
+\newcommand{\shouldsf}[1]{#1}
+
+\renewcommand{\tt}{\mathsf{true}}
+\newcommand{\ff}{\mathsf{false}}
+\newcommand{\ite}[4]{\mathsf{ite}(#1, #2, #3)} 
+
+
+\newcommand{\plus}{\mathsf{+}}
+
+\newcommand{\pair}[2]{\mathsf{pair}({#1,#2})}%{\langle #1,#2 \rangle}
+\newcommand{\fst}[1]{\textsf{fst}(#1)}
+\newcommand{\snd}[1]{\textsf{snd}(#1)}
+\newcommand{\spread}[2]{\textsf{spread}(#1, #2)}
+\newcommand{\inl}[1]{\textsf{inl}(#1)}
+\newcommand{\inr}[1]{\textsf{inr}(#1)}
+\newcommand{\case}[3]{\textsf{case}(#1, #2, #3)}
+\newcommand{\abort}[1]{\textsf{abort}(#1)}
+%\newcommand{\spread}[2]{\textsf{spread}(#1, #2)}
+
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\urec}[4]{\mathsf{urec}(#1, #2, #3)} 
+
+\newcommand{\wrec}[4]{\mathsf{wrec}(#1, #2, #3)} 
+\renewcommand{\sup}[2]{\mathsf{sup}(#1, #2)}
+
+\renewcommand{\succ}[1]{\mathsf{s}(#1)}
+%\renewcommand{\succop}{\mathsf{s}}
+\newcommand{\natrec}[4]{\mathsf{rec}(#1, #2, #3)} 
+\newcommand{\natrecop}{\mathsf{rec}} 
+%\newcommand{\reflop}[1]{\mathsf{refl}(#1)}
+\newcommand{\idrec}[5]{\mathsf{J}(#1, #2, #3, #4)} %{\mathsf{idrec}_{#5}(#1, #2, #3, #4)}
+\newcommand{\refl}{\mathsf{refl}}
+\newcommand{\subs}[2]{[#1/#2]}
+%\newcommand{\idtype}[3]{\textsf{Id}(#1, #2, #3)} %{#2 =_{#1} #3}
+\newcommand{\idtype}[3]{#2 =_{#1} #3}
+
+\newcommand{\univ}[1]{\mathcal{#1}}
+\newcommand*\sq{\mathbin{\vcenter{\hbox{\rule{.3ex}{.3ex}}}}}
+\newcommand{\ua}{\mathsf{ua}}
+\newcommand{\idtoeqv}{\mathsf{idtoeqv}}
+
+\newcommand{\ucircle}{\mathsf{S}^1}
+\newcommand{\base}{\mathsf{base}}
+\newcommand{\uloop}{\mathsf{loop}}
+
+%% Hyphenation
+
+\tolerance=5000
+\emergencystretch=\maxdimen
+\hyphenpenalty=5000 
+\hbadness=10000
+
+% Footnote
+
+\renewcommand*\footnoterule{}
+\setlength{\skip\footins}{1.5pc plus 5pt minus 2pt}
+
+% Notations
+
+\DeclareFontFamily{U}{matha}{\hyphenchar\font45}
+\DeclareFontShape{U}{matha}{m}{n}{
+	<5> <6> <7> <8> <9> <10> gen * matha
+	<10.95> matha10 <12> <14.4> <17.28> <20.74> <24.88> matha12
+}{}
+\DeclareSymbolFont{matha}{U}{matha}{m}{n}
+
+\DeclareMathSymbol{\supvar}{3}{matha}{"81} % inspired by https://tex.stackexchange.com/questions/14386/importing-a-single-symbol-from-a-different-font
+
+\newcommand{\impl}{\supvar}
+
+\DeclareMathSymbol{\mhyphen}{\mathord}{AMSa}{"39}
+
+\newcommand{\onetoone}{~1\mhyphen 1~}
+
+\usepackage{xcolor,listings}
+\usepackage{doc}
+
+\definecolor{keywordcolor}{rgb}{0.5, 0.3, 0.7}   % amethyst
+\definecolor{tacticcolor}{rgb}{0.0, 0.1, 0.6}    % blue
+\definecolor{commentcolor}{rgb}{0.4, 0.4, 0.4}   % grey
+\definecolor{symbolcolor}{rgb}{1.2, 0.4, 0.1}    % orange
+\definecolor{sortcolor}{rgb}{0.1, 0.5, 0.1}      % green
+\definecolor{attributecolor}{rgb}{0.7, 0.1, 0.1} % red
+
+\newenvironment{proofsk}{\noindent\textit{Proof (Sketch).}}{\hfill$\square \\$}
+
+\newcommand{\simnot}{\mathord{\sim}}
+
+\definecolor{darkgreen}{rgb}{0.18,0.54,0.34}
+\definecolor{darkpink}{rgb}{0.75,0.25,0.5}
+
+\makeatletter
+\lst@InputCatcodes
+\def\lst@DefEC{%
+	\lst@CCECUse \lst@ProcessLetter
+	^^80^^81^^82^^83^^84^^85^^86^^87^^88^^89^^8a^^8b^^8c^^8d^^8e^^8f%
+	^^90^^91^^92^^93^^94^^95^^96^^97^^98^^99^^9a^^9b^^9c^^9d^^9e^^9f%
+	^^a0^^a1^^a2^^a3^^a4^^a5^^a6^^a7^^a8^^a9^^aa^^ab^^ac^^ad^^ae^^af%
+	^^b0^^b1^^b2^^b3^^b4^^b5^^b6^^b7^^b8^^b9^^ba^^bb^^bc^^bd^^be^^bf%
+	^^c0^^c1^^c2^^c3^^c4^^c5^^c6^^c7^^c8^^c9^^ca^^cb^^cc^^cd^^ce^^cf%
+	^^d0^^d1^^d2^^d3^^d4^^d5^^d6^^d7^^d8^^d9^^da^^db^^dc^^dd^^de^^df%
+	^^e0^^e1^^e2^^e3^^e4^^e5^^e6^^e7^^e8^^e9^^ea^^eb^^ec^^ed^^ee^^ef%
+	^^f0^^f1^^f2^^f3^^f4^^f5^^f6^^f7^^f8^^f9^^fa^^fb^^fc^^fd^^fe^^ff%
+	^^^^0393^^^^2081^^^^2082^^^^2208^^^^03c3%
+	^^^^2113^^^^2192^^^^03a0^^^^03bb%          <-- NEW
+	^^00}
+\lst@RestoreCatcodes
+\makeatother
+
+\lstdefinestyle{pearl}{
+	inputencoding=utf8,
+	extendedchars=true,
+	belowcaptionskip=1\baselineskip,
+	breaklines=true,
+	mathescape=true,
+	keywordstyle=[1]{\ttfamily\color{keywordcolor}},
+	keywordstyle=[2]{\ttfamily\color{sortcolor}},
+	keywordstyle=[3]{\ttfamily\color{tacticcolor}},
+	keywordstyle=[4]{\ttfamily\color{attributecolor}},
+	commentstyle=\color{blue}\textit,
+	stringstyle=\color{pink}\ttfamily,
+	basicstyle=\footnotesize\ttfamily,
+	showstringspaces=false,
+	identifierstyle={\color{black}}, 
+	%
+	literate=*
+	{|}{{{\color{darkgreen}$|$}}}{1}
+	{ℓ}{{{\color{darkgreen}$\ell$}}}{1}
+	{→}{{{\color{darkgreen}$\to$}}}{1}
+	{Π}{{{\color{black}$\Pi$}}}{1}
+	{λ}{{{\color{black}$\lambda$}}}{1}
+	{:}{{{\color{darkgreen}:}}}{1}
+	{=}{{{\color{darkgreen}=\;}}}{1}
+	{[}{{{\color{darkgreen}[}}}{1}
+	{]}{{{\color{darkgreen}]}}}{1}
+	{sigma}{{{\color{black}$\sigma$}}}{1}
+	{.7}{{{\color{red}.7}}}{2},%
+	%
+	morekeywords={prefix,inductive,reflect,import,eval,infer,universe,print,definition,def,lemma,lem,thm,theorem,type,attribute}
+}

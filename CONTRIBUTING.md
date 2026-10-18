@@ -8,17 +8,16 @@ Pearl is written by human beings for human use and built on the convictions shar
 
 Here are some items on our TODO list:
 
+- Introduce Quotients types
 - Delay unification (in progress)
 - Clearly separate elaboration, checking, and look for global identifier conflict when opening a binder only at elaboration stage
-- Fix universe polymorphism bug when universe level occurs in proof
 - Improve stack overflow error at synthetization attempts
-- Do not automatically unfold terms tagged as theorem or as lemma
 - Expand the library with more formalized math for testing strengths and limits
-- Add structures
-- Let-in local definitions
-- Introduce Quotients types
-- Opening of modules for referring to module.foo as foo
 - Wildcard printing: user should not see inductive data as part of context when _ is entered in a proof (remove ind@ctx hack)
+- Pretty print user-named definitions 
 - Pretty print numbers in applied exprs (but not as levels) as sss...s0, e.g 2 as ss0
 - Publish VS Code extension
-- Proper readthedocs documentation
+- Add structures
+- Let-in local definitions
+- Opening of modules for referring to module.foo as foo
+- Better documentation
