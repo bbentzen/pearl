@@ -22,8 +22,9 @@ let solve_meta_application args vars body = function
         let v1 = Expr.init_fresh vars in
         Lam (v1, build_lam (vars + 1) (Expr.shift 1 0 body) args)
     in
-    if Placeholder.has_placeholder_name n body then None else 
-      Some (build_lam vars body args)
+    if Placeholder.has_placeholder_name n body then None else
+      let solved = build_lam vars body args in
+      (Hashtbl.add Data.meta_store n { Data.solution = solved}; Some solved)
   | _ -> None
 
 (* Checks whether the type of a given expression is the given type *)
@@ -617,6 +618,25 @@ and unify env ctx lvl lc sl vars x lift =
           end
         end
       
+      | App (e1, e2), e', _ | e', App (e1, e2), _ ->
+        (* Check for metavariable application *)
+        let head, args = Eval.break_args [] (App (e1, e2)) in
+        begin match solve_meta_application args vars e' head with
+        | Some s -> Ok s
+        | None -> 
+          (* As a last resort we zonk and check their values again *)
+          let se' = Placeholder.solve [] e' in
+          let se1 = Placeholder.solve [] e1 and se2 = Placeholder.solve [] e2 in
+          if e1 = se1 && e2 = se2 && e' = se' then
+            Error ((App (e1, e2), e'), Msg.app_mixed_unify e1 e2 e')
+          else
+            let e = eval (App (se1, se2)) and e' = eval se' in
+            begin match unify env ctx lvl lc sl vars (e, e', ty) lift with
+            | Ok e -> Ok e
+            | Error (_, msg) -> Error ((e, e'), Msg.app_mixed_unify_zonk e e' msg)
+            end
+        end
+
       | e , e', _ ->
         (* As a last resort we zonk and check their values again *)
         let e1 = Placeholder.solve [] e in

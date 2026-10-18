@@ -155,6 +155,15 @@ let app_unify_fallback e1 e2 e1' e2' msg =
   "Failed to unify the applications " ^ Pretty.printf (App (e1, e2)) ^ 
               " and " ^ Pretty.printf (App (e1', e2')) ^ ". " ^ msg
 
+let app_mixed_unify e1 e2 e' =
+  "Failed to solve the metavariables needed to unify " ^ Pretty.printf (App (e1, e2)) ^ 
+  " with " ^ Pretty.printf e' ^ ". "
+
+let app_mixed_unify_zonk e e' msg =
+  "Failed to solve the metavariables needed to unify " ^ Pretty.printf e ^ 
+  " with " ^ Pretty.printf e' ^ " after multiple substitutions. " ^ msg
+
+
 let app_unify_arg e2 h1 msg =
   "Failed to check that " ^ Pretty.printf e2 ^ " has type " ^ Pretty.printf h1 ^ ".\n" ^ msg
 

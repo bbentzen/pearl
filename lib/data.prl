@@ -4,9 +4,8 @@
  * Author: Bruno Bentzen
  */
 
-/* import ./data/sigma.prl */
-/* import ./data/nat.prl */
+import ./data/sigma.prl
+import ./data/nat.prl
 import ./data/sum.prl
-import ./data/unit.prl 
-import ./data/bool.prl 
-/* import ./data/eq.prl */
+import ./data/unit.prl
+import ./data/bool.prl

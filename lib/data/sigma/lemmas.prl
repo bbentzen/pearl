@@ -19,10 +19,10 @@ def prod_swap {A B : type ℓ} :
   (A × B) → (B × A) :=
 λ w, (snd w, fst w)
 
-/* def prod_assoc {A B C : type ℓ} :
+def prod_assoc {A B C : type ℓ} :
   A × B × C ↔ (A × B) × C :=
 (λ w, ((fst w, fst (snd w)), snd (snd w)),
- λ w, (fst (fst w), (snd (fst w), snd w))) */
+ λ w, (fst (fst w), (snd (fst w), snd w)))
 
 def prod_distrib_fst {A B C : type ℓ} :
   ((A → C) × (B → C)) → ((A × B) → C) :=
