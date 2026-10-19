@@ -40,25 +40,6 @@ However, we recommend using the pearl-vscode extension for verification support.
 
 Please see the reference manual on [doc/README.md](https://github.com/bbentzen/pearl/blob/main/doc/README.md).
 
-## AI Statement
-
-We firmly believe that mathematics is built on the exercise of human judgment [[1](#BEN27), §6]. This has been embraced as a core tenet of mathematical constructivism by Brouwer and Bishop from the very beginning [[6](#BEN24)] long before mathematicians became aware of the serious threats presently posed by AI. We are fully committed to the preservation of human understanding without any relevant use of AI-generative tools. In fact, the spirit of our computational view of type theory is most beautifully expressed in Bishop's words:
-
-> Mathematics that has computational meaning may require the exercise
-of judgment before that meaning is discharged. Whether a given rule
-generates a constructively deﬁned sequence of integers [...] require[s]
-judgment. If the judgment is not unanimous, either the mathematics is
-bad or the judgment of at least one of the judges is bad. This is the dif-
-ference between man and the presently available computers: We exercise
-judgment, and the computers do not. Because the computer is lacking in
-judgment, the theorems of constructive mathematics do not in general
-represent computer programs. They represent person programs, which in
-some instances can be transformed into computer programs and in other
-instances cannot. [[7](BIS67), pp. 354–355]
-
-
-
-
 ## Support
 
 This work was partly supported by the US Air Force Office of Scientific Research (AFOSR) grant FA9550-18-1-0120. Any opinions, findings and conclusions, or recommendations expressed in this material are those of the author and do not necessarily reflect the views of the AFOSR.
@@ -87,9 +68,3 @@ Oxford, UK, 7th July 2018., pages 1–10, 2018. URL: 10.4204/EPTCS.274.1. URL [h
 
 <a name="Andromeda">[5]</a>
 Andrej Bauer, Gaëtan Gilbert, Philipp Haselwarter, Matija Pretnar, and Christopher A. Stone. Design and implementation of the Andromeda proof assistant. TYPES, 2016. URL [http://www.types2016.uns.ac.rs/images/abstracts/bauer2.pdf](http://www.types2016.uns.ac.rs/images/abstracts/bauer2.pdf).
-
-<a name="BEN24">[6]</a>
-An intuitionistic interpretation of Bishop's philosophy. Philosophia Mathematica, 32(3), pp. 307–331, 2024. URL [https://doi.org/10.1093/philmat/nkae015](https://philpapers.org/archive/BENAII-2.pdf)
-
-<a name="BIS67">[7]</a>
-Bishop, Errett. Foundations of Constructive Analysis. New York: McGraw-Hill. 1967

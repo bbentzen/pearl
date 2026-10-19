@@ -2,6 +2,20 @@ We very much welcome contribution from human authors of all forms, including fee
 
 ## AI Use Guidelines
 
+We firmly believe that mathematics is built on the exercise of human judgment. This has been embraced as a core tenet of mathematical constructivism by Brouwer and Bishop from the very beginning long before mathematicians became aware of the serious threats presently posed by AI. We are fully committed to the preservation of human understanding without any relevant use of AI-generative tools. In fact, the spirit of our computational view of type theory is most beautifully expressed in Bishop's words:
+
+> Mathematics that has computational meaning may require the exercise
+of judgment before that meaning is discharged. Whether a given rule
+generates a constructively deﬁned sequence of integers [...] require[s]
+judgment. If the judgment is not unanimous, either the mathematics is
+bad or the judgment of at least one of the judges is bad. This is the dif-
+ference between man and the presently available computers: We exercise
+judgment, and the computers do not. Because the computer is lacking in
+judgment, the theorems of constructive mathematics do not in general
+represent computer programs. They represent person programs, which in
+some instances can be transformed into computer programs and in other
+instances cannot. [Foundations of constructive analysis, pp. 354–355]
+
 Pearl is written by human beings for human use and built on the convictions shared by Brouwer and Bishop that mathematics is a human activity. The practice of so-called "vibe coding" can undermine this vision and be highly detrimental to human understanding. As a first step, we encourage contributors to abide by the recommendations of the [AHM](https://www.ahmath.org/) and [AGMAI](https://agmai.org/) to protect human mathematics. Our rule of thumb is as follows: while low-impact use of AI for basic technical assistance and proofreading can be barely tolerated if they do not impact the human programming experience, contributors should explicitly acknowledge any further use and will only publish code that they are fully capable of producing on their own. 
 
 ## Desired features
@@ -20,4 +34,4 @@ Here are some items on our TODO list:
 - Add structures
 - Let-in local definitions
 - Opening of modules for referring to module.foo as foo
-- Better documentation
+- Better documentation (in progress)
