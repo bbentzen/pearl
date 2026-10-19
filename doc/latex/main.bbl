@@ -6,23 +6,27 @@ Carlo Angiuli, Evan Cavallo, Kuen-Bang Hou~(Favonia), Robert Harper, and
 \newblock The {RedPRL} proof assistant (invited paper).
 \newblock {\em Electronic Proceedings in Theoretical Computer Science},
   274:1--10, 2018.
+\newblock URL: \url{http://dx.doi.org/10.4204/EPTCS.274.1}.
 
 \bibitem{angiuli2018meaning}
 Carlo Angiuli and Robert Harper.
 \newblock Meaning explanations at higher dimension.
 \newblock {\em Indagationes Mathematicae}, 29(1):135--149, 2018.
+\newblock URL: \url{https://doi.org/10.1016/j.indag.2017.07.010}.
 
 \bibitem{angiuli2017chdtt}
 Carlo Angiuli, Robert Harper, and Todd Wilson.
 \newblock Computational higher-dimensional type theory.
 \newblock {\em Proceedings of the 44th Annual ACM SIGPLAN-SIGACT Symposium on
   Principles of Programming Languages, POPL '17}, 52(1):680--693, 2017.
+\newblock URL: \url{https://www.cs.cmu.edu/~cangiuli/papers/chtt.pdf}.
 
 \bibitem{barras1997coq}
 Bruno Barras, Samuel Boutin, Cristina Cornes, Judica{\"e}l Courant,
   Jean-Christophe Filliatre, Eduardo Gimenez, Hugo Herbelin, Gerard Huet, Cesar
   Munoz, Chetan Murthy, et~al.
 \newblock {The Coq proof assistant reference manual: Version 6.1}, 1997.
+\newblock URL: \url{https://inria.hal.science/inria-00069968}.
 
 \bibitem{bauer2018design}
 Andrej Bauer, Ga\"{e}tan Gilbert, Philipp~G. Haselwarter, Matija Pretnar, and
@@ -33,36 +37,41 @@ Andrej Bauer, Ga\"{e}tan Gilbert, Philipp~G. Haselwarter, Matija Pretnar, and
   volume~97 of {\em Leibniz International Proceedings in Informatics (LIPIcs)},
   pages 5:1--5:31, Dagstuhl, Germany, 2018. Schloss Dagstuhl -- Leibniz-Zentrum
   f{\"u}r Informatik.
+\newblock URL: \url{https://doi.org/10.4230/LIPIcs.TYPES.2016.5}.
 
 \bibitem{bentzen2019what}
 Bruno Bentzen.
 \newblock What types should not be.
 \newblock {\em Philosophia Mathematica}, 28(1):60--76, 2020.
+\newblock URL: \url{https://doi.org/10.1093/philmat/nkz014}.
 
 \bibitem{bentzen2025iep}
 Bruno Bentzen.
 \newblock Intuitionism in mathematics.
 \newblock In James Fieser and Bradley Dowden, editors, {\em The {Internet}
   Encyclopedia of Philosophy}. 2025.
+\newblock URL: \url{https://iep.utm.edu/intuitionism-math}.
 
 \bibitem{cube}
 Bruno Bentzen.
-\newblock Cube.
-\newblock URL \url{https://github.com/bbentzen/cube}, 2026.
+\newblock Cube, 2026.
 \newblock Experimental proof assistant for cubical type theory with proof
   irrelevance. Originally named ``Cubo''.
+\newblock URL: \url{https://github.com/bbentzen/cube}.
 
 \bibitem{bentzen2026book}
 Bruno Bentzen.
 \newblock {\em Philosophical type theory}, volume~68 of {\em Logic,
   Epistemology, and the Unity of Science}.
 \newblock Springer, Cham, 202x.
+\newblock URL: \url{https://link.springer.com/book/9783032419392}.
 
 \bibitem{bickford2018computability}
 Mark Bickford, Liron Cohen, Robert~L Constable, and Vincent Rahli.
 \newblock Computability beyond church-turing via choice sequences.
 \newblock In {\em Proceedings of the 33rd Annual {ACM/IEEE} Symposium on Logic
   in Computer Science}, pages 245--254, New York, NY, USA, 2018. ACM.
+\newblock URL: \url{10.1145/3209108.3209200}.
 
 \bibitem{bishop1967foundations}
 Errett Bishop.
@@ -76,49 +85,73 @@ R.~L. Constable, S.~F. Allen, H.~M. Bromley, W.~R. Cleaveland, J.~F. Cremer,
 \newblock {\em Implementing Mathematics with The Nuprl Proof Development
   System}.
 \newblock Prentice-Hall, 1985.
+\newblock URL: \url{https://www.nuprl.org/book/}.
 
 \bibitem{constable2009computational}
 Robert~L. Constable.
 \newblock Computational type theory.
 \newblock {\em Scholarpedia}, 4(2):7618, 2009.
+\newblock URL: \url{http://dx.doi.org/10.4249/scholarpedia.7618}.
 
 \bibitem{constable2020continuum}
 Robert~L Constable.
 \newblock Computational complexity and brouwer’s continuum, 2020.
 \newblock Unpublished note.
+\newblock URL:
+  \url{https://nuprl-web.cs.cornell.edu/documents/Constable/The-Continuum.pdf}.
 
 \bibitem{istari}
 Karl Crary.
-\newblock {The Istari proof assistant}.
-\newblock URL \url{https://istarilogic.org}, 2025.
+\newblock The {Istari} proof assistant, 2025.
+\newblock URL: \url{https://istarilogic.org}.
+
+\bibitem{dybjer2012program}
+Peter Dybjer.
+\newblock Program testing and the meaning explanations of intuitionistic type
+  theory.
+\newblock In Peter Dybjer, Sten Lindström, Erik Palmgren, and Göran Sundholm,
+  editors, {\em Epistemology versus Ontology}, pages 215--241. Springer, 2012.
+\newblock URL: \url{https://doi.org/10.1007/978-94-007-4435-6_11}.
 
 \bibitem{hickey2001metaprl}
 Jason~J. Hickey.
 \newblock {\em The MetaPRL Logical Programming Environment}.
 \newblock PhD thesis, Cornell University, Ithaca, NY, 2001.
+\newblock URL: \url{https://dl.acm.org/doi/book/10.5555/932618}.
 
 \bibitem{jonprl}
 Vincent~Rahli Jonathan~Sterling, Daniel~Gratzer.
-\newblock Jonprl.
-\newblock URL \url{https://github.com/jonsterling/JonPRL}, 2018.
+\newblock Jonprl, 2018.
 \newblock An proof refinement logic for computational type theory. Inspired by
   Nuprl.
+\newblock URL: \url{https://github.com/jonsterling/JonPRL}.
 
 \bibitem{kreitz2023answer}
 Christoph Kreitz.
 \newblock {Answer to ``What is the state of Nuprl and Extensional Type
   Theory?", Proof Assistants Stack Exchange}.
 \newblock Licensed under CC BY-SA 3.0.
+\newblock URL: \url{https://proofassistants.stackexchange.com/q/2346/1048}.
+
+\bibitem{kreitz2002nuprl}
+Christoph Kreitz.
+\newblock The nuprl proof development system, version 5: Reference manual and
+  user’s guide.
+\newblock {\em Department of Computer Science, Cornell University}, 10, 2002.
+\newblock URL:
+  \url{https://www.cs.cornell.edu/info/people/kreitz/PDF/02cucs-NuprlManual.pdf}.
 
 \bibitem{ladymanpresnell2017hottfoundation}
 James Ladyman and Stuart Presnell.
 \newblock Does homotopy type theory provide a foundation for mathematics?
 \newblock {\em The British Journal for the Philosophy of Science}, 69(2), 2016.
+\newblock URL: \url{https://doi.org/10.1093/bjps/axw006}.
 
 \bibitem{linnebo2011category}
 {\O}ystein Linnebo and Richard Pettigrew.
 \newblock Category theory as an autonomous foundation.
 \newblock {\em Philosophia Mathematica}, 19(3):227--254, 2011.
+\newblock URL: \url{https://doi.org/10.1093/philmat/nkr024}.
 
 \bibitem{martinlof1982constructive}
 Per Martin-L{\"o}f.
@@ -126,37 +159,52 @@ Per Martin-L{\"o}f.
 \newblock In {\em Logic, methodology and philosophy of science, {VI}
   ({H}annover, 1979)}, volume 104 of {\em Stud. Logic Found. Math.}, pages
   153--175. North-Holland, Amsterdam, 1982.
+\newblock URL: \url{https://doi.org/10.1016/S0049-237X(09)70189-2}.
 
 \bibitem{demoura2021lean}
 Leonardo~de Moura and Sebastian Ullrich.
 \newblock The {Lean 4} theorem prover and programming language.
 \newblock In {\em International Conference on Automated Deduction}, pages
   625--635. Springer, 2021.
+\newblock URL: \url{https://doi.org/10.1007/978-3-030-79876-5_37}.
 
 \bibitem{norell2009agda}
 Ulf Norell.
 \newblock {\em Dependently Typed Programming in {Agda}}, pages 230--266.
 \newblock Springer Berlin Heidelberg, Berlin, Heidelberg, 2009.
+\newblock \href {https://doi.org/10.1007/978-3-642-04652-0_5}
+  {\path{doi:10.1007/978-3-642-04652-0_5}}.
 
 \bibitem{rahli2017bar}
 Vincent Rahli, Mark Bickford, and Robert~L Constable.
 \newblock Bar induction: The good, the bad, and the ugly.
 \newblock In {\em 2017 32nd Annual ACM/IEEE Symposium on Logic in Computer
   Science (LICS)}, pages 1--12. IEEE, 2017.
+\newblock URL:
+  \url{https://vrahli.github.io/articles/bar-induction-lics-short.pdf}.
 
 \bibitem{sterling2015typetheory}
 Jonathan Sterling.
 \newblock Type theory and its meaning explanations.
 \newblock Unpublished note, 2015.
+\newblock URL: \url{https://arxiv.org/abs/1512.01837}.
 
 \bibitem{sterling2019xtt}
 Jonathan Sterling, Carlo Angiuli, and Daniel Gratzer.
 \newblock {Cubical Syntax for Reflection-Free Extensional Equality}, 2019.
+\newblock \href {https://doi.org/10.4230/LIPIcs.FSCD.2019.31}
+  {\path{doi:10.4230/LIPIcs.FSCD.2019.31}}.
 
 \bibitem{troelstravandalen1988constructivism}
 Anne~S. Troelstra and Dirk van Dalen.
 \newblock {\em Constructivism in mathematics. Vol. I}, volume 121 of {\em
   Studies in Logic and the Foundations of Mathematics}.
 \newblock North-Holland, Amsterdam, 1988.
+
+\bibitem{hottbook}
+{UFP (The Univalent Foundations Program)}.
+\newblock {\em Homotopy Type Theory: Univalent Foundations of Mathematics}.
+\newblock Institute for Advanced Study, Princeton, 2013.
+\newblock URL: \url{https://homotopytypetheory.org/book/}.
 
 \end{thebibliography}
