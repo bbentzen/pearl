@@ -107,7 +107,7 @@ Of course, RedPRL~\cite{angiuli2018redprl} remains an excellent alternative, but
 
 %, which are helpful to discuss in detail to better situate the project in the literature
 
-Although inspired by NuPRL, Pearl deviates from it in three important ways. First, it is intended to be consistent with classical reasoning in adherence to Bishop's band of constructivism mathematics~\cite{bishop1967foundations}, while the latest versions of NuPRL~\cite{rahli2017bar, bickford2018computability, constable2020continuum} gradually came to favor the formalization of intuitionistic mathematics, including the accommodation of continuity principles, free choice sequences, and elements of Brouwer's creating subject arguments that prove classically false theorems~\cite{bentzen2025iep}. We see this incompatibility with classical mathematics as a design choice that is orthogonal to the computational view of type theory per se. Indeed, the type theory of Pearl rests on an open-ended ontology of untyped programs~\cite[ \S11]{bentzen2026book}. The law of excluded middle cannot be refuted because we cannot rule out the possibility that an oracle deciding whether any type is inhabitable might find its way as a program. 
+Although inspired by NuPRL, Pearl deviates from it in three important ways. First, it is intended to be consistent with classical reasoning in adherence to Bishop's band of constructivism mathematics~\cite{bishop1967foundations}, while the latest versions of NuPRL~\cite{rahli2017bar, bickford2018computability, constable2020continuum} gradually came to favor the formalization of intuitionistic mathematics, including the accommodation of continuity principles, free choice sequences, and elements of Brouwer's creating subject arguments that prove classically false theorems~\cite{bentzen2025iep}. We see this incompatibility with classical mathematics as a design choice that is orthogonal to the computational view of type theory per se. Indeed, the type theory of Pearl rests on an open-ended ontology of untyped programs~\cite[\S11]{bentzen2026book}. The law of excluded middle cannot be refuted because we cannot rule out the possibility that an oracle deciding whether any type is inhabitable might find its way as a program. 
 
 Second, Pearl operates without a proof refinement logic as NuPRL does. Pearl is designed to get around the difficulties involving accessing truth in the intended interpretation and dealing with undecidability without going too far beyond a proof term language in a style reminiscent of Andromeda~\cite{bauer2018design}. But the latter is based on an explicitly typed language of algebraic effects and handlers intended to accommodate generic theories with user-definable rules of inference. This use of explicit typing and freedom from models is not suitable to computational type theory. In contrast to Andromeda, Pearl is based on a untyped programming language and specifically implements computational type theory with Curry-style types being attributed to programs depending on their computational behavior depending on two opaque term-level operations for reflection and explosion. This allows Pearl to rely on incremental proof construction with no separate tactics language much like Agda~\cite{norell2009agda}. 
 To illustrate this, we note that, in contrast to the usual status of function extensionality as a primitive rule of inference in NuPRL~\cites[p.~179]{nuprl}[A.3.1]{kreitz2002nuprl}, we can prove function extensionality in Pearl using only equality reflection and $\eta$-conversion:
@@ -139,12 +139,16 @@ This hybrid approach is meant to make computational type theory more accessible 
 
 
 %-----------------------------------------------------------------------------------------------------------------
-\section{The type theory of Pearl} \label{sec:typetheory}
+\section{Core language} \label{sec:language}
 %-----------------------------------------------------------------------------------------------------------------
 
-%For a more comprehensive account of the computatonal type theory implemented in Pearl we refer users to \cite[ch.~2]{bentzen2026book}. 
+Pearl is built on a command language for entering proof environments, among others of its many functions, a simple metalanguage for manipulating reflection and explosion on mathematical objects, and finally the object language, an open-ended untyped programming language that defines Pearl's ontology in the style of \cite[\S11]{bentzen2026book}. This object language comes with a syntax and an operational semantics. 
 
-To keep the kernel as small as possible, the type theory of Pearl only runs on built-in type formers for dependent functions, the equality type, the empty type, a cumulative hierarchy of universes à la Russell, and user-defined inductive type families. Pearl's raw language is based on the untyped lambda-calculus extended with constants for type formers and their constructors and eliminators (when they exist). The three dots indicate the possibility of further extension: 
+\subsection{The object language}
+
+The object language is the point of departure of the system. It is based on the untyped lambda-calculus extended with constants for a small selection of type formers and their constructors and eliminators (when they exist). To keep the kernel small in line with the de Bruijn Criterion, Pearl only includes built-in dependent functions, the equality type, the empty type, a cumulative hierarchy of universes à la Russell, and user-defined inductive type families. 
+
+ The three dots indicate the possibility of further extension: 
 %%
 \begin{align*}
 	\mathsf{var} :=\:& {x} \mid {y} \mid {z} \mid \ldots \\ 
@@ -175,7 +179,7 @@ To keep the kernel as small as possible, the type theory of Pearl only runs on b
 	As usual, all free occurrences of `$\mathtt{x}$' in `$\mathtt{M}$' are bound in `$\mathtt{λ x.M}$'. Since bound variables are represented using de Bruijin indices internally, we never
 	distinguish between the choice of bound variables in an expression. To be exact, the syntax of Pearl is based on locally nameless representation.
 	
-	\item Equality type express equality statements as `$M = K N$' or `$\mathtt{eq} K M N$' and its constructor is given by the reflexivity constant `$\mathtt{rfl}$'. As explained in \cite{sterling2015typetheory,bentzen2026book}, there is no need for a constant witnessing its elimination rule from the computational view of type theory: the semantics justifies a more general rule of inference on the level of judgments. This is the so-called reflection rule, which states that when the equality type is inhabited the two expressions are judgmentally equal at their type. When the user types `$\mathtt{reflect M N}$' when proving a theorem and `$M$' realizes an equality type, the elaborator rewrites `$N$' and the current goal so that the terms are syntactically indistinguishable for unification purposes. This is achieved internally using explicit substitutions to keep track of reflected terms.
+	\item Equality type express equality statements as `$M = K\ N$' or `$\mathtt{eq} \ K \ M \ N$' and its constructor is given by the reflexivity constant `$\mathtt{rfl}$'. As explained in \cite{sterling2015typetheory,bentzen2026book}, there is no need for a constant witnessing its elimination rule from the computational view of type theory: the semantics justifies a more general rule of inference on the level of judgments. This is the so-called reflection rule, which states that when the equality type is inhabited the two expressions are judgmentally equal at their type. When the user types `$\mathtt{reflect \ M \ N}$' when proving a theorem and `$M$' realizes an equality type, the elaborator rewrites `$N$' and the current goal so that the terms are syntactically indistinguishable for unification purposes. This is achieved internally using explicit substitutions to keep track of reflected terms.
 	
 	\item Empty type expresses absurdity and empty collections as `$\void$'. This type has no constructors and no eliminators. Again, there is no need for a constant witnessing ex falso. Computationally, explosion is well-justified on the level of judgments. Thus, when the user types `$\mathtt{explode M N}$'  when proving a theorem and `$\mathtt{M}$' realizes the empty type, the elaborator aborts the proof leaving `$\mathtt{N}$' left as its realizer.
 	
@@ -186,7 +190,7 @@ To keep the kernel as small as possible, the type theory of Pearl only runs on b
 
 \section{Usage}
 
-We recommend using the \href{URL}{https://github.com/bbentzen/pearl/tree/main/vscode}{pearl-vscode extension} for verification support. Once you are all set, note that you can use the following commands for inductively defining type families, entering the proof environment, type inference, term evaluation, importing files for the modularizion of proofs, declaring universe levels, and extracting and printing terms from definitions and theorems:
+Interaction with Pearl is best done using the \href{https://github.com/bbentzen/pearl/tree/main/vscode}{pearl-vscode extension} for verification support. Once you are all set, note that you can use the following commands for inductively defining type families, entering the proof environment, type inference, term evaluation, importing files for the modularizion of proofs, declaring universe levels, and extracting and printing terms from definitions and theorems:
 
 \section{Inductive environment}
 
@@ -261,14 +265,6 @@ This extracts and prints the realizer corresponding to a definition or theorem w
 \begin{lstlisting}[style=pearl]
 print [name]
 \end{lstlisting}
-
-\section{Semantics}
-
-Computational type theory is inspired by Martin-Löf's early idea of justifying type-theoretic reasoning by means of untyped computation~\cite{martinlof1982constructive}. After he came to abandon the approach in favor of syntax-driven meaning explanations, computational type theory was
-
-is remarkably different from his late work.
-
-See~\cite{constable2009computational,sterling2015typetheory} for accessible introductions. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
