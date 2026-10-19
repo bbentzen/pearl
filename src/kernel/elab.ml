@@ -232,19 +232,18 @@ let rec elaborate env ctx lvl lc sl ty vars = function
 
   | Pi(x, ty1, ty2) ->
     let ty1 = eval ty1 in
-    let h1 = Placeholder.generate () in
+    let h1 = Level.ignore_meta ty in
     let elab1 = elaborate env ctx lvl lc sl h1 vars ty1 in
     let ty2 = eval ty2 in
     let ty2' = (Expr.open_var 0 (Global x) ty2) in
-    let elab2 = elaborate env ((x, ty1, true) :: ctx) lvl lc sl h1 vars ty2'
-    in
+    let elab2 = elaborate env ((x, ty1, true) :: ctx) lvl lc sl h1 vars ty2' in
     begin match elab1, elab2 with
     | Ok (ty1', Type n1, sa1), Ok (ty2', Type n2, sa2) -> 
       let max = Level.reduce (Max(n1, n2)) in
       begin match (Expr.type_of ty) with
       | Type (Var par) when Level.is_arbitrary_string par ->
         (* Synthesize type levels placeholder *)
-        Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type (Suc(max)), Stack.append sa1 sa2)
+        Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type max, Stack.append sa1 sa2)
       | Type m ->
         (* Check if levels are compatible *)
         if Level.leq max m then 
@@ -305,7 +304,12 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | Ok (_, Type _, sa), Error (sb, msg) -> Error (Stack.append sa sb, Msg.pi_codomain ty2' msg)
     | _, Error (sb, msg) -> Error (sb, Msg.pi_codomain ty2' msg)
     | Error (sa, msg), _ -> Error (sa, Msg.pi_domain ty1 msg)
-    | Ok (ty1', u1, _), Ok (ty2', u2, _) -> Error (sl, Msg.pi_unexpected x ty1 ty2 ty ty1' u1 ty2' u2)
+    | Ok (ty1', u1, _), Ok (ty2', u2, _) -> 
+      let ty1' = Placeholder.solve [] ty1' in
+      let ty2' = Placeholder.solve [] ty2' in
+      let u1 = Placeholder.solve [] u1 in
+      let u2 = Placeholder.solve [] u2 in
+      Error (sl, Msg.pi_unexpected x ty1 ty2 ty ty1' u1 ty2' u2)
     end
 
   | Void() ->

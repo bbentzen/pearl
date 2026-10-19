@@ -21,8 +21,28 @@ def is_right_identity {A : type ℓ} (f : A → A → A) (e : A) : type ℓ :=
 def is_left_identity {A : type ℓ} (f : A → A → A) (e : A) : type ℓ :=
   Π (x : A), eq A (f e x) x
 
+def is_identity {A : type ℓ} (f : A → A → A) (e : A) : type ℓ :=
+  is_right_identity f e × is_left_identity f e
+
 def has_inverse {A : type ℓ} (f : A → A → A) (e : A) : type ℓ :=
   Π (x : A), Σ (y : A), eq A (f x y) e
 
 def is_commutative {A : type ℓ} (f : A → A → A) : type ℓ :=
   Π (x y : A), eq A (f x y) (f y x)
+
+/* Uniqueness of identity */
+
+thm identity_is_unique {A : type ℓ} {f : A → A → A} (e e' : A) :
+  Π (p : is_identity f e) (q : is_identity f e'), eq A e e' :=
+λ p q, ((fst q) e)⁻¹ · ((snd p) e')
+
+/* Monoids */
+
+inductive monoid (A : type ℓ) : type ℓ :=
+| mk : Π (f : A → A → A) (e : A) (p : is_identity f e) (q : is_associative f), monoid A
+
+definition get_op (A : type ℓ) : monoid A → (A → A → A) :=
+monoidrec A (λ _, A → A → A) (λ f e p q, f)
+
+definition preserves_mult {A B : type ℓ} (h : A → B) (M : monoid A) (N : monoid B) : type ℓ :=
+Π (x y : A), eq B (h (get_op A M x y)) (get_op B N (h x) (h y))

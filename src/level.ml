@@ -101,3 +101,9 @@ let rec is_declared lvl = function
   | _, Error msg ->
     Error ("Invalid universe level:\n  " ^ Pretty.print_level m ^ "\n" ^ msg)
   end
+
+(* Make type *)
+
+let ignore_meta = function
+  | Meta _ -> Type (Var "?_") 
+  | e -> e
