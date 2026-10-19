@@ -78,6 +78,12 @@ Errett Bishop.
 \newblock {\em Foundations of Constructive Analysis}.
 \newblock Academic Press, New York, 1967.
 
+\bibitem{chargueraud2012locally}
+Arthur Chargu{\'e}raud.
+\newblock The locally nameless representation.
+\newblock {\em Journal of automated reasoning}, 49(3):363--408, 2012.
+\newblock URL: \url{https://doi.org/10.1007/s10817-011-9225-2}.
+
 \bibitem{nuprl}
 R.~L. Constable, S.~F. Allen, H.~M. Bromley, W.~R. Cleaveland, J.~F. Cremer,
   R.~W. Harper, D.~J. Howe, T.~B. Knoblock, N.~P. Mendler, P.~Panangaden, J.~T.

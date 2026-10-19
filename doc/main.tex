@@ -146,20 +146,20 @@ Pearl is built on a command language for entering proof environments, among othe
 
 \subsection{The object language}
 
-The object language is the point of departure of the system. It is based on the untyped lambda-calculus extended with constants for a small selection of type formers and their constructors and eliminators (when they exist). To keep the kernel small in line with the de Bruijn Criterion, Pearl only includes built-in dependent functions, the equality type, the empty type, a cumulative hierarchy of universes à la Russell, and user-defined inductive type families. 
-
- The three dots indicate the possibility of further extension: 
+The object language is the point of departure of the system. It is based on the untyped lambda calculus extended with constants for a small selection of type formers and their constructors and eliminators (when they do in fact exist). The raw user language has named variables but internally Pearl uses locally nameless representation~\cite{chargueraud2012locally}. 
+Regarding the selection, to keep the kernel small in line with the de Bruijn Criterion, Pearl only includes, in addition to user-defined inductive type families, a built-in dependent function type, equality type, quotient type, empty type, and a cumulative hierarchy of universes à la Russell. Below you can find a simplified version of the raw user syntax where the three dots indicate the possibility of further extension: 
 %%
 \begin{align*}
 	\mathsf{var} :=\:& {x} \mid {y} \mid {z} \mid \ldots \\ 
-	\mathsf{lvl} :=\:& \mathtt{0} \mid \mathtt{1} \mid ... \mid \var \\ 
 	\expr :=\:& \var  \mid \Pi_{(\var : \expr)} \expr \mid  \fun{\var}\expr \mid \expr\ \expr \\
-	& \mid \void \\ %\mid \mathtt{explode} \ \expr \ \expr \\ 
 	& \mid \idtype{\expr}{\expr}{\expr} \mid  \rfl \\ %\mid \mathtt{reflect} \ \expr \ \expr \\
-	& \mid \expr / \expr  \\
-	& \mid \type \ \mathsf{lvl}  \\
+	& \mid \expr / \expr \mid [\expr]\ \expr  \\
+	& \mid \void \\ %\mid \mathtt{explode} \ \expr \ \expr \\ 
+	& \mid \type \ \mathtt{0} \mid \type \ \mathtt{1} \mid ... \mid \type \ \var  \\
 	& \; \vdots
 \end{align*}
+
+The native operational semantics is based on $\beta$-reduction alone. 
 
 %To give a simple example, consider the following proof of Peano's first axiom in Pearl:
 %
@@ -271,7 +271,7 @@ print [name]
 %% References
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\bibliography{../../../../mybib.bib}
+\bibliography{../../../mybib.bib}
 \bibliographystyle{plainurl}
 
 \end{document}
