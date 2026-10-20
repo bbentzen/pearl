@@ -30,10 +30,16 @@ thm funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) :
 
 /* Injectivity of non-dependent function former */
 
-thm fun_inj_dom {A A' B B' : type ℓ} (p : eq (type ℓ) (A → B) (A' → B')) :
-  eq (type ℓ) A A' :=
-reflect p rfl
+thm fun_inj_dom {A A' B B' : type ℓ} :
+  eq (type ℓ) (A → B) (A' → B') → eq (type ℓ) A A' :=
+λ p, reflect p rfl
 
-thm fun_inj_codom {A A' B B' : type ℓ} (p : eq (type ℓ) (A → B) (A' → B')) :
-  eq (type ℓ) B B' :=
-reflect p rfl
+thm fun_inj_codom {A A' B B' : type ℓ} :
+  eq (type ℓ) (A → B) (A' → B') → eq (type ℓ) B B' :=
+λ p, reflect p rfl
+
+/* Injectivity of dependent function former */
+
+thm dfun_inj_dom {A A' : type ℓ} {B : A → type ℓ} {B' : A' → type ℓ} :
+  eq (type ℓ) (Π (x : A), B x) (Π (x : A'), B' x) → eq (type ℓ) A A' :=
+λ p, reflect p rfl
