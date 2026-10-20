@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) 2026 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ./equiv.prl
+
+universe ℓ
+
+/* Equivalence class */
+
+def class_eq {A : type ℓ} (R : A → A → type ℓ) (e : is_equiv R) (a b : A) (d : R a b) : 
+  eq (A / R) ([a] R) ([b] R) :=
+reflect d rfl

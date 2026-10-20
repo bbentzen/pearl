@@ -183,6 +183,20 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         | Ok (e2, ty, sa) -> Ok (Reflect (e1, e2), ty, sa)
         | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx b a e2 ty msg)
         end
+      | App (App (rel, a), b) ->
+        if find_equivalence env ctx lvl lc sl vars rel h1 then
+          let a = Placeholder.solve [] a and b = Placeholder.solve [] b in
+          let a = eval a and b = eval b in
+          (* Explicit substitutions so we can recover the type later on *)
+          let ty = Expr.reflsubst 0 b (ESubIn(a, b, ty)) ty in
+          let e2 = Expr.reflsubst 0 b (ESubIn(a, b, ty)) e2 in
+          begin match elaborate env ctx lvl lc sl ty vars e2 with
+          | Ok (e2, ty, sa) -> Ok (Reflect (e1, e2), ty, sa)
+          | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx b a e2 ty msg)
+          end
+        else
+          Error (sa, Msg.reflect_goal_mkq ctx e1 rel a b ty)
+      (* If an equiv then reflect *)
       | ty1 -> Error (sa, Msg.reflect_1 e1 ty1)
       end
     | Error (sa, msg) -> Error (sa, Msg.reflect_2 e1 msg)

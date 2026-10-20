@@ -200,7 +200,6 @@ let unify_quot msg =
 let unify_mkq e1 e2 e1' e2'  msg =
   "Unification failed for the equivalence classes " ^ Pretty.printf (Mkq (e1, e2)) ^ " and " ^ Pretty.printf (Mkq (e1', e2')) ^ msg
 
-
 let not_syntactically_equal e e' =
   "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. "
 
@@ -290,3 +289,9 @@ let mkq_error_dom_2 e1 e2 ty msg =
 
 let mkq_error_ty e1 e2 ty =
   "The term " ^ Pretty.printf (Mkq (e1, e2)) ^ " is checked against the type \n  " ^ Pretty.printf ty ^ "\nbut is expected to have type ?1? / ?2?"
+
+let reflect_goal_mkq ctx e1 rel a b ty =
+  "Cannot resolve reflection. The term " ^ Pretty.printf e1 ^ 
+  " realizes " ^ Pretty.printf (App (App (rel, a), b)) ^
+  ", but no equivalence proof for " ^ Pretty.printf rel ^ " be found. " ^ 
+  "\n\n" ^ Global.printf ctx ^ "-------------------------------------------\n ⊢ " ^ Pretty.printf ty ^ "\n"
