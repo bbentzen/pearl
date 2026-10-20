@@ -322,9 +322,44 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | _ -> Error (sl, Msg.void_ty ty)
     end
   
-  | Quot(e1, e2) | Mkq (e1, e2) -> 
+  (* Note that this doesn't require e2 to be an equivalence yet *)
+  | Quot(e1, e2) -> 
+    let e1 = eval e1 in
+    let e2 = eval e2 in
+    let h1 = Level.ignore_meta ty in
+    begin match elaborate env ctx lvl lc sl h1 vars e1 with
+    | Ok (e1, Type n, st) ->
+      let ty1 = Pi("?v", e1, Pi("?v", e1, Type n)) in
+      begin match elaborate env ctx lvl lc sl ty1 vars e2 with
+      | Ok (e2, Pi(_, e1, Pi(_, e1', Type n)), sa) ->
+        (* Check against the target type *)
+        let e1 = Placeholder.without e1 e1' in
+        begin match eval (Expr.type_of ty) with
+        | Type (Var par) when Level.is_arbitrary_string par ->
+          (* Synthesize type levels placeholder *)
+          Ok (Quot(e1, e2), Type n, Stack.append st sa)
+        | Type m ->
+          (* Check if levels are compatible *)
+          if Level.leq n m then
+            Ok (Quot(e1, e2), Type m, Stack.append st sa)
+          else
+            Error (Stack.append st sa, Msg.quot_universe_1 e1 e2 n m)
+        | Meta k ->
+          Hashtbl.add Data.meta_store k { Data.solution = Type n};
+          Ok (Quot(e1, e2), Type n, Stack.append st sa)
+        | _ -> Error (Stack.append st sa, Msg.quot_universe_2 e1 e2 (eval (Expr.type_of ty)))
+        end
+      | Ok (e2, ty1, _) -> Error (sl, Msg.quot_no_rel_1 e1 e2 n ty1)
+      | Error (sl, msg) -> Error (sl, Msg.quot_no_rel_2 e1 e2 n msg)
+      end
+    (* Type is neither a well-specified universe nor a meta *)
+    | Ok (e1, ty1, st) -> Error (st, Msg.quot_dom_type_1 e1 e2 ty1)
+    | Error (sa, msg) -> Error (sa, Msg.quot_dom_type_2 e1 e2 msg)
+    end
+   
+  | Mkq (e1, e2) -> 
     Error (sl, Pretty.printf e1 ^ Pretty.printf e2 ^ "Not yet implemented")
-  
+
   | Eq(ty1, e1, e2) ->
     let ty1 = eval ty1 in
     let e1 = eval e1 in

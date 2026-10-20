@@ -120,3 +120,8 @@ let rec unique = function
   | Reflect (e1, e2) -> Reflect (unique e1, unique e2)
   | Explode (e1, e2) -> Explode (unique e1, unique e2)
   | ESubIn (e, e1, e2) -> ESubIn (unique e, unique e1, unique e2)
+
+(* Takes two expressions and returns the first if the second is a meta variable *)
+let without e1 = function
+  | Meta _ -> e1
+  | e2 -> e2

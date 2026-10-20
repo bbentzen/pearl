@@ -240,3 +240,25 @@ let reflect_goal ctx b a e2 ty msg =
 let eq_not_a_type ty1 e1 e2 msg =
   "Cannot verify that " ^ Pretty.printf ty1 ^ " is a type in\n " ^ Pretty.printf (Eq(ty1, e1, e2)) ^ ". " ^ msg
 
+(* Quotients *)
+
+let quot_universe_1 e1 e2 max m =
+  "Universe level mismatch when checking that the type\n  " ^ Pretty.printf (Quot(e1, e2)) ^
+  "\nof type \n  " ^ Pretty.printf (Type max) ^ "\nhas type\n  " ^ Pretty.printf (Type m)
+
+let quot_universe_2 e1 e2 ty =
+  "Type mismatch when checking that the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\nhas type\n  " ^ Pretty.printf ty
+
+let quot_no_rel_1 e1 e2 n ty1 =
+  "Type mismatch when checking that " ^ Pretty.printf e2 ^ " in the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\nhas type\n  " ^ 
+  Pretty.printf (Pi("?v", e1, Pi("?v", e1, Type n))) ^ "Its type was found to be " ^ Pretty.printf ty1
+
+let quot_no_rel_2 e1 e2 n msg =
+  "Type mismatch when checking that " ^ Pretty.printf e2 ^ " in the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\nhas type\n  " ^ Pretty.printf (Pi("?v", e1, Pi("?v", e1, Type n))) ^ "\n" ^ msg
+
+let quot_dom_type_1 e1 e2 ty1 =
+  "The domain " ^ Pretty.printf e1 ^ " in the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\nhas type\n  " ^ 
+  Pretty.printf ty1 ^ "\nbut is expected to be a type."
+
+let quot_dom_type_2 e1 e2 msg =
+  "Cannot check the typehood of the domain " ^ Pretty.printf e1 ^ " in the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\n." ^ msg
