@@ -33,6 +33,10 @@ reflect q reflect r rfl
 
 /* Congruence rules for the quotient type */
 
-def form_quotient_type_1 {A A' : type ℓ₁} (R R' : A → A → type ℓ₁) (p : eq (type ℓ₁) A A') :
+def form_quotient_type_1 {A A' : type ℓ₁} (R : A → A → type ℓ₁) (p : eq (type ℓ₁) A A') :
   eq (type ℓ₁) (A / R) (A' / reflect p R) :=
+reflect p rfl
+
+def form_quotient_type_2 {A : type ℓ₁} (R R' : A → A → type ℓ₁) (p : eq (A → A → type ℓ₁) R R') :
+  eq (type ℓ₁) (A / R) (A / R') :=
 reflect p rfl
