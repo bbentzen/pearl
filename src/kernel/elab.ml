@@ -322,7 +322,6 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | _ -> Error (sl, Msg.void_ty ty)
     end
   
-  (* Note that this doesn't require e2 to be an equivalence yet *)
   | Quot(e1, e2) -> 
     let e1 = eval e1 in
     let e2 = eval e2 in
@@ -332,10 +331,10 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       let ty1 = Pi("?v", e1, Pi("?v", e1, Type n)) in
       begin match elaborate env ctx lvl lc sl ty1 vars e2 with
       | Ok (e2, Pi(_, e1, Pi(_, e1', Type n)), sa) ->
-        (* Proceed only if a proof of equivalence is available *)
-        let proceed () =
+        (* Only proceed only if a proof of equivalence is available *)
+        if find_equivalence env ctx lvl lc sl vars e2 ty1 then
           let e1 = Placeholder.without e1 e1' in
-          begin match eval (Expr.type_of ty) with
+          match eval (Expr.type_of ty) with
           | Type (Var par) when Level.is_arbitrary_string par ->
             (* Synthesize type levels placeholder *)
             Ok (Quot(e1, e2), Type n, Stack.append st sa)
@@ -349,18 +348,8 @@ let rec elaborate env ctx lvl lc sl ty vars = function
             Hashtbl.add Data.meta_store k { Data.solution = Type n};
             Ok (Quot(e1, e2), Type n, Stack.append st sa)
           | _ -> Error (Stack.append st sa, Msg.quot_universe_2 e1 e2 (eval (Expr.type_of ty)))
-          end
-        in
-        (* Search for proof **in context** that e2 is an equivalence *)
-        (* To be expanded to global environment *)
-        let rec search_equiv = function
-        | [] -> Error (sa, Msg.quot_no_rel_3 e1 e2)
-        | x :: l ->
-          match unify env ctx lvl lc sl vars (e2, x, ty1) true with
-          | Ok _ -> proceed ()
-          | Error _ -> search_equiv l
-        in
-        search_equiv (Global.equiv_lookup e2 ctx)
+        else
+          Error (sa, Msg.quot_no_rel_3 e1 e2)
       | Ok (e2, ty1, _) -> Error (sl, Msg.quot_no_rel_1 e1 e2 n ty1)
       | Error (sl, msg) -> Error (sl, Msg.quot_no_rel_2 e1 e2 n msg)
       end
@@ -510,6 +499,19 @@ and find n env ctx ty lvl lc sl vars =
         | Error _ -> search ctx'
   in
   search ctx
+
+(* Search for proof **in context** that e2 is an equivalence *)
+(* To be expanded to global environment *)
+
+and find_equivalence env ctx lvl lc sl vars e ty =
+  let rec search_equiv = function
+  | [] -> true
+  | x :: l ->
+    match unify env ctx lvl lc sl vars (e, x, ty) true with
+    | Ok _ -> true
+    | Error _ -> search_equiv l
+  in
+  search_equiv (Global.equiv_lookup e ctx)
 
 (* Unifies two expressions at type up to alpha/beta/eta-conversion *)
 
