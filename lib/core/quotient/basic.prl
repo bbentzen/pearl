@@ -10,6 +10,6 @@ universe ℓ
 
 /* Equivalence class */
 
-def mk_q {A : type ℓ} (R : A → A → type ℓ) (e : is_equiv R) (a : A) : 
+def mk_q {A : type ℓ} (R : A → A → type ℓ) (a : A) : 
   A / R :=
 [a] R

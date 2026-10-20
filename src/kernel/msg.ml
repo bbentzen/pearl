@@ -197,6 +197,10 @@ let lam_unify_2 x e y e' msg =
 let unify_quot msg =
   "Unification failed at quotient type: " ^ msg
 
+let unify_mkq e1 e2 e1' e2'  msg =
+  "Unification failed for the equivalence classes " ^ Pretty.printf (Mkq (e1, e2)) ^ " and " ^ Pretty.printf (Mkq (e1', e2')) ^ msg
+
+
 let not_syntactically_equal e e' =
   "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. "
 
