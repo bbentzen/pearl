@@ -33,13 +33,13 @@ let rec ids_to_bindings ids ty =
   | id :: rest -> (id, ty) :: ids_to_bindings rest ty
 
 let prod_def e1 e2 =
-RApp (RApp (RId "sigma", e1), RLam("v?", e2))
+  RApp (RApp (RId "sigma", e1), RLam("v?", e2))
 
 let pair_def e1 e2 =
-RApp(RApp(RApp(RApp (RId "pair", RWild 0), RWild 0), e1), e2)
+  RApp(RApp(RApp(RApp (RId "pair", RWild 0), RWild 0), e1), e2)
 
 let iff_def e1 e2 =
-RApp (RApp (RId "sigma", RPi("v?",e1, e2)), RLam("v?", RPi("v?",e2, e1)))
+  RApp (RApp (RId "sigma", RPi("v?",e1, e2)), RLam("v?", RPi("v?",e2, e1)))
 
 let single_id = function
   | [id] -> id
@@ -58,6 +58,7 @@ let single_id = function
 %token STAR SUM
 %token EXPLODE VOID NEG
 %token EQ EQSYM RFL SYMM TRANS REFLECT
+%token SLASH LSQBRACK RSQBRACK
 %token WILDCARD PLACEHOLDER COLONEQ
 %token EOF
 %right EQSYM

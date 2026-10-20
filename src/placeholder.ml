@@ -25,13 +25,13 @@ let restore n = counter := n
 (* Determines whether an expression is a placeholder/underscore *)
 
 let is = function
-| Meta _ | Wild _ -> true
-    | _ -> false
+  | Meta _ | Wild _ -> true
+  | _ -> false
 
 (* Determines whether an expression is an underscore *)
 
 let is_wild = function
-| Wild _ -> true | _ -> false
+  | Wild _ -> true | _ -> false
 
 (* Tail-recursive recursion with stack for placeholder tracking  *)
 
@@ -42,8 +42,8 @@ let has_placeholder term =
     | x :: rest ->
       match x with
       | Meta _ -> true
+      | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> helper (e1 :: e2 :: rest)
       | Lam (_, e) -> helper (e :: rest)
-      | Pi (_, e1, e2) | App (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> helper (e1 :: e2 :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
       | _ -> helper rest
   in
@@ -57,8 +57,8 @@ let has_placeholder_name name term =
       match x with
       | Meta n when n = name -> true
       | Meta _ -> false
+      | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> helper (e1 :: e2 :: rest)
       | Lam (_, e) -> helper (e :: rest)
-      | Pi (_, e1, e2) | App (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> helper (e1 :: e2 :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
       | _ -> helper rest
   in
@@ -74,7 +74,7 @@ let has term =
       match x with
       | Wild _ | Meta _ -> true
       | Lam (_, e) -> helper (e :: rest)
-      | Pi (_, e1, e2) | App (e1, e2) -> helper (e1 :: e2 :: rest)
+      | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) -> helper (e1 :: e2 :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
       | Reflect (_, e) | Explode (_, e) -> helper (e :: rest)
       | _ -> helper rest
@@ -95,10 +95,12 @@ let rec solve env = function
       bind 0 stored.solution env
     | None -> Meta n
     end
-  | Lam (x, e) -> Lam (x, solve (x :: env) e)
-  | App (e1, e2) -> App (solve env e1, solve env e2)
   | Pi (x, e1, e2) -> Pi (x, solve env e1, solve env e2)
+  | Lam (x, e) -> Lam (x, solve (x :: env) e)
+  | App (e1, e2) -> App (solve env e1, solve env e2)  
   | Eq (e, e1, e2) -> Eq (solve env e, solve env e1, solve env e2)
+  | Quot (e1, e2) -> Quot (solve env e1, solve env e2)
+  | Mkq (e1, e2) -> Mkq (solve env e1, solve env e2)
   | Reflect (e1, e2) -> Reflect (solve env e1, solve env e2)
   | Explode (e1, e2) -> Explode (solve env e1, solve env e2)
   | ESubIn (e, e1, e2) -> ESubIn (solve env e, solve env e1, solve env e2)
@@ -107,12 +109,14 @@ let rec solve env = function
 (* Assigns unique positive metas to negative metas *)
 
 let rec unique = function
+  | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
   | Meta _ -> generate ()
+  | Pi (x, e1, e2) -> Pi (x, unique e1, unique e2)
   | Lam (x, e) -> Lam (x, unique e)
   | App (e1, e2) -> App (unique e1, unique e2)
-  | Pi (x, e1, e2) -> Pi (x, unique e1, unique e2)
   | Eq (e, e1, e2) -> Eq (unique e, unique e1, unique e2)
+  | Quot (e1, e2) -> Quot (unique e1, unique e2)
+  | Mkq (e1, e2) -> Mkq (unique e1, unique e2)
   | Reflect (e1, e2) -> Reflect (unique e1, unique e2)
   | Explode (e1, e2) -> Explode (unique e1, unique e2)
   | ESubIn (e, e1, e2) -> ESubIn (unique e, unique e1, unique e2)
-  | e -> e

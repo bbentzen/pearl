@@ -35,10 +35,12 @@ let rec zonk st = function
     | Some e -> zonk st e
     | None -> Meta n
     end
+  | Pi (x, e1, e2) -> Pi (x, zonk st e1, zonk st e2)
   | Lam (x, e) -> Lam (x, zonk st e)
   | App (e1, e2) -> App (zonk st e1, zonk st e2)
-  | Pi (x, e1, e2) -> Pi (x, zonk st e1, zonk st e2)
   | Eq (e, e1, e2) -> Eq (zonk st e, zonk st e1, zonk st e2)
+  | Quot (e1, e2) -> Quot (zonk st e1, zonk st e2)
+  | Mkq (e1, e2) -> Mkq (zonk st e1, zonk st e2)
   | Reflect (e1, e2) -> Reflect (zonk st e1, zonk st e2)
   | Explode (e1, e2) -> Explode (zonk st e1, zonk st e2)
   | ESubIn (e, e1, e2) -> ESubIn (zonk st e, zonk st e1, zonk st e2)

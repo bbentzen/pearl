@@ -322,6 +322,9 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | _ -> Error (sl, Msg.void_ty ty)
     end
   
+  | Quot(e1, e2) | Mkq (e1, e2) -> 
+    Error (sl, Pretty.printf e1 ^ Pretty.printf e2 ^ "Not yet implemented")
+  
   | Eq(ty1, e1, e2) ->
     let ty1 = eval ty1 in
     let e1 = eval e1 in

@@ -26,7 +26,6 @@ let rec leq k l =
       match k, l with
       | Var x, _ when is_arbitrary_string x -> true
       | _, Var y when is_arbitrary_string y -> true
-
       | Num 0, _ -> true
       | Num n, Num m -> n <= m
       | Num n, Suc k -> leq (Num (n - 1)) k
@@ -34,22 +33,18 @@ let rec leq k l =
       | Suc k, Suc l -> leq k l
       | Suc k, Num m -> if m = 0 then false else leq k (Num (m - 1))
       | Suc k, Max(b1, b2) -> leq (Suc k) b1 || leq (Suc k) b2
-
       | Var x, Suc k -> leq (Var x) k
       | Var x, Var y -> x = y
       | Var _, Num _ -> false
       | Var x, Max(k1, k2) -> leq (Var x) k1 || leq (Var x) k2
-
       | Max(k1, k2), l -> leq k1 l && leq k2 l
-
       | _ -> false
 
 let rec reduce = function
   | Suc (Num n) -> Num (n + 1)
   | Max (Num n, Num m) -> Num (n + m)
   | Suc n -> Suc (reduce n)
-  | Max (Suc n, m) | Max (m, Suc n) -> 
-    Suc (reduce (Max (n, m)))
+  | Max (Suc n, m) | Max (m, Suc n) -> Suc (reduce (Max (n, m)))
   | Max (n, m) ->
     if leq n m then
       reduce m
@@ -69,38 +64,37 @@ let rec placeholder_level = function
 
 let rec placeholder_levels = function
   | Type lvl -> Type (placeholder_level lvl)
+  | Lam (x, e) -> Lam (x, placeholder_levels e)
   | Pi (x, l1, l2) -> Pi (x, placeholder_levels l1, placeholder_levels l2)
   | App (l1, l2) -> App (placeholder_levels l1, placeholder_levels l2)
   | Eq (l1, l2, l3) -> Eq (placeholder_levels l1, placeholder_levels l2, placeholder_levels l3)
-  | Meta n -> Meta n
+  | Quot (l1, l2) -> Quot (placeholder_levels l1, placeholder_levels l2)
+  | Mkq (l1, l2) -> Mkq (placeholder_levels l1, placeholder_levels l2)
   | Reflect (l1, l2) -> Reflect (placeholder_levels l1, placeholder_levels l2)
   | Explode (l1, l2) -> Explode (placeholder_levels l1, placeholder_levels l2)
-  | e -> e
+  | ESubIn (l1, l2, l3) -> ESubIn (placeholder_levels l1, placeholder_levels l2, placeholder_levels l3)
+  | Global _ | Local _ | Rfl _ | Void _ | Meta _ | Wild _ as e -> e
 
 (* Returns true when a universe level is less-than-or-equal to another, also returns false if they are incomparable *)
 
 let rec is_declared lvl = function
-| Num _ -> Ok ()
-| Var name ->
-  (* Checks if declaration exists or if it's a parameter level *)
-  if List.mem name lvl || Char.equal name.[0] '?' then 
-    Ok ()
-  else
-    Error ("No declaration found for the universe level '" ^ name ^ "'")
-| Suc n ->
-  begin match is_declared lvl n with
-  | Ok _ -> Ok ()
-  | Error msg ->
-    Error ("Invalid universe level:\n  " ^ Pretty.print_level n ^ "\n" ^ msg)
-  end
-| Max (n, m) ->
-  begin match is_declared lvl n, is_declared lvl m with
-  | Ok _, Ok _ -> Ok ()
-  | Error msg, _ ->
-    Error ("Invalid universe level:\n  " ^ Pretty.print_level n ^ "\n" ^ msg)
-  | _, Error msg ->
-    Error ("Invalid universe level:\n  " ^ Pretty.print_level m ^ "\n" ^ msg)
-  end
+  | Num _ -> Ok ()
+  | Var name ->
+    (* Checks if declaration exists or if it's a parameter level *)
+    if List.mem name lvl || Char.equal name.[0] '?' then 
+      Ok ()
+    else
+      Error ("No declaration found for the universe level '" ^ name ^ "'")
+  | Suc n ->
+    begin match is_declared lvl n with
+    | Ok _ -> Ok ()
+    | Error msg -> Error ("Invalid universe level:\n  " ^ Pretty.print_level n ^ "\n" ^ msg)
+    end
+  | Max (n, m) ->
+    match is_declared lvl n, is_declared lvl m with
+    | Ok _, Ok _ -> Ok ()
+    | Error msg, _ -> Error ("Invalid universe level:\n  " ^ Pretty.print_level n ^ "\n" ^ msg)
+    | _, Error msg -> Error ("Invalid universe level:\n  " ^ Pretty.print_level m ^ "\n" ^ msg)
 
 (* Make type *)
 

@@ -30,12 +30,12 @@ let rec occurs_name id l = function
     | Some h -> h = id 
     | None -> false
     end
-  | Lam (x, e) ->  occurs_name x l e
   | Pi (x, e1, e2) -> occurs_name x l e1 || occurs_name x l e2
-  | Void _ | Rfl _ | Type _ | Wild _ | Meta _ -> false
-  | App (e1, e2) | Explode (e1, e2) | Reflect (e1, e2) -> occurs_name id l e1 || occurs_name id l e2
+  | Lam (x, e) ->  occurs_name x l e
+  | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Explode (e1, e2) | Reflect (e1, e2) -> occurs_name id l e1 || occurs_name id l e2
   | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> occurs_name id l e || occurs_name id l e1 || occurs_name id l e2
-
+  | Rfl _ | Void _ | Type _ | Wild _ | Meta _ -> false  
+  
 (* Returns the head symbol of an application tree *)
 
 let rec head_symbol = function
@@ -51,38 +51,38 @@ let rec strictly_positive_arg ty = function
     let cod = Eval.eval cod in
     not (occurs_name ty [x] dom) && strictly_positive_arg ty cod
   | expr ->
-      (* If ind_name occurs in the target of an argument, it must be the head symbol *)
-      let expr = Eval.eval expr in
-      if occurs_name ty [] expr then
-        match head_symbol expr with
-        | Some x -> x = ty
-        | None -> false
-      else true
+    (* If ind_name occurs in the target of an argument, it must be the head symbol *)
+    let expr = Eval.eval expr in
+    if occurs_name ty [] expr then
+      match head_symbol expr with
+      | Some x -> x = ty
+      | None -> false
+    else true
 
 (* Validates strict positivity across an entire constructor type signature *)
 
 let rec strictly_positive ind_name = function
   | Pi (_, arg_ty, rest_ty) ->
-      let arg_ty = Eval.eval arg_ty in
-      let rest_ty = Eval.eval rest_ty in
-      strictly_positive_arg ind_name arg_ty &&
-      strictly_positive ind_name rest_ty
+    let arg_ty = Eval.eval arg_ty in
+    let rest_ty = Eval.eval rest_ty in
+    strictly_positive_arg ind_name arg_ty &&
+    strictly_positive ind_name rest_ty
   | target_ty ->
-      (* The final return type of the constructor must target ind_name *)
-      let target_ty = Eval.eval target_ty in
-      match head_symbol target_ty with
-      | Some x -> x = ind_name
-      | None -> false
+    (* The final return type of the constructor must target ind_name *)
+    let target_ty = Eval.eval target_ty in
+    match head_symbol target_ty with
+    | Some x -> x = ind_name
+    | None -> false
 
 (* Loads inductive types, constructors, and eliminators to top of the context *)
 let add ind ctx =
-ctx @ (List.map (fun (id, ty) -> (id, ty, true)) ind)
+  ctx @ (List.map (fun (id, ty) -> (id, ty, true)) ind)
 
 (* Opens a type family with abstractions matching its context *)
 
 let rec abs_ctx_args e = function
-| [] -> e
-| ((x, ty, _) :: ctx) -> Pi (x, ty, Expr.close_var 0 x (abs_ctx_args e ctx))
+  | [] -> e
+  | ((x, ty, _) :: ctx) -> Pi (x, ty, Expr.close_var 0 x (abs_ctx_args e ctx))
 
 let parametrize_constructor_ty c_ty ctx = 
   abs_ctx_args c_ty ctx
@@ -90,8 +90,8 @@ let parametrize_constructor_ty c_ty ctx =
 (* Closes a type family with applications matching its context *)
 
 let rec app_ctx_args ind_name = function
-| [] -> Global ind_name
-| ((x, _, _) :: ctx) -> App (app_ctx_args ind_name ctx, Global x)
+  | [] -> Global ind_name
+  | ((x, _, _) :: ctx) -> App (app_ctx_args ind_name ctx, Global x)
 
 (* Closes a function with applications matching its arity *)
 
@@ -210,19 +210,19 @@ let check_universe_levels ctx_univ constrs_univs target_lvl =
   | [] -> true
   | (_, univ, _) :: ctx_univ ->
     match extract_universe_level univ with
-      | Some lvl ->
-          Level.leq lvl target_lvl && 
-          helper_ctx target_lvl ctx_univ
-      | None -> false
+    | Some lvl ->
+        Level.leq lvl target_lvl && 
+        helper_ctx target_lvl ctx_univ
+    | None -> false
   in
   let rec helper_constrs target_lvl = function
   | [] -> true
   | (_, c_univ) :: constrs_univs ->
     match extract_universe_level c_univ with
-      | Some lvl ->
-          Level.leq lvl target_lvl && 
-          helper_constrs target_lvl constrs_univs
-      | None -> false 
+    | Some lvl ->
+        Level.leq lvl target_lvl && 
+        helper_constrs target_lvl constrs_univs
+    | None -> false 
   in 
   helper_ctx target_lvl ctx_univ &&
   helper_constrs target_lvl constrs_univs
@@ -251,6 +251,6 @@ let print_spec : string -> ind_spec -> string =
 let find_print id =
   let rec_env, _ = Data.get_ind_env () in
   match Hashtbl.find_opt rec_env id with
-            | Some rec_spec ->
-              print_spec id rec_spec
-            | None -> "Inductive type not found in environment"
+  | Some rec_spec ->
+    print_spec id rec_spec
+  | None -> "Inductive type not found in environment"

@@ -24,10 +24,7 @@ let is_declared x env =
   let rec helper x = function
     | [] -> false
     | ((id,_), _) :: env -> 
-      if x = id then 
-        true
-      else 
-        helper x env
+      if x = id then true else helper x env
   in
   helper x (List.rev env)
 
@@ -53,9 +50,7 @@ let rec check_def_id id = function
   | [] -> 
     Error ("No definition or theorem found for the identifier '" ^ id ^ "'") 
   | ((id', body), _) :: env -> 
-    if id = id'
-    then Ok body
-    else check_def_id id env
+    if id = id' then Ok body else check_def_id id env
 
 (* Appends a quadruple (id * (term * type)) * attrb to the env context *)
 
@@ -81,12 +76,15 @@ let rec unfold id = function
 
 let rec lift n = function
   | Wild m -> Wild (m+n)
+  | Pi (y, e1, e2) -> Pi (y, lift n e1, lift n e2)
   | Lam (y, e) -> Lam (y, lift n e)
   | App (e1, e2) -> App (lift n e1, lift n e2)
-  | Pi (y, e1, e2) -> Pi (y, lift n e1, lift n e2)
   | Eq (e, e1, e2) -> Eq (lift n e, lift n e1, lift n e2)
+  | Quot (e1, e2) -> Quot (lift n e1, lift n e2)
+  | Mkq (e1, e2) -> Mkq (lift n e1, lift n e2)
   | Reflect (e1, e2) -> Reflect (lift n e1, lift n e2)
   | Explode (e1, e2) -> Explode (lift n e1, lift n e2)
+  | ESubIn (e, e1, e2) -> ESubIn (lift n e, lift n e1, lift n e2)
   | e -> e
 
 (* Unfolds all declared env constants and checks for naming conflicts *)
@@ -94,11 +92,10 @@ let rec lift n = function
 
 let rec unfold_all env vars = function
   | Global id -> 
-    begin 
-      match unfold id env with
-      | Ok ((body, _), attrb) -> 
-        if attrb = 1 then Ok (Global id) else Ok body
-      | _ -> Ok (Global id)
+    begin match unfold id env with
+    | Ok ((body, _), attrb) -> 
+      if attrb = 1 then Ok (Global id) else Ok body
+    | _ -> Ok (Global id)
     end
 
   | Lam (x, e) ->
@@ -115,8 +112,8 @@ let rec unfold_all env vars = function
     let u1 = unfold_all env vars e1 in
     let u2 = unfold_all env vars e2 in
     begin match u1, u2 with
-      | Ok e1', Ok e2' -> Ok (App (e1', e2'))
-      | Error msg, _ | _, Error msg -> Error msg
+    | Ok e1', Ok e2' -> Ok (App (e1', e2'))
+    | Error msg, _ | _, Error msg -> Error msg
     end
 
   | Pi (x, e1, e2) -> 
@@ -135,24 +132,49 @@ let rec unfold_all env vars = function
     let u1 = unfold_all env vars e1 in
     let u2 = unfold_all env vars e2 in
     begin match u, u1, u2 with
-      | Ok e', Ok e1', Ok e2' -> Ok (Eq (e', e1', e2'))
-      | Error msg, _, _ | _, Error msg , _ | _, _, Error msg -> Error msg
+    | Ok e', Ok e1', Ok e2' -> Ok (Eq (e', e1', e2'))
+    | Error msg, _, _ | _, Error msg , _ | _, _, Error msg -> Error msg
+    end
+  
+  | Quot (e1, e2) ->
+    let u1 = unfold_all env vars e1 in
+    let u2 = unfold_all env vars e2 in
+    begin match u1, u2 with
+    | Ok e1, Ok e2 -> Ok (Quot (e1, e2))
+    | Error msg, _ | _, Error msg -> Error msg
+    end
+  
+  | Mkq (e1, e2) ->
+    let u1 = unfold_all env vars e1 in
+    let u2 = unfold_all env vars e2 in
+    begin match u1, u2 with
+    | Ok e1, Ok e2 -> Ok (Mkq (e1, e2))
+    | Error msg, _ | _, Error msg -> Error msg
     end
   
   | Explode (e1, e2) ->
     let u1 = unfold_all env vars e1 in
     let u2 = unfold_all env vars e2 in
     begin match u1, u2 with
-      | Ok e1', Ok e2' -> Ok (Explode (e1', e2'))
-      | Error msg, _ | _, Error msg -> Error msg
+    | Ok e1', Ok e2' -> Ok (Explode (e1', e2'))
+    | Error msg, _ | _, Error msg -> Error msg
     end
 
   | Reflect (e1, e2) ->
     let u1 = unfold_all env vars e1 in
     let u2 = unfold_all env vars e2 in
     begin match u1, u2 with
-      | Ok e1', Ok e2' -> Ok (Reflect (e1', e2'))
-      | Error msg, _ | _, Error msg -> Error msg
+    | Ok e1', Ok e2' -> Ok (Reflect (e1', e2'))
+    | Error msg, _ | _, Error msg -> Error msg
+    end
+  
+  | ESubIn (e, e1, e2) -> 
+    let u = unfold_all env vars e in
+    let u1 = unfold_all env vars e1 in
+    let u2 = unfold_all env vars e2 in
+    begin match u, u1, u2 with
+    | Ok e, Ok e1, Ok e2 -> Ok (ESubIn (e, e1, e2))
+    | Error msg, _, _ | _, Error msg , _ | _, _, Error msg -> Error msg
     end
 
   | e -> Ok e 

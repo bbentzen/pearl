@@ -18,11 +18,13 @@ type rawlevel =
 
 type rawexpr = 
   | RId of string
+  | RPi of string * rawexpr * rawexpr
   | RLam of string * rawexpr
   | RApp of rawexpr * rawexpr
-  | RPi of string * rawexpr * rawexpr  
-  | RRfl of unit
   | REq of rawexpr * rawexpr * rawexpr
+  | RRfl of unit
+  | RQuot of rawexpr * rawexpr
+  | RMkq of rawexpr * rawexpr
   | RVoid of unit
   | RType of rawlevel
   | RMeta of int
@@ -32,14 +34,11 @@ type rawexpr =
 
 let rec has_var x = function
   | RId y -> x = y
-  | RLam (y, e) -> 
-    if x = y then false else has_var x e 
-  | RPi (y, e1, e2)  -> 
-    if x = y then false else has_var x e1 || has_var x e2
-  | RApp (e1, e2) | RReflect (e1, e2) | RExplode (e1, e2) -> 
+  | RPi (y, e1, e2)  -> if x = y then false else has_var x e1 || has_var x e2
+  | RLam (y, e) -> if x = y then false else has_var x e 
+  | RApp (e1, e2) | RQuot (e1, e2) | RMkq (e1, e2) | RReflect (e1, e2) | RExplode (e1, e2) -> 
     has_var x e1 || has_var x e2
-  | REq (e, e1, e2) -> 
-    has_var x e || has_var x e1 || has_var x e2
+  | REq (e, e1, e2) -> has_var x e || has_var x e1 || has_var x e2
   | _ -> false
 
 let fresh_var_int e = 
@@ -57,14 +56,14 @@ type proof =
   | Prf of string * (((string list * rawexpr) * bool) list) * rawexpr * rawexpr * int
 
 type command = 
-    | Import of command * string
-    | Thm of command * proof
-    | Infer of command * (((string list * rawexpr) * bool) list) * rawexpr
-    | Ind of command * string * (((string list * rawexpr) * bool) list) * rawexpr * ((string * rawexpr) list)
-    | Print of command * string
-    | Eval of command * rawexpr
-    | Level of command * string list
-    | Eof of unit
+  | Import of command * string
+  | Thm of command * proof
+  | Infer of command * (((string list * rawexpr) * bool) list) * rawexpr
+  | Ind of command * string * (((string list * rawexpr) * bool) list) * rawexpr * ((string * rawexpr) list)
+  | Print of command * string
+  | Eval of command * rawexpr
+  | Level of command * string list
+  | Eof of unit
 
 (* Internal core syntax in locally nameless representation style *)
 
@@ -77,12 +76,14 @@ type level =
 type expr =
   | Local of int
   | Global of string
+  | Pi of string * expr * expr
   | Lam of string * expr
   | App of expr * expr
-  | Pi of string * expr * expr
-  | Void of unit
-  | Rfl of unit
   | Eq of expr * expr * expr
+  | Rfl of unit
+  | Quot of expr * expr
+  | Mkq of expr * expr
+  | Void of unit
   | Type of level
   | Meta of int
   | Wild of int
@@ -120,14 +121,14 @@ let rec of_raw_expr_with_env env = function
       | Some index -> Local index
       | None -> Global x
     end
+  | RPi (x, e1, e2) -> Pi (x, of_raw_expr_with_env env e1, of_raw_expr_with_env (x :: env) e2)
   | RLam (x, e) -> Lam (x, of_raw_expr_with_env (x :: env) e)
   | RApp (e1, e2) -> App (of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
-  | RPi (x, e1, e2) ->
-    Pi (x, of_raw_expr_with_env env e1, of_raw_expr_with_env (x :: env) e2)
-  | RVoid () -> Void ()
+  | RQuot (e1, e2) -> Quot (of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
+  | RMkq (e1, e2) -> Mkq (of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
+  | REq (e, e1, e2) -> Eq (of_raw_expr_with_env env e, of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
   | RRfl () -> Rfl ()
-  | REq (e, e1, e2) ->
-    Eq (of_raw_expr_with_env env e, of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
+  | RVoid () -> Void ()
   | RType l -> Type (level_of_raw l)
   | RMeta n -> Meta n
   | RWild n -> Wild n
@@ -155,6 +156,10 @@ let rec of_raw_expr_with_vars env = function
         []
     in
     e, n
+  | RPi (x, e1, e2) ->
+    let e1', v1 = of_raw_expr_with_vars env e1 in
+    let e2', v2 = of_raw_expr_with_vars (x :: env) e2 in
+    Pi (x, e1', e2'), v1 @ v2
   | RLam (x, e) ->
     let e', v = of_raw_expr_with_vars (x :: env) e in
     Lam (x, e'), v
@@ -162,17 +167,21 @@ let rec of_raw_expr_with_vars env = function
     let e1', v1 = of_raw_expr_with_vars env e1 in
     let e2', v2 = of_raw_expr_with_vars env e2 in
     App (e1', e2'), v1 @ v2
-  | RPi (x, e1, e2) ->
-    let e1', v1 = of_raw_expr_with_vars env e1 in
-    let e2', v2 = of_raw_expr_with_vars (x :: env) e2 in
-    Pi (x, e1', e2'), v1 @ v2
-  | RVoid () -> Void (), []
-  | RRfl () -> Rfl (), []
   | REq (e, e1, e2) ->
     let e', v = of_raw_expr_with_vars env e in
     let e1', v1 = of_raw_expr_with_vars env e1 in
     let e2', v2 = of_raw_expr_with_vars env e2 in
     Eq (e', e1', e2'), v @ v1 @ v2
+  | RRfl () -> Rfl (), []
+  | RQuot (e1, e2) ->
+    let e1', v1 = of_raw_expr_with_vars env e1 in
+    let e2', v2 = of_raw_expr_with_vars env e2 in
+    Quot (e1', e2'), v1 @ v2
+  | RMkq (e1, e2) ->
+    let e1', v1 = of_raw_expr_with_vars env e1 in
+    let e2', v2 = of_raw_expr_with_vars env e2 in
+    Mkq (e1', e2'), v1 @ v2
+  | RVoid () -> Void (), []
   | RType l -> Type (level_of_raw l), []
   | RMeta n -> Meta n, []
   | RWild n -> Wild n, []

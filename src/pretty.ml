@@ -96,6 +96,9 @@ let rec print env = function
 
   | Type l -> 
     "type " ^ print_level l ^ " "
+  
+  | Quot (e1, e2) -> parenthesize env e1 ^ " / " ^ parenthesize env e2
+  | Mkq (e1, e2) -> "[" ^ parenthesize env e1 ^ "] " ^ parenthesize env e2
 
   | Reflect (e1, e2) -> "reflect " ^ parenthesize env e1 ^ parenthesize env e2
   | Explode (e1, e2) -> "explode " ^ parenthesize env e1 ^ parenthesize env e2

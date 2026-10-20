@@ -16,10 +16,12 @@ open Expr
 let rec subst_global k d x = function
   | Global y when x = y -> shift 0 k d
   | Global _ | Local _ | Void _ | Rfl _ | Type _ | Meta _ | Wild _ as e -> e
+  | Pi (y, e1, e2) -> Pi (y, subst_global k d x e1, subst_global (k+1) d x e2)
   | Lam (y, e) -> Lam (y, subst_global (k+1) d x e)
   | App (e1, e2) -> App (subst_global k d x e1, subst_global k d x e2)
-  | Pi (y, e1, e2) -> Pi (y, subst_global k d x e1, subst_global (k+1) d x e2)
   | Eq (e, e1, e2) -> Eq (subst_global k d x e, subst_global k d x e1, subst_global k d x e2)
+  | Quot (e1, e2) -> Quot (subst_global k d x e1, subst_global k d x e2)
+  | Mkq (e1, e2) -> Mkq (subst_global k d x e1, subst_global k d x e2)
   | Reflect (e1, e2) -> Reflect (subst_global k d x e1, subst_global k d x e2)
   | Explode (e1, e2) -> Explode (subst_global k d x e1, subst_global k d x e2)
   | ESubIn (e, e1, e2) -> ESubIn (subst_global k d x e, subst_global k d x e1, subst_global k d x e2)

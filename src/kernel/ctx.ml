@@ -14,11 +14,12 @@ let check global ind ctx lvl =
     match l with
   | [] -> Ok []
   | (x, ty, b) :: ctx' ->
-    begin match Env.unfold_all global 0 ty with
+    match Env.unfold_all global 0 ty with
+    | Error msg -> Error ("The specified context is invalid: " ^ msg)
     | Ok ty' ->
       (* Dumps inductive type data into the context (reversed to preserve its order ) *)
       let ind_ctx = List.map (fun (id, ty) -> (id, ty, true)) ind @ (List.rev ctx') in
-      begin match Type.check global ind_ctx lvl ty', helper ctx' with
+      match Type.check global ind_ctx lvl ty', helper ctx' with
       | Ok elab, Ok ctx'' -> 
         if Env.is_declared x global then
           Error ("Naming conflict with the identifier '" ^ x ^ 
@@ -27,9 +28,6 @@ let check global ind ctx lvl =
           Ok ((x, eval (fst elab), b) :: ctx'')
       | Error msg, _ -> Error ("The specified context has a type mismatch: " ^ msg)
       | _ , Error msg -> Error msg
-      end
-    | Error msg -> Error ("The specified context is invalid: " ^ msg)
-    end
   in
   helper (List.rev ctx)
 
@@ -38,9 +36,10 @@ let check_with_universe global ctx lvl =
     match l with
   | [] -> Ok ([], [])
   | (x, ty, b) :: ctx' ->
-    begin match Env.unfold_all global 0 ty with
+    match Env.unfold_all global 0 ty with
+    | Error msg -> Error ("The specified context is invalid: " ^ msg)
     | Ok ty' ->
-      begin match Type.check global ctx' lvl ty', helper ctx' with
+      match Type.check global ctx' lvl ty', helper ctx' with
       | Ok (ty', univ), Ok (ctx1, ctx2) -> 
         if Env.is_declared x global then
           Error ("Naming conflict with the identifier '" ^ x ^ 
@@ -49,13 +48,10 @@ let check_with_universe global ctx lvl =
           Ok (((x, eval ty', b) :: ctx1), ((x, eval univ, b) :: ctx2))
       | Error msg, _ -> Error ("The specified context is invalid: " ^ msg)
       | _ , Error msg -> Error msg
-      end
-    | Error msg -> Error ("The specified context is invalid: " ^ msg)
-    end
   in
   helper (List.rev ctx)
 
 let rec placeholder_levels = function
   | [] -> []
   | (x, ty, b) :: ctx' ->
-      (x, Level.placeholder_levels ty, b) :: placeholder_levels ctx'
+    (x, Level.placeholder_levels ty, b) :: placeholder_levels ctx'

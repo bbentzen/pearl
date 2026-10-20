@@ -102,6 +102,9 @@ rule token = parse
   | "eq"               { EQ }
   | "="                { EQSYM }
   | "rfl"              { RFL }
+  | "/"                { SLASH }
+  | "["                { LSQBRACK }
+  | "]"                { RSQBRACK }
   | "_"                { WILDCARD }
   | "??"               { PLACEHOLDER }
   | ":="               { COLONEQ }
