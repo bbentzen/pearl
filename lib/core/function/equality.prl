@@ -43,3 +43,8 @@ thm fun_inj_codom {A A' B B' : type ℓ} :
 thm dfun_inj_dom {A A' : type ℓ} {B : A → type ℓ} {B' : A' → type ℓ} :
   eq (type ℓ) (Π (x : A), B x) (Π (x : A'), B' x) → eq (type ℓ) A A' :=
 λ p, reflect p rfl
+
+thm dfun_inj_codom {A A' : type ℓ} {B : A → type ℓ} {B' : A' → type ℓ} :
+  Π (p : eq (type ℓ) (Π (x : A), B x) (Π (x : A'), B' x)), 
+  reflect p (Π (x : A), eq (type ℓ) (B x) (B' x)) :=
+λ p x, reflect p rfl

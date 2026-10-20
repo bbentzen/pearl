@@ -13,3 +13,13 @@ universe ℓ
 def class_eq {A : type ℓ} (R : A → A → type ℓ) (e : is_equiv R) (a b : A) (d : R a b) : 
   eq (A / R) ([a] R) ([b] R) :=
 reflect d rfl
+
+/* Injectivity of quotient type former */
+
+thm quot_inj_dom {A A': type ℓ} {R : A → A → type ℓ} {R' : A' → A' → type ℓ} (e₁ : is_equiv R) (e₂ : is_equiv R') :
+  eq (type ℓ) (A / R) (A' / R') → eq (type ℓ) A A' :=
+λ p, reflect p rfl
+
+thm quot_inj_codom {A A': type ℓ} {R : A → A → type ℓ} {R' : A' → A' → type ℓ} (e₁ : is_equiv R) (e₂ : is_equiv R') :
+  Π (p : eq (type ℓ) (A / R) (A' / R')), reflect p (eq (A → A → type ℓ) R R') :=
+λ p, reflect p rfl

@@ -172,7 +172,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | Ok (e1, ty1, sa) ->
       let ty1 = Placeholder.solve [] ty1 in
       begin match eval (Expr.type_of ty1) with
-      | Eq (_, Pi(_, a, a'), Pi(_, b, b')) ->
+      | Eq (_, Pi(_, a, a'), Pi(_, b, b')) | Eq (_, Quot(a, a'), Quot(b, b')) ->
         eq_reflection_on env ctx lvl lc sl ty vars e1 e2 ([(a, b)] @ [(a', b')])
       | Eq (_, Eq(ty1, a, a'), Eq(ty1', b, b')) ->
         eq_reflection_on env ctx lvl lc sl ty vars e1 e2 ([(ty1, ty1')] @ [(a, b)] @ [(a', b')])
