@@ -522,6 +522,20 @@ and unify env ctx lvl lc sl vars x lift =
           end
         | Error (sa, msg) -> Error (sa, Msg.unify_eq e e1 e2 e' e1' e2' msg)
         end
+      
+      | Quot (e1, e2), Quot (e1', e2'), ty ->
+        let e1 = eval e1 in 
+        let e1' = eval e1' in
+        begin match unify env ctx lvl lc sl vars (e1, e1', ty) lift with
+        | Ok s1 -> 
+          let e2 = eval e2 in
+          let e2' = eval e2' in
+          begin match unify env ctx lvl lc sl (vars+1) (e2, e2', ty) lift with
+          | Ok s2 -> Ok (Quot (s1, s2))
+          | Error (_, msg) -> Error ((e2, e2'), Msg.unify_quot msg)
+          end
+        | Error ((e1, e2), msg) -> Error ((e1, e2), Msg.unify_quot msg)
+        end
 
       | Lam (x, e), Lam (y, e'), Pi(_, ty1 , ty2) ->
         if e = e' then

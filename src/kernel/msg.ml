@@ -194,6 +194,9 @@ let lam_unify_2 x e y e' msg =
   "Don't know how to unify both lambda abstractions\n  " ^ 
   Pretty.printf (Lam (x, e)) ^ "\nand\n  " ^ Pretty.printf (Lam (y, e')) ^ ". " ^ msg
 
+let unify_quot msg =
+  "Unification failed at quotient type: " ^ msg
+
 let not_syntactically_equal e e' =
   "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. "
 

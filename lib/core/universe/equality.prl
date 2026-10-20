@@ -30,3 +30,9 @@ def form_equality_type_2 {A A' : type ℓ₁} {a b : A} {a' b' : A'}
   (p : eq (type ℓ₁) A A') (q : eq A' (reflect p a) a') (r : eq A' (reflect p b) b') :
   eq (type ℓ₁) (eq A a b) (eq (reflect p A') a' b') :=
 reflect q reflect r rfl
+
+/* Congruence rules for the quotient type */
+
+def form_quotient_type_1 {A A' : type ℓ₁} (R R' : A → A → type ℓ₁) (p : eq (type ℓ₁) A A') :
+  eq (type ℓ₁) (A / R) (A' / reflect p R) :=
+reflect p rfl

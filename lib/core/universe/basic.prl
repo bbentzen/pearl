@@ -8,10 +8,11 @@ universe ℓ₁ ℓ₂
  
 /* Formation rules for type formers */
 
-def form_function_type {A : type ℓ₁} {B : A → type ℓ₂} :
-  type (max ℓ₁ ℓ₂) :=
-Π (x : A), B x
+def form_function_type {A : type ℓ₁} {B : A → type ℓ₂} : type (max ℓ₁ ℓ₂) :=
+  Π (x : A), B x
 
-def form_equality_type {A : type ℓ₁} (a b : A) :
-  type ℓ₁ :=
-eq A a b
+def form_equality_type {A : type ℓ₁} (a b : A) : type ℓ₁ :=
+  eq A a b
+
+def form_quotient_type {A : type ℓ₁} (R : A → A → type ℓ₁) : type ℓ₁ :=
+  A / R
