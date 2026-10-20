@@ -332,23 +332,35 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       let ty1 = Pi("?v", e1, Pi("?v", e1, Type n)) in
       begin match elaborate env ctx lvl lc sl ty1 vars e2 with
       | Ok (e2, Pi(_, e1, Pi(_, e1', Type n)), sa) ->
-        (* Check against the target type *)
-        let e1 = Placeholder.without e1 e1' in
-        begin match eval (Expr.type_of ty) with
-        | Type (Var par) when Level.is_arbitrary_string par ->
-          (* Synthesize type levels placeholder *)
-          Ok (Quot(e1, e2), Type n, Stack.append st sa)
-        | Type m ->
-          (* Check if levels are compatible *)
-          if Level.leq n m then
-            Ok (Quot(e1, e2), Type m, Stack.append st sa)
-          else
-            Error (Stack.append st sa, Msg.quot_universe_1 e1 e2 n m)
-        | Meta k ->
-          Hashtbl.add Data.meta_store k { Data.solution = Type n};
-          Ok (Quot(e1, e2), Type n, Stack.append st sa)
-        | _ -> Error (Stack.append st sa, Msg.quot_universe_2 e1 e2 (eval (Expr.type_of ty)))
-        end
+        (* Proceed only if a proof of equivalence is available *)
+        let proceed () =
+          let e1 = Placeholder.without e1 e1' in
+          begin match eval (Expr.type_of ty) with
+          | Type (Var par) when Level.is_arbitrary_string par ->
+            (* Synthesize type levels placeholder *)
+            Ok (Quot(e1, e2), Type n, Stack.append st sa)
+          | Type m ->
+            (* Check if levels are compatible *)
+            if Level.leq n m then
+              Ok (Quot(e1, e2), Type m, Stack.append st sa)
+            else
+              Error (Stack.append st sa, Msg.quot_universe_1 e1 e2 n m)
+          | Meta k ->
+            Hashtbl.add Data.meta_store k { Data.solution = Type n};
+            Ok (Quot(e1, e2), Type n, Stack.append st sa)
+          | _ -> Error (Stack.append st sa, Msg.quot_universe_2 e1 e2 (eval (Expr.type_of ty)))
+          end
+        in
+        (* Search for proof **in context** that e2 is an equivalence *)
+        (* To be expanded to global environment *)
+        let rec search_equiv = function
+        | [] -> Error (sa, Msg.quot_no_rel_3 e1 e2)
+        | x :: l ->
+          match unify env ctx lvl lc sl vars (e2, x, ty1) true with
+          | Ok _ -> proceed ()
+          | Error _ -> search_equiv l
+        in
+        search_equiv (Global.equiv_lookup e2 ctx)
       | Ok (e2, ty1, _) -> Error (sl, Msg.quot_no_rel_1 e1 e2 n ty1)
       | Error (sl, msg) -> Error (sl, Msg.quot_no_rel_2 e1 e2 n msg)
       end

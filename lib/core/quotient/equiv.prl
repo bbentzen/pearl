@@ -17,5 +17,5 @@ def is_symm {A : type ℓ} (R : A → A → type ℓ) : type ℓ :=
 def is_trans {A : type ℓ} (R : A → A → type ℓ) : type ℓ :=
 Π (x y z : A), R x y → R y z → R x z
 
-def is_equiv {A : type ℓ} (R : A → A → type ℓ) : type ℓ :=
+thm is_equiv {A : type ℓ} (R : A → A → type ℓ) : type ℓ :=
 is_refl R × is_symm R × is_trans R

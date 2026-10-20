@@ -259,6 +259,9 @@ let quot_no_rel_1 e1 e2 n ty1 =
 let quot_no_rel_2 e1 e2 n msg =
   "Type mismatch when checking that " ^ Pretty.printf e2 ^ " in the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\nhas type\n  " ^ Pretty.printf (Pi("?v", e1, Pi("?v", e1, Type n))) ^ "\n" ^ msg
 
+let quot_no_rel_3 e1 e2 =
+  "Type mismatch when checking that " ^ Pretty.printf e2 ^ " in the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\nis an equivalence. Could not find a suitable relizer for is_equiv " ^ Pretty.printf e2 ^ "."
+
 let quot_dom_type_1 e1 e2 ty1 =
   "The domain " ^ Pretty.printf e1 ^ " in the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\nhas type\n  " ^ 
   Pretty.printf ty1 ^ "\nbut is expected to be a type."

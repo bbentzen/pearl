@@ -108,3 +108,10 @@ let print ctx =
   printrev (List.rev ctx)
 
 let printf ctx = print ctx
+
+(* Use syntactic identity? Probably too strong *)
+
+let rec equiv_lookup rel = function
+  | [] -> []
+  | (_, App (Global "is_equiv", e), _) :: ctx -> e :: equiv_lookup rel ctx
+  | _ :: ctx -> equiv_lookup rel ctx
