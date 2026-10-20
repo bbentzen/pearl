@@ -66,10 +66,10 @@ let single_id = function
 %right PI
 %right RARROW
 %right SUM PROD
-%right TRANS
-%nonassoc NEG
-%nonassoc EXPLODE
+%left TRANS SLASH
 %left APP
+%nonassoc NEG
+%nonassoc LSQBRACK EQ REFLECT EXPLODE
 %nonassoc ID LPAREN ABS SIGMA ZERO NAT STAR VOID RFL TYPE PLACEHOLDER WILDCARD
 %nonassoc SYMM
 
@@ -138,6 +138,7 @@ expr:
   | app_expr %prec NEG                                      { $1 }
   | expr RARROW expr                                        { RPi("v?", $1, $3) }
   | expr LRARROW expr                                       { iff_def $1 $3 }
+  | expr SLASH expr %prec SLASH                             { RQuot($1, $3) }
   | expr PROD expr                                          { prod_def $1 $3 }
   | expr SUM expr                                           { RApp(RApp(RId "sum", $1), $3) }
   | expr EQSYM expr                                         { REq(RWild 0, $1, $3) }
@@ -156,8 +157,9 @@ head_expr:
   | PI blocks                                               { pi_of_list (snd $2) (fst $2) }
   | SIGMA blocks                                            { sigma_of_list (snd $2) (fst $2) }
   | NEG app_expr %prec NEG                                  { RPi("v?", $2, RVoid()) }
-  | EQ head_expr head_expr head_expr %prec EXPLODE          { REq($2, $3, $4) }
-  | REFLECT head_expr head_expr %prec EXPLODE               { RReflect($2, $3) }
+  | LSQBRACK expr RSQBRACK expr %prec LSQBRACK              { RMkq($2, $4) }
+  | EQ head_expr head_expr head_expr %prec EQ               { REq($2, $3, $4) }
+  | REFLECT head_expr head_expr %prec REFLECT               { RReflect($2, $3) }
   | EXPLODE head_expr head_expr %prec EXPLODE               { RExplode($2, $3) }
 
 atom:
