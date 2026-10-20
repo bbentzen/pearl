@@ -39,3 +39,13 @@ thm sum_eq {A B : type ℓ} (v v' : A + B) :
 sumrec _ _ _
   (λ y, sumrec _ _ _  (λ y', id_iff_id) (λ y', (sum_neq, absurd)) v') 
   (λ y, sumrec _ _ _ (λ y', (sum_neq', absurd)) (λ x', id_iff_id) v') v
+
+/* Injectivity of sum type former */
+
+thm sum_inj_1 {A A' B B' : type ℓ} :
+  eq (type ℓ) (A + B) (A' + B') → eq (type ℓ) A A' :=
+λ p, reflect p rfl
+
+thm sum_inj_2 {A A' B B' : type ℓ} :
+  eq (type ℓ) (A + B) (A' + B') → eq (type ℓ) B B' :=
+λ p, reflect p rfl

@@ -176,6 +176,19 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         eq_reflection_on env ctx lvl lc sl ty vars e1 e2 ([(a, b)] @ [(a', b')])
       | Eq (_, Eq(ty1, a, a'), Eq(ty1', b, b')) ->
         eq_reflection_on env ctx lvl lc sl ty vars e1 e2 ([(ty1, ty1')] @ [(a, b)] @ [(a', b')])
+      | Eq (_, App(a, a'), App(b, b')) ->
+        let a_head, a_args = Eval.break_args [] a in
+        let b_head, b_args = Eval.break_args [] b in
+        if a_head = b_head && List.length a_args = List.length b_args then
+          let rec helper l1 = function
+          | [] -> [(a', b')]
+          | a :: l2 ->
+            let n = List.length l2 in
+            (a, List.nth l1 n) :: helper l1 l2
+        in
+          eq_reflection_on env ctx lvl lc sl ty vars e1 e2 (helper a_args b_args)
+        else
+          eq_reflection_on env ctx lvl lc sl ty vars e1 e2 [(App(a, a'), App(b, b'))]
       | Eq (_, a, b) ->
         eq_reflection_on env ctx lvl lc sl ty vars e1 e2 [(a, b)]
       | App (App (rel, a), b) ->
