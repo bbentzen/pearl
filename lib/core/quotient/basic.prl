@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) 2026 Bruno Bentzen. All rights reserved.
+ * Released under the Apache License 2.0 (see "License");
+ * Author: Bruno Bentzen
+ */
+
+import ./equiv.prl
+
+universe ℓ
+
+/* Equivalence class */
+
+def mk_q {A : type ℓ} (R : A → A → type ℓ) (e : is_equiv R) (a : A) : 
+  A / R :=
+[a] R

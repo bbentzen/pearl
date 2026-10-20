@@ -268,3 +268,21 @@ let quot_dom_type_1 e1 e2 ty1 =
 
 let quot_dom_type_2 e1 e2 msg =
   "Cannot check the typehood of the domain " ^ Pretty.printf e1 ^ " in the quotient type\n  " ^ Pretty.printf (Quot(e1, e2)) ^ "\n." ^ msg
+
+(* Equivalence classes *)
+
+let mkq_error_rel e1 e2 ty msg =
+  "Cannot check that " ^ Pretty.printf (Mkq (e1, e2)) ^ " inhabits the type\n  " ^ Pretty.printf ty ^ "\n" ^ msg
+
+let mkq_error_rel_2 e1 e2 ty =
+  "Cannot check that " ^ Pretty.printf (Mkq (e1, e2)) ^ " inhabits the type\n  " ^ Pretty.printf ty ^ "\n"
+
+let mkq_error_dom e1 e2 ty ty1 msg =
+  "Failed to check that " ^ Pretty.printf (Mkq (e1, e2)) ^ " inhabits the type\n  " ^ Pretty.printf ty ^ 
+  "\n Cannot check that " ^ Pretty.printf e1 ^ " has type " ^ Pretty.printf ty1 ^ "\n" ^ msg
+
+let mkq_error_dom_2 e1 e2 ty msg =
+  "Failed to check that " ^ Pretty.printf (Mkq (e1, e2)) ^ " inhabits the type\n  " ^ Pretty.printf ty ^ "\n" ^ msg
+
+let mkq_error_ty e1 e2 ty =
+  "The term " ^ Pretty.printf (Mkq (e1, e2)) ^ " is checked against the type \n  " ^ Pretty.printf ty ^ "\nbut is expected to have type ?1? / ?2?"

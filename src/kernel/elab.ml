@@ -369,8 +369,38 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     | Error (sa, msg) -> Error (sa, Msg.quot_dom_type_2 e1 e2 msg)
     end
    
-  | Mkq (e1, e2) -> 
-    Error (sl, Pretty.printf e1 ^ Pretty.printf e2 ^ "Not yet implemented")
+  | Mkq (e1, e2) ->
+    let ty = eval ty in
+    begin match (Expr.type_of ty) with
+    | Quot (ty1, e2') ->
+      let e1 = eval e1 in
+      begin match elaborate env ctx lvl lc sl ty1 vars e1 with
+      | Ok (e1, ty1, sa) ->
+        let e2 = eval e2 in
+        let ty2 = Pi("?v", ty1, Pi("?v", ty1, Type (Var "?_"))) in
+        begin match unify env ctx lvl lc sl vars (e2', e2, ty2) true with
+        | Ok e2 -> Ok (Mkq (e1, e2), Quot (ty1, e2), sa)
+        | Error (_, msg) -> Error (sl, Msg.mkq_error_rel e1 e2 ty msg)
+        end
+      | Error (sa, msg) -> Error (sa, Msg.mkq_error_dom e1 e2 ty ty1 msg)
+      end
+    | Meta _ ->
+      let h1 = Placeholder.generate () in
+      begin match elaborate env ctx lvl lc sl h1 vars e1 with
+      | Ok (e1, ty1, sa) ->
+        let e2 = eval e2 in
+        let ty1 = Pi("?v", ty1, Pi("?v", ty1, Type (Var "?_"))) in
+        begin match elaborate env ctx lvl lc sl ty1 vars e2 with
+        | Ok (e2, Pi(_, ty1, Pi("?v", ty1', _)), sa) ->
+          let ty1 = Placeholder.without ty1 ty1' in
+          Ok (Mkq (e1, e2), Quot (ty1, e2), sa)
+        | Ok _ -> Error (sa, Msg.mkq_error_rel_2 e1 e2 ty)
+        | Error (sa, msg) -> Error (sa, Msg.mkq_error_rel e1 e2 ty msg)
+        end
+      | Error (sa, msg) -> Error (sa, Msg.mkq_error_dom_2 e1 e2 ty msg)
+      end
+    | _ -> Error (sl, Msg.mkq_error_ty e1 e2 ty)
+    end
 
   | Eq(ty1, e1, e2) ->
     let ty1 = eval ty1 in
