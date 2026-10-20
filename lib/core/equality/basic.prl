@@ -27,3 +27,17 @@ reflect p id
 lem eq_left {A : type ℓ} {a b c : A} (p : eq A a b) :
   eq A c a → eq A c b :=
 reflect p id
+
+/* Injectivity of equality */
+
+thm eq_inj_dom {A A' : type ℓ} {a b : A} {a' b' : A'} (p : eq (type ℓ) (eq A a b) (eq A' a' b')) :
+  eq (type ℓ) A A' :=
+reflect p rfl
+
+thm eq_inj_lhs {A A' : type ℓ} {a b : A} {a' b' : A'} (p : eq (type ℓ) (eq A a b) (eq A' a' b')) :
+  eq A a (reflect p a') :=
+reflect p rfl
+
+thm eq_inj_rhs {A A' : type ℓ} {a b : A} {a' b' : A'} (p : eq (type ℓ) (eq A a b) (eq A' a' b')) :
+  eq A b (reflect p b') :=
+reflect p rfl

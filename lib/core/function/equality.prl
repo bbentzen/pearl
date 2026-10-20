@@ -27,3 +27,13 @@ rfl
 thm funext {A : type ℓ} {B : A → type ℓ} (f g : Π (x : A), B x) :
   (Π (x : A), eq (B x) (f x) (g x)) → eq (Π (x : A), B x) f g :=
 λ h, reflect (etad f) reflect (etad g) (λ x, (reflect (h x) rfl) x)
+
+/* Injectivity of non-dependent function former */
+
+thm fun_inj_dom {A A' B B' : type ℓ} (p : eq (type ℓ) (A → B) (A' → B')) :
+  eq (type ℓ) A A' :=
+reflect p rfl
+
+thm fun_inj_codom {A A' B B' : type ℓ} (p : eq (type ℓ) (A → B) (A' → B')) :
+  eq (type ℓ) B B' :=
+reflect p rfl
