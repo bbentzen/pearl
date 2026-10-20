@@ -173,30 +173,12 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       let ty1 = Placeholder.solve [] ty1 in
       begin match eval (Expr.type_of ty1) with
       | Eq (_, a, b) ->
-        (* Zonks the metavariables in boths sides *)
-        let a = Placeholder.solve [] a and b = Placeholder.solve [] b in
-        let a = eval a and b = eval b in
-        (* Explicit substitutions so we can recover the type later on *)
-        let ty = Expr.reflsubst 0 b (ESubIn(a, b, ty)) ty in
-        let e2 = Expr.reflsubst 0 b (ESubIn(a, b, ty)) e2 in
-        begin match elaborate env ctx lvl lc sl ty vars e2 with
-        | Ok (e2, ty, sa) -> Ok (Reflect (e1, e2), ty, sa)
-        | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx b a e2 ty msg)
-        end
+        reflection env ctx lvl lc sl ty vars a b e1 e2
       | App (App (rel, a), b) ->
         if find_equivalence env ctx lvl lc sl vars rel h1 then
-          let a = Placeholder.solve [] a and b = Placeholder.solve [] b in
-          let a = eval a and b = eval b in
-          (* Explicit substitutions so we can recover the type later on *)
-          let ty = Expr.reflsubst 0 b (ESubIn(a, b, ty)) ty in
-          let e2 = Expr.reflsubst 0 b (ESubIn(a, b, ty)) e2 in
-          begin match elaborate env ctx lvl lc sl ty vars e2 with
-          | Ok (e2, ty, sa) -> Ok (Reflect (e1, e2), ty, sa)
-          | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx b a e2 ty msg)
-          end
+          reflection env ctx lvl lc sl ty vars a b e1 e2
         else
           Error (sa, Msg.reflect_goal_mkq ctx e1 rel a b ty)
-      (* If an equiv then reflect *)
       | ty1 -> Error (sa, Msg.reflect_1 e1 ty1)
       end
     | Error (sa, msg) -> Error (sa, Msg.reflect_2 e1 msg)
@@ -513,6 +495,20 @@ and find n env ctx ty lvl lc sl vars =
         | Error _ -> search ctx'
   in
   search ctx
+
+(* Reflection *)
+
+and reflection env ctx lvl lc sl ty vars a b e1 e2 =
+  (* Zonks the metavariables on both sides *)
+  let a = Placeholder.solve [] a and b = Placeholder.solve [] b in
+  let a = eval a and b = eval b in
+  (* Explicit substitutions so we can recover the type later on *)
+  let ty = Expr.reflsubst 0 b (ESubIn(a, b, ty)) ty in
+  let e2 = Expr.reflsubst 0 b (ESubIn(a, b, ty)) e2 in
+  begin match elaborate env ctx lvl lc sl ty vars e2 with
+  | Ok (e2, ty, sa) -> Ok (Reflect (e1, e2), ty, sa)
+  | Error (sa, msg) -> Error (sa, Msg.reflect_goal ctx b a e2 ty msg)
+  end
 
 (* Search for proof **in context** that e2 is an equivalence *)
 (* To be expanded to global environment *)
