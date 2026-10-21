@@ -1,4 +1,4 @@
-We very much welcome contribution from human authors of all forms, including feedback sharing, bug reports, feature requests, improved documentation, and source code or library contributions. Before preparing a pull request (PR), which assumes that you have read the AI Use Policy found below, we ask that you please test your changes beforehand, running `dune build` to check that the Pearl source code compiles properly and then checking that nothing in the library `lib/all.prl` was broken.
+We now welcome contribution from human authors of all forms, including feedback sharing, bug reports, feature requests, improved documentation, and source code or library contributions. Before preparing a pull request (PR), which assumes that you have read the AI Use Policy found below, we ask that you please test your changes beforehand, running `dune build` to check that the Pearl source code compiles properly and then checking that nothing in the library `lib/all.prl` was broken.
 
 ## AI Use Guidelines
 
@@ -16,13 +16,13 @@ represent computer programs. They represent person programs, which in
 some instances can be transformed into computer programs and in other
 instances cannot. [Foundations of constructive analysis, pp. 354–355]
 
-Pearl is written by human beings for human use and built on the convictions shared by Brouwer and Bishop that mathematics is a human activity. The practice of so-called "vibe coding" can undermine this vision and be highly detrimental to human understanding. As a first step, we encourage contributors to abide by the recommendations of the [AHM](https://www.ahmath.org/) and [AGMAI](https://agmai.org/) to protect human mathematics. Our rule of thumb is as follows: while low-impact use of AI for basic technical assistance and proofreading can be barely tolerated if they do not impact the human programming experience, contributors should explicitly acknowledge any further use and will only publish code that they are fully capable of producing on their own. 
+Pearl is written by human beings for human use and built on the convictions shared by Brouwer and Bishop that mathematics is a human activity. The practice of so-called "vibe coding" can undermine this vision and be highly detrimental to human understanding. As a first step, we encourage contributors to abide by the recommendations of the [AHM](https://www.ahmath.org/) and [AGMAI](https://agmai.org/) to protect human mathematics. Our rule of thumb is as follows: while low-impact use of AI for basic technical assistance and proofreading can be tolerated if they do not impact the human programming experience, contributors should explicitly acknowledge any further use and will only publish code that they are fully capable of producing on their own. 
 
 ## Desired features
 
 Here are some items on our TODO list:
 
-- Introduce Quotients types
+- Type inference at context
 - Delay unification (in progress)
 - Clearly separate elaboration, checking, and look for global identifier conflict when opening a binder only at elaboration stage
 - Improve stack overflow error at synthetization attempts
@@ -35,3 +35,7 @@ Here are some items on our TODO list:
 - Let-in local definitions
 - Opening of modules for referring to module.foo as foo
 - Better documentation (in progress)
+
+## Disclaimer
+
+This is an academic project maintained by a small group at Zhejiang University in part time. This project is driven by our philosophical credo that the justificatory value of theorem proving in a proof assistant is predicated on its own justifiation. The goal is not to compete with Agda, Lean, Rocq, Idris on practical grounds but to build a proof assistant that prioritizes its own philosophical justification over anything else.
