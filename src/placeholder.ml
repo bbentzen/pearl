@@ -42,7 +42,7 @@ let has_placeholder term =
     | x :: rest ->
       match x with
       | Meta _ -> true
-      | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> helper (e1 :: e2 :: rest)
+      | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> helper (e1 :: e2 :: rest)
       | Lam (_, e) -> helper (e :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
       | _ -> helper rest
@@ -57,7 +57,7 @@ let has_placeholder_name name term =
       match x with
       | Meta n when n = name -> true
       | Meta _ -> false
-      | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) | Explode (e1, e2) -> helper (e1 :: e2 :: rest)
+      | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> helper (e1 :: e2 :: rest)
       | Lam (_, e) -> helper (e :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
       | _ -> helper rest
@@ -76,7 +76,7 @@ let has term =
       | Lam (_, e) -> helper (e :: rest)
       | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) -> helper (e1 :: e2 :: rest)
       | Eq (e, e1, e2) -> helper (e :: e1 :: e2 :: rest)
-      | Reflect (_, e) | Explode (_, e) -> helper (e :: rest)
+      | Reflect (_, e) -> helper (e :: rest)
       | _ -> helper rest
   in
   helper [term]
@@ -102,7 +102,6 @@ let rec solve env = function
   | Quot (e1, e2) -> Quot (solve env e1, solve env e2)
   | Mkq (e1, e2) -> Mkq (solve env e1, solve env e2)
   | Reflect (e1, e2) -> Reflect (solve env e1, solve env e2)
-  | Explode (e1, e2) -> Explode (solve env e1, solve env e2)
   | ESubIn (e, e1, e2) -> ESubIn (solve env e, solve env e1, solve env e2)
   | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
 
@@ -118,7 +117,6 @@ let rec unique = function
   | Quot (e1, e2) -> Quot (unique e1, unique e2)
   | Mkq (e1, e2) -> Mkq (unique e1, unique e2)
   | Reflect (e1, e2) -> Reflect (unique e1, unique e2)
-  | Explode (e1, e2) -> Explode (unique e1, unique e2)
   | ESubIn (e, e1, e2) -> ESubIn (unique e, unique e1, unique e2)
 
 (* Takes two expressions and returns the first if the second is a meta variable *)

@@ -196,16 +196,13 @@ let rec elaborate env ctx lvl lc sl ty vars = function
           eq_reflection_on env ctx lvl lc sl ty vars e1 e2 [(a, b)]
         else
           Error (sa, Msg.reflect_goal_mkq ctx e1 rel a b ty)
+      | Void () ->
+        Ok (Reflect (e1, e2), ty, sa)
       | ty1 -> Error (sa, Msg.reflect_1 e1 ty1)
       end
     | Error (sa, msg) -> Error (sa, Msg.reflect_2 e1 msg)
     end
-
-  | Explode (e1, e2) ->
-    begin match elaborate env ctx lvl lc sl (Void()) vars e1 with
-    | Ok (e1', _, sa) -> Ok (Explode (e1', e2), ty, sa)
-    | Error (sa, msg) -> Error (sa, Msg.void_error e1 msg)
-    end
+    
   
   | ESubIn (e, e1, e2) ->
     begin match elaborate env ctx lvl lc sl ty vars e with
@@ -692,13 +689,6 @@ and unify env ctx lvl lc sl vars x lift =
         let u = unify env ctx lvl lc sl vars (e, e', Meta 0) lift in
         begin match u with
         | Ok e -> Ok (Reflect (p, e))
-        | Error msg -> Error msg
-        end
-
-      | Explode (p, e), Explode (_, e'), _ ->
-        let u = unify env ctx lvl lc sl vars (e, e', Meta 0) lift in
-        begin match u with
-        | Ok e -> Ok (Explode (p, e))
         | Error msg -> Error msg
         end
 

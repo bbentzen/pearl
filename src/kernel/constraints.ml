@@ -42,6 +42,5 @@ let rec zonk st = function
   | Quot (e1, e2) -> Quot (zonk st e1, zonk st e2)
   | Mkq (e1, e2) -> Mkq (zonk st e1, zonk st e2)
   | Reflect (e1, e2) -> Reflect (zonk st e1, zonk st e2)
-  | Explode (e1, e2) -> Explode (zonk st e1, zonk st e2)
   | ESubIn (e, e1, e2) -> ESubIn (zonk st e, zonk st e1, zonk st e2)
   | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e

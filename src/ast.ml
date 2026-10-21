@@ -30,13 +30,12 @@ type rawexpr =
   | RMeta of int
   | RWild of int
   | RReflect of rawexpr * rawexpr
-  | RExplode of rawexpr * rawexpr
 
 let rec has_var x = function
   | RId y -> x = y
   | RPi (y, e1, e2)  -> if x = y then false else has_var x e1 || has_var x e2
   | RLam (y, e) -> if x = y then false else has_var x e 
-  | RApp (e1, e2) | RQuot (e1, e2) | RMkq (e1, e2) | RReflect (e1, e2) | RExplode (e1, e2) -> 
+  | RApp (e1, e2) | RQuot (e1, e2) | RMkq (e1, e2) | RReflect (e1, e2) -> 
     has_var x e1 || has_var x e2
   | REq (e, e1, e2) -> has_var x e || has_var x e1 || has_var x e2
   | _ -> false
@@ -88,7 +87,6 @@ type expr =
   | Meta of int
   | Wild of int
   | Reflect of expr * expr
-  | Explode of expr * expr
   | ESubIn of expr * expr * expr
 
 (* Conversion of raw expressions into expressions *)
@@ -133,7 +131,6 @@ let rec of_raw_expr_with_env env = function
   | RMeta n -> Meta n
   | RWild n -> Wild n
   | RReflect (e1, e2) -> Reflect (of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
-  | RExplode (e1, e2) -> Explode (of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
 
 (* Returns a core expression with a list of used variable identifiers *)
 
@@ -189,10 +186,6 @@ let rec of_raw_expr_with_vars env = function
     let e1', v1 = of_raw_expr_with_vars env e1 in
     let e2', v2 = of_raw_expr_with_vars env e2 in
     Reflect (e1', e2'), v1 @ v2
-  | RExplode (e1, e2) ->
-    let e1', v1 = of_raw_expr_with_vars env e1 in
-    let e2', v2 = of_raw_expr_with_vars env e2 in
-    Explode (e1', e2'), v1 @ v2
 
 let fresh_var_list l =
   List.fold_left (fun acc n -> n + acc) 0 l

@@ -101,7 +101,6 @@ let rec print env = function
   | Mkq (e1, e2) -> "[" ^ parenthesize env e1 ^ "] " ^ parenthesize env e2
 
   | Reflect (e1, e2) -> "reflect " ^ parenthesize env e1 ^ parenthesize env e2
-  | Explode (e1, e2) -> "explode " ^ parenthesize env e1 ^ parenthesize env e2
   | ESubIn (e, e1, _) -> 
     (* print env e *)
   (* for testing: *)
@@ -114,7 +113,7 @@ let rec print env = function
 and parenthesize env e = 
   let helper = function
     | Lam _ | Pi _ 
-    | Reflect _ | Explode _ | App _
+    | Reflect _ | App _
     | Eq _ -> true
     | _ -> false
   in

@@ -56,7 +56,7 @@ let single_id = function
 %token LPAREN RPAREN BAR COMMA PROD SIGMA
 %token ZERO NAT
 %token STAR SUM
-%token EXPLODE VOID NEG
+%token VOID NEG
 %token EQ EQSYM RFL SYMM TRANS REFLECT
 %token SLASH LSQBRACK RSQBRACK
 %token WILDCARD PLACEHOLDER COLONEQ
@@ -160,7 +160,6 @@ head_expr:
   | LSQBRACK expr RSQBRACK expr %prec LSQBRACK              { RMkq($2, $4) }
   | EQ head_expr head_expr head_expr %prec EQ               { REq($2, $3, $4) }
   | REFLECT head_expr head_expr %prec REFLECT               { RReflect($2, $3) }
-  | EXPLODE head_expr head_expr %prec EXPLODE               { RExplode($2, $3) }
 
 atom:
   | ID                                                      { RId($1) }

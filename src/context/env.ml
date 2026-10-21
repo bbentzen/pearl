@@ -83,7 +83,6 @@ let rec lift n = function
   | Quot (e1, e2) -> Quot (lift n e1, lift n e2)
   | Mkq (e1, e2) -> Mkq (lift n e1, lift n e2)
   | Reflect (e1, e2) -> Reflect (lift n e1, lift n e2)
-  | Explode (e1, e2) -> Explode (lift n e1, lift n e2)
   | ESubIn (e, e1, e2) -> ESubIn (lift n e, lift n e1, lift n e2)
   | e -> e
 
@@ -149,14 +148,6 @@ let rec unfold_all env vars = function
     let u2 = unfold_all env vars e2 in
     begin match u1, u2 with
     | Ok e1, Ok e2 -> Ok (Mkq (e1, e2))
-    | Error msg, _ | _, Error msg -> Error msg
-    end
-  
-  | Explode (e1, e2) ->
-    let u1 = unfold_all env vars e1 in
-    let u2 = unfold_all env vars e2 in
-    begin match u1, u2 with
-    | Ok e1', Ok e2' -> Ok (Explode (e1', e2'))
     | Error msg, _ | _, Error msg -> Error msg
     end
 

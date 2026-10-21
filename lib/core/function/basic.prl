@@ -66,11 +66,11 @@ def neg_ant {A B : type ℓ} :
 
 thm ex_falso {A B : type ℓ} :
   A → ¬ A → B :=
-λ x f, explode (f x) x
+λ x f, reflect (f x) x
 
 thm absurd {A : type ℓ} :
   void → A :=
-λ x, explode x x
+λ x, reflect x x
 
 /* Dependent function type */
 

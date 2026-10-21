@@ -32,7 +32,7 @@ let rec occurs_name id l = function
     end
   | Pi (x, e1, e2) -> occurs_name x l e1 || occurs_name x l e2
   | Lam (x, e) ->  occurs_name x l e
-  | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Explode (e1, e2) | Reflect (e1, e2) -> occurs_name id l e1 || occurs_name id l e2
+  | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> occurs_name id l e1 || occurs_name id l e2
   | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> occurs_name id l e || occurs_name id l e1 || occurs_name id l e2
   | Rfl _ | Void _ | Type _ | Wild _ | Meta _ -> false  
   

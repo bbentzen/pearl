@@ -114,7 +114,6 @@ rule token = parse
   | ":"                { COLON }
   | "{"                { LBRACE }
   | "}"                { RBRACE }
-  | "explode"          { EXPLODE }
   | "reflect"          { REFLECT }
   | "import"           { IMPORT }
   | "inductive"        { IND }
