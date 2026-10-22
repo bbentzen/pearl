@@ -52,8 +52,7 @@ let is_declared x ctx =
   in
   helper x (List.rev ctx)
 
-let rec var_type x ctx =
-  match (List.rev ctx) with
+let rec var_type x = function
   | [] -> Error()
   | (y, ty, _) :: ctx' -> 
     if x = y then 
@@ -63,8 +62,7 @@ let rec var_type x ctx =
 
 (* Determines whether a given typed variable occurs in the context *)
 
-let rec check_var_ty x ty ctx =
-  match (List.rev ctx) with
+let rec check_var_ty x ty = function
   | [] -> false 
   | (y, ty', _) :: ctx -> 
     if x = y && ty' = ty then 

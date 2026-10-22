@@ -29,7 +29,7 @@ let solve_meta_application args vars body = function
 
 (* Checks whether the type of a given expression is the given type *)
 
-let rec elaborate env ctx lvl lc sl ty vars = function
+let rec elaborate env ctx ind lvl lc sl ty vars = function
   | Global x ->
     begin match Global.var_type x ctx with
     | Ok ty' ->
@@ -43,14 +43,14 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       | _ , true, _ , _ -> Ok (Global x, ty', sl)
       | false , false, false , true ->
         let h1 = Placeholder.generate () in
-        begin match elaborate env ctx lvl lc sl h1 vars ty' with
+        begin match elaborate env ctx ind lvl lc sl h1 vars ty' with
         | Ok (_, tTy', sa) ->
-          begin match unify env ctx lvl lc sl vars (ty, ty', (Expr.type_of tTy')) true with
+          begin match unify env ctx ind lvl lc sl vars (ty, ty', (Expr.type_of tTy')) true with
           | Ok s -> Ok (Global x, s, sl) 
           | Error _ ->
             (* Try again after evaluating both types *)
             let ty = eval ty and ty' = eval ty' in
-            begin match unify env ctx lvl lc sl vars (eval ty, eval ty', (Expr.type_of tTy')) true with
+            begin match unify env ctx ind lvl lc sl vars (eval ty, eval ty', (Expr.type_of tTy')) true with
             | Ok s -> Ok (Global x, s, sl) 
             | Error (_, msg) -> Error (sa, Msg.var_type_mismatch x ty' ty msg)
             end
@@ -60,16 +60,48 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       | false, false, false, false -> Error (sl, Msg.var_error_2 x)
       end
     | Error _ ->
-      (* Check if identifier corresponds to a theorem in the env environment *)
-      begin match Env.var_type x env with
-      | Ok envty ->
+      (* CHECK IF IN INDUCTIVE ENV *)
+      begin match Inductive.var_type x ind with
+      | Ok ty' ->
+        let ty = eval ty in
+        let c = Inductive.check_var_ty x ty ind in
+        let h = Placeholder.is ty in 
+        let h' = Placeholder.is ty' in 
+        let d = Inductive.is_declared x ind in
+        begin match c, h, h', d with
+        | true , _, _ , _ | _ , _, true , _ -> Ok (Global x, ty, sl)
+        | _ , true, _ , _ -> Ok (Global x, ty', sl)
+        | false , false, false , true ->
           let h1 = Placeholder.generate () in
-          begin match unify env ctx lvl lc sl vars (eval ty, envty, h1) true with
-          | Ok s ->
-            Ok (Global x, s, sl) 
-          | Error (_, msg) -> Error (([],[]), Msg.var_type_mismatch x envty ty msg)
+          begin match elaborate env ctx ind lvl lc sl h1 vars ty' with
+          | Ok (_, tTy', sa) ->
+            begin match unify env ctx ind lvl lc sl vars (ty, ty', (Expr.type_of tTy')) true with
+            | Ok s -> Ok (Global x, s, sl) 
+            | Error _ ->
+              (* Try again after evaluating both types *)
+              let ty = eval ty and ty' = eval ty' in
+              begin match unify env ctx ind lvl lc sl vars (eval ty, eval ty', (Expr.type_of tTy')) true with
+              | Ok s -> Ok (Global x, s, sl) 
+              | Error (_, msg) -> Error (sa, Msg.var_type_mismatch x ty' ty msg)
+              end
+            end
+          (* here *)
+          | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
           end
-      | Error _ -> Error (sl, Msg.undeclared x)
+        | false, false, false, false -> Error (sl, Msg.var_error_2 x)
+        end
+      | Error _ ->
+        (* Check if identifier corresponds to a theorem in the env environment *)
+        begin match Env.var_type x env with
+        | Ok envty ->
+            let h1 = Placeholder.generate () in
+            begin match unify env ctx ind lvl lc sl vars (eval ty, envty, h1) true with
+            | Ok s ->
+              Ok (Global x, s, sl) 
+            | Error (_, msg) -> Error (([],[]), Msg.var_type_mismatch x envty ty msg)
+            end
+        | Error _ -> Error (sl, Msg.undeclared x ind)
+        end
       end
     end
 
@@ -83,7 +115,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
         let v1 = Expr.mk_fresh x ctx in
         let e' = Expr.open_var 0 (Global v1) e in
         let ty2' = Expr.open_var 0 (Global v1) ty2 in
-        let elab = elaborate env ((v1, ty1, true) :: ctx) lvl lc sl ty2' (vars+1) e' in
+        let elab = elaborate env ((v1, ty1, true) :: ctx) ind lvl lc sl ty2' (vars+1) e' in
         begin match elab with
         | Ok (e', ty2', sa) -> Ok (Lam (v1, Expr.close_bound v1 e'), Pi (v1, ty1, Expr.close_bound v1 ty2'), sa)
         | Error (sa, msg) -> Error (sa, msg)
@@ -91,7 +123,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       | Meta _ ->
         let h1 = Placeholder.generate () in
         let h2 = Placeholder.generate () in
-        elaborate env ctx lvl lc sl (Pi(x, h1, h2)) vars (Lam (x, e))
+        elaborate env ctx ind lvl lc sl (Pi(x, h1, h2)) vars (Lam (x, e))
       | _ -> Error (sl, Msg.lam_error x e ty)
       end
     in
@@ -101,7 +133,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       if not (Expr.occurs_index 0 0 e) && not (Placeholder.has e) then 
         (* Elaborate e1 against ty without expecting a function type *)
         (* Flag the toleration of dangling local when reflecting or exploding *)
-        begin match elaborate env ctx lvl (lc+1) sl ty vars e with
+        begin match elaborate env ctx ind lvl (lc+1) sl ty vars e with
         | Ok (e, ty, sa) -> Ok (Lam (x, App (e, Local 0)), ty, sa)
         | Error msg -> Error msg
         end
@@ -116,38 +148,38 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let ty = eval ty in
     let head, args = Eval.break_args [] (App (e1, e2)) in
     let rec_env, cons_env = Data.get_ind_env () in 
-    begin match Infer.rec_motive_idx elaborate env ctx lvl lc sl vars rec_env ty args head with
+    begin match Infer.rec_motive_idx elaborate env ctx ind lvl lc sl vars rec_env ty args head with
     | Some res ->
-      elaborate env ctx lvl lc sl ty vars res
+      elaborate env ctx ind lvl lc sl ty vars res
     | None ->
       (* If the head expression is a constructor try to infer indices *)
       begin match Infer.constr_indices cons_env ty args head with
       | Some res ->
-        elaborate env ctx lvl lc sl ty vars res
+        elaborate env ctx ind lvl lc sl ty vars res
       | None ->
         (* Otherwise infer the type of e1 and check its evaluated domain against e2 *)
         let h1 = Placeholder.generate () in
         let v1 = Expr.init_fresh vars in
         let h2 = Placeholder.generate () in
-        let elab1 = elaborate env ctx lvl lc sl (Pi(v1, h1, h2)) (vars+1) e1 in
+        let elab1 = elaborate env ctx ind lvl lc sl (Pi(v1, h1, h2)) (vars+1) e1 in
         begin match elab1 with
         | Ok (e1', Pi(_, ty1, ty2), sa1) ->
           (* Evaluates the inferred domain before type checking *)
           let ty1' = eval ty1 in
           let h3 = Placeholder.generate () in
-          let elab2 = elaborate env ctx lvl lc sl ty1' (vars+1) e2 in
+          let elab2 = elaborate env ctx ind lvl lc sl ty1' (vars+1) e2 in
           begin match elab2 with
           | Ok (e2', _, sa2) ->
             (* Otherwise unify both types possibly lifting the universe levels *)
             let ty2' = eval (Expr.open_var 0 e2' ty2) in
-            begin match unify env ctx lvl lc sl (vars+1) (ty, ty2', h3) true with
+            begin match unify env ctx ind lvl lc sl (vars+1) (ty, ty2', h3) true with
             | Ok _ -> Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
             | Error (_, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_1 e1' e2' ty2' ty msg)
             end
           | Error (sa2, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_2 e1 e2 ty1' msg)
           end
         | Ok (e1', ty1', sa1) -> 
-          begin match elaborate env ctx lvl lc sl h1 (vars+1) e2 with
+          begin match elaborate env ctx ind lvl lc sl h1 (vars+1) e2 with
           | Ok (e2', ty1, sa2) ->
             Constraints.add st {
             lhs = (Pi(v1, ty1, h2)); 
@@ -168,14 +200,14 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let e1 = eval e1 in
     let e2 = eval e2 in
     let h1 = Placeholder.generate () in
-    begin match elaborate env ctx lvl lc sl h1 vars e1 with
+    begin match elaborate env ctx ind lvl lc sl h1 vars e1 with
     | Ok (e1, ty1, sa) ->
       let ty1 = Placeholder.solve [] ty1 in
       begin match eval (Expr.type_of ty1) with
       | Eq (_, Pi(_, a, a'), Pi(_, b, b')) | Eq (_, Quot(a, a'), Quot(b, b')) ->
-        eq_reflection_on env ctx lvl lc sl ty vars e1 e2 ([(a, b)] @ [(a', b')])
+        eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 ([(a, b)] @ [(a', b')])
       | Eq (_, Eq(ty1, a, a'), Eq(ty1', b, b')) ->
-        eq_reflection_on env ctx lvl lc sl ty vars e1 e2 ([(ty1, ty1')] @ [(a, b)] @ [(a', b')])
+        eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 ([(ty1, ty1')] @ [(a, b)] @ [(a', b')])
       | Eq (_, App(a, a'), App(b, b')) ->
         let a_head, a_args = Eval.break_args [] a in
         let b_head, b_args = Eval.break_args [] b in
@@ -186,14 +218,14 @@ let rec elaborate env ctx lvl lc sl ty vars = function
             let n = List.length l2 in
             (a, List.nth l1 n) :: helper l1 l2
         in
-          eq_reflection_on env ctx lvl lc sl ty vars e1 e2 (helper a_args b_args)
+          eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 (helper a_args b_args)
         else
-          eq_reflection_on env ctx lvl lc sl ty vars e1 e2 [(App(a, a'), App(b, b'))]
+          eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 [(App(a, a'), App(b, b'))]
       | Eq (_, a, b) ->
-        eq_reflection_on env ctx lvl lc sl ty vars e1 e2 [(a, b)]
+        eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 [(a, b)]
       | App (App (rel, a), b) ->
-        if find_equivalence env ctx lvl lc sl vars rel h1 then
-          eq_reflection_on env ctx lvl lc sl ty vars e1 e2 [(a, b)]
+        if find_equivalence env ctx ind lvl lc sl vars rel h1 then
+          eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 [(a, b)]
         else
           Error (sa, Msg.reflect_goal_mkq ctx e1 rel a b ty)
       | Void () ->
@@ -205,7 +237,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     
   
   | ESubIn (e, e1, e2) ->
-    begin match elaborate env ctx lvl lc sl ty vars e with
+    begin match elaborate env ctx ind lvl lc sl ty vars e with
     | Ok (e, ty, sa) -> Ok (ESubIn (e, e1, e2), ty, sa)
     | Error (sa, msg) -> Error (sa, Msg.esub_error msg)
     end
@@ -218,13 +250,13 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let ty = eval ty in
     begin match (Expr.type_of ty) with
     | Eq (ty1, e1, e2) ->
-      let elab1 = elaborate env ctx lvl lc sl ty1 vars e1 in
-      let elab2 = elaborate env ctx lvl lc sl ty1 vars e2 in
+      let elab1 = elaborate env ctx ind lvl lc sl ty1 vars e1 in
+      let elab2 = elaborate env ctx ind lvl lc sl ty1 vars e2 in
       begin match elab1, elab2 with
       | Ok (e1, _, sa), Ok (e2, _, sb) ->
         let e1 = eval e1 in 
         let e2 = eval e2 in
-        begin match unify env ctx lvl lc sl vars (e1, e2, (Expr.type_of ty1)) false with
+        begin match unify env ctx ind lvl lc sl vars (e1, e2, (Expr.type_of ty1)) false with
           | Ok _ -> Ok (Rfl (), Eq (ty1, e1, e2), Stack.append sa sb)
           | Error (_, msg) -> Error (Stack.append sa sb, msg)
         end
@@ -243,10 +275,10 @@ let rec elaborate env ctx lvl lc sl ty vars = function
   | Pi(x, ty1, ty2) ->
     let ty1 = eval ty1 in
     let h1 = Level.ignore_meta ty in
-    let elab1 = elaborate env ctx lvl lc sl h1 vars ty1 in
+    let elab1 = elaborate env ctx ind lvl lc sl h1 vars ty1 in
     let ty2 = eval ty2 in
     let ty2' = (Expr.open_var 0 (Global x) ty2) in
-    let elab2 = elaborate env ((x, ty1, true) :: ctx) lvl lc sl h1 vars ty2' in
+    let elab2 = elaborate env ((x, ty1, true) :: ctx) ind lvl lc sl h1 vars ty2' in
     begin match elab1, elab2 with
     | Ok (ty1', Type n1, sa1), Ok (ty2', Type n2, sa2) -> 
       let max = Level.reduce (Max(n1, n2)) in
@@ -336,13 +368,13 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let e1 = eval e1 in
     let e2 = eval e2 in
     let h1 = Level.ignore_meta ty in
-    begin match elaborate env ctx lvl lc sl h1 vars e1 with
+    begin match elaborate env ctx ind lvl lc sl h1 vars e1 with
     | Ok (e1, Type n, st) ->
       let ty1 = Pi("?v", e1, Pi("?v", e1, Type n)) in
-      begin match elaborate env ctx lvl lc sl ty1 vars e2 with
+      begin match elaborate env ctx ind lvl lc sl ty1 vars e2 with
       | Ok (e2, Pi(_, e1, Pi(_, e1', Type n)), sa) ->
         (* Only proceed only if a proof of equivalence is available *)
-        if find_equivalence env ctx lvl lc sl vars e2 ty1 then
+        if find_equivalence env ctx ind lvl lc sl vars e2 ty1 then
           let e1 = Placeholder.without e1 e1' in
           match eval (Expr.type_of ty) with
           | Type (Var par) when Level.is_arbitrary_string par ->
@@ -373,11 +405,11 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     begin match (Expr.type_of ty) with
     | Quot (ty1, e2') ->
       let e1 = eval e1 in
-      begin match elaborate env ctx lvl lc sl ty1 vars e1 with
+      begin match elaborate env ctx ind lvl lc sl ty1 vars e1 with
       | Ok (e1, ty1, sa) ->
         let e2 = eval e2 in
         let ty2 = Pi("?v", ty1, Pi("?v", ty1, Type (Var "?_"))) in
-        begin match unify env ctx lvl lc sl vars (e2', e2, ty2) true with
+        begin match unify env ctx ind lvl lc sl vars (e2', e2, ty2) true with
         | Ok e2 -> Ok (Mkq (e1, e2), Quot (ty1, e2), sa)
         | Error (_, msg) -> Error (sl, Msg.mkq_error_rel e1 e2 ty msg)
         end
@@ -385,11 +417,11 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       end
     | Meta _ ->
       let h1 = Placeholder.generate () in
-      begin match elaborate env ctx lvl lc sl h1 vars e1 with
+      begin match elaborate env ctx ind lvl lc sl h1 vars e1 with
       | Ok (e1, ty1, sa) ->
         let e2 = eval e2 in
         let ty1 = Pi("?v", ty1, Pi("?v", ty1, Type (Var "?_"))) in
-        begin match elaborate env ctx lvl lc sl ty1 vars e2 with
+        begin match elaborate env ctx ind lvl lc sl ty1 vars e2 with
         | Ok (e2, Pi(_, ty1, Pi("?v", ty1', _)), sa) ->
           let ty1 = Placeholder.without ty1 ty1' in
           Ok (Mkq (e1, e2), Quot (ty1, e2), sa)
@@ -406,11 +438,11 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     let e1 = eval e1 in
     let e2 = eval e2 in
     let h1 = Placeholder.generate () in
-    let elab = elaborate env ctx lvl lc sl h1 vars ty1 in
+    let elab = elaborate env ctx ind lvl lc sl h1 vars ty1 in
     begin match elab with
     | Ok (ty1, Type n, st) -> 
-      let elab1 = elaborate env ctx lvl lc sl ty1 vars e1 in
-      let elab2 = elaborate env ctx lvl lc sl ty1 vars e2 in
+      let elab1 = elaborate env ctx ind lvl lc sl ty1 vars e1 in
+      let elab2 = elaborate env ctx ind lvl lc sl ty1 vars e2 in
       begin match elab1, elab2 with
       | Ok (e1, _, sa), Ok (e2, _, sb) ->
         (* Check against the target type *)
@@ -434,8 +466,8 @@ let rec elaborate env ctx lvl lc sl ty vars = function
       end
     (* The type lives in a metavariable type *)
     | Ok (ty1, Meta n, st) ->
-      let elab1 = elaborate env ctx lvl lc sl ty1 vars e1 in
-      let elab2 = elaborate env ctx lvl lc sl ty1 vars e2 in
+      let elab1 = elaborate env ctx ind lvl lc sl ty1 vars e1 in
+      let elab2 = elaborate env ctx ind lvl lc sl ty1 vars e2 in
       begin match elab1, elab2 with
       | Ok (e1, _, sa), Ok (e2, _, sb) ->
         (* Check against the target type *)
@@ -483,7 +515,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
     begin match List.find_opt (fun (n', _, _) -> n = n') solved with
     | Some (_, e', _) -> Ok (Global e', ty, sl)
     | None ->
-      begin match find n env ctx ty lvl lc sl vars with (* false*)
+      begin match find n env ctx ty ind lvl lc sl vars with (* false*)
       | Ok (e', ty') ->
         let sl' = ((n, e', ty') :: solved, used) in
         Ok (Global e', ty, sl')
@@ -493,7 +525,7 @@ let rec elaborate env ctx lvl lc sl ty vars = function
 
 (* Finds a variable in a context for a given type up to unification *)
 
-and find n env ctx ty lvl lc sl vars =
+and find n env ctx ty ind lvl lc sl vars =
   let forbidden = snd sl in
   let rec search = function
     | [] -> Error "Can't find match"
@@ -504,7 +536,7 @@ and find n env ctx ty lvl lc sl vars =
       else
         (* We ignore their types since they are assumed to be well-typed *)
         let h1 = Placeholder.generate () in
-        match unify env ctx lvl lc sl vars (ty, ty', h1) true with
+        match unify env ctx ind lvl lc sl vars (ty, ty', h1) true with
         | Ok uty -> Ok (id, uty)
         | Error _ -> search ctx'
   in
@@ -512,9 +544,9 @@ and find n env ctx ty lvl lc sl vars =
 
 (* Equality reflection on a list of pairs of expressions *)
 
-and eq_reflection_on env ctx lvl lc sl ty vars e1 e2 = function
+and eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 = function
   | [] ->
-    begin match elaborate env ctx lvl lc sl ty vars e2 with
+    begin match elaborate env ctx ind lvl lc sl ty vars e2 with
     | Ok (e2, ty, sa) -> Ok (Reflect (e1, e2), ty, sa)
     | Error (sa, msg) -> Error (sa, Msg.reflect_show_goal ctx e2 ty msg)
     end
@@ -525,16 +557,16 @@ and eq_reflection_on env ctx lvl lc sl ty vars e1 e2 = function
     (* Explicit substitutions so we can recover the type later on *)
     let ty = Expr.reflsubst 0 b (ESubIn(a, b, ty)) ty in
     let e2 = Expr.reflsubst 0 b (ESubIn(a, b, ty)) e2 in
-    eq_reflection_on env ctx lvl lc sl ty vars e1 e2 l
+    eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 l
 
 (* Search for proof **in context** that e2 is an equivalence *)
 (* To be expanded to global environment *)
 
-and find_equivalence env ctx lvl lc sl vars e ty =
+and find_equivalence env ctx ind lvl lc sl vars e ty =
   let rec search_equiv = function
   | [] -> true
   | x :: l ->
-    match unify env ctx lvl lc sl vars (e, x, ty) true with
+    match unify env ctx ind lvl lc sl vars (e, x, ty) true with
     | Ok _ -> true
     | Error _ -> search_equiv l
   in
@@ -542,7 +574,7 @@ and find_equivalence env ctx lvl lc sl vars e ty =
 
 (* Unifies two expressions at type up to alpha/beta/eta-conversion *)
 
-and unify env ctx lvl lc sl vars x lift =
+and unify env ctx ind lvl lc sl vars x lift =
   match x with
   | e, e', ty ->
     if e = e' then
@@ -562,7 +594,7 @@ and unify env ctx lvl lc sl vars x lift =
         (* For now we just evaluate, soon we'll only evaluate if they are values *)
         let ty1 = eval ty1 in 
         let ty1' = eval ty1' in
-        let u1 = unify env ctx lvl lc sl vars (ty1, ty1', ty) lift in
+        let u1 = unify env ctx ind lvl lc sl vars (ty1, ty1', ty) lift in
         begin match u1 with
         | Ok s1 -> 
           let v1 = Expr.init_fresh vars in
@@ -570,7 +602,7 @@ and unify env ctx lvl lc sl vars x lift =
           let ty2'_open = Expr.fullsubst 0 ty1' s1 (Expr.open_bound (Global v1) ty2') in
           let ty2_open = eval ty2_open in
           let ty2'_open = eval ty2'_open in
-          let u2 = unify env ((v1, s1, true) :: ctx) lvl lc sl (vars+1) (ty2_open, ty2'_open, ty) lift in
+          let u2 = unify env ((v1, s1, true) :: ctx) ind lvl lc sl (vars+1) (ty2_open, ty2'_open, ty) lift in
           begin match u2 with
           | Ok s2 -> Ok (Pi (v1, s1, Expr.close_bound v1 s2))
           | Error (_, msg) -> Error ((ty2_open, ty2'_open), Msg.unify_pi msg)
@@ -580,12 +612,12 @@ and unify env ctx lvl lc sl vars x lift =
 
       | Eq (e, e1, e2) , Eq (e', e1', e2'), ty ->
         let e = eval e and e' = eval e' in
-        begin match unify env ctx lvl lc sl vars (e, e', ty) lift with
+        begin match unify env ctx ind lvl lc sl vars (e, e', ty) lift with
         | Ok s ->
           let e1 = eval e1 and e1' = eval e1' in
           let e2 = eval e2 and e2' = eval e2' in
-          let u1 = unify env ctx lvl lc sl vars (e1, e1', s) lift in
-          let u2 = unify env ctx lvl lc sl vars (e2, e2', s) lift in
+          let u1 = unify env ctx ind lvl lc sl vars (e1, e1', s) lift in
+          let u2 = unify env ctx ind lvl lc sl vars (e2, e2', s) lift in
           begin match u1, u2 with
           | Ok s1, Ok s2 ->           
             Ok (Eq (s, s1, s2))
@@ -597,11 +629,11 @@ and unify env ctx lvl lc sl vars x lift =
       | Quot (e1, e2), Quot (e1', e2'), ty ->
         let e1 = eval e1 in 
         let e1' = eval e1' in
-        begin match unify env ctx lvl lc sl vars (e1, e1', ty) lift with
+        begin match unify env ctx ind lvl lc sl vars (e1, e1', ty) lift with
         | Ok s1 -> 
           let e2 = eval e2 in
           let e2' = eval e2' in
-          begin match unify env ctx lvl lc sl (vars+1) (e2, e2', ty) lift with
+          begin match unify env ctx ind lvl lc sl (vars+1) (e2, e2', ty) lift with
           | Ok s2 -> Ok (Quot (s1, s2))
           | Error (_, msg) -> Error ((e2, e2'), Msg.unify_quot msg)
           end
@@ -611,11 +643,11 @@ and unify env ctx lvl lc sl vars x lift =
       | Mkq (e1, e2), Mkq (e1', e2'), Quot(_, _) ->
         let e1 = eval e1 in 
         let e1' = eval e1' in
-        begin match unify env ctx lvl lc sl vars (e1, e1', ty) lift with
+        begin match unify env ctx ind lvl lc sl vars (e1, e1', ty) lift with
         | Ok s1 -> 
           let e2 = eval e2 in
           let e2' = eval e2' in
-          begin match unify env ctx lvl lc sl (vars+1) (e2, e2', ty) lift with
+          begin match unify env ctx ind lvl lc sl (vars+1) (e2, e2', ty) lift with
           | Ok s2 -> Ok (Mkq (s1, s2))
           | Error (_, msg) -> Error ((e2, e2'), Msg.unify_mkq e1 e2 e1' e2' msg)
           end
@@ -636,7 +668,7 @@ and unify env ctx lvl lc sl vars x lift =
           let ev1 = Expr.open_var 0 (Global v1) e in
           let ev1' = Expr.open_var 0 (Global v1) e' in
           let tyv1 = Expr.open_var 0 (Global v1) ty2 in
-          let u = unify env ((v1, ty1, true) :: ctx) lvl lc sl (vars+1) (ev1, ev1', tyv1) lift in
+          let u = unify env ((v1, ty1, true) :: ctx) ind lvl lc sl (vars+1) (ev1, ev1', tyv1) lift in
           begin match u with
           | Ok s -> Ok (Lam (v1, s))
           | Error ((e, e'), msg) -> Error ((e, e'), Msg.lam_unify_2 x e y e' msg)
@@ -644,12 +676,12 @@ and unify env ctx lvl lc sl vars x lift =
       
       | App (e1, e2), App (e1', e2'), ty ->
         let h1 = Placeholder.generate () in
-        let elab2 = elaborate env ctx lvl lc sl h1 vars e2 in
+        let elab2 = elaborate env ctx ind lvl lc sl h1 vars e2 in
         begin match elab2 with
         | Ok (_, ty2, _) ->
-          let u2 = unify env ctx lvl lc sl vars (e2, e2', ty2) lift in
+          let u2 = unify env ctx ind lvl lc sl vars (e2, e2', ty2) lift in
           let v1 = Expr.init_fresh vars in
-          let u1 = unify env ctx lvl lc sl (vars+1) (e1, e1', Pi(v1, ty2, Expr.fullsubst 0 e2 (Local 0) ty)) lift in
+          let u1 = unify env ctx ind lvl lc sl (vars+1) (e1, e1', Pi(v1, ty2, Expr.fullsubst 0 e2 (Local 0) ty)) lift in
           begin match u1, u2 with
           | Ok s1, Ok s2 -> Ok (App (s1, s2))
           | Error (ex, msg), _ | _, Error (ex, msg) ->
@@ -671,7 +703,7 @@ and unify env ctx lvl lc sl vars x lift =
                 if app1 = app1' && app2 = app2' then
                   Error (ex, Msg.app_unify_fallback e1 e2 e1' e2' msg)
                 else
-                  unify env ctx lvl lc sl (vars+1) (app1', app2', ty) lift
+                  unify env ctx ind lvl lc sl (vars+1) (app1', app2', ty) lift
               end
             end
           end
@@ -679,14 +711,14 @@ and unify env ctx lvl lc sl vars x lift =
         end
       
       | Reflect (p, e), Reflect (_, e'), _ ->
-        let u = unify env ctx lvl lc sl vars (e, e', Meta 0) lift in
+        let u = unify env ctx ind lvl lc sl vars (e, e', Meta 0) lift in
         begin match u with
         | Ok e -> Ok (Reflect (p, e))
         | Error msg -> Error msg
         end
       
       | Reflect (p, e), e', _ | e', Reflect (p, e), _->
-        let u = unify env ctx lvl lc sl vars (e, e', Meta 0) lift in
+        let u = unify env ctx ind lvl lc sl vars (e, e', Meta 0) lift in
         begin match u with
         | Ok e -> Ok (Reflect (p, e))
         | Error msg -> Error msg
@@ -710,7 +742,7 @@ and unify env ctx lvl lc sl vars x lift =
         begin match eval e with
         | App (e , Local 0) ->
           if not (Expr.occurs_index 0 0 e) && not (Placeholder.has e) then
-            unify env ctx lvl lc sl vars (e, e', ty) lift
+            unify env ctx ind lvl lc sl vars (e, e', ty) lift
           else
             Error ((Lam (x, App (e , Local 0)) , e'), Msg.lam_unify x e e')
         | _ -> Error ((Lam (x, e), e'), Msg.lam_unify x e e')
@@ -718,7 +750,7 @@ and unify env ctx lvl lc sl vars x lift =
       
       | ESubIn(e, e2, e3) , ESubIn(e', _, _), ty ->
         let e = eval e and e' = eval e' in
-        let u = unify env ctx lvl lc sl vars (e, e', ty) lift in
+        let u = unify env ctx ind lvl lc sl vars (e, e', ty) lift in
         begin match u with
         | Ok e -> Ok (ESubIn(e, e2, e3))
         | Error (_, msg) -> Error ((e, e'), Msg.esubin_not_unifiable e e' msg)
@@ -726,11 +758,11 @@ and unify env ctx lvl lc sl vars x lift =
 
       | ESubIn(e, e2, e3) , e', ty | e', ESubIn(e, e2, e3) , ty ->
         let e = eval e and e' = eval e' in
-        begin match unify env ctx lvl lc sl vars (e, e', ty) lift with
+        begin match unify env ctx ind lvl lc sl vars (e, e', ty) lift with
         | Ok e -> Ok (ESubIn(e, e2, e3))
         | Error _ -> 
           (* Error ((e, e'), Msg.esubin_not_unifiable e e' msg) *)
-          begin match unify env ctx lvl lc sl vars (e2, e', ty) lift with
+          begin match unify env ctx ind lvl lc sl vars (e2, e', ty) lift with
           | Ok e2 -> Ok (ESubIn(e, e2, e3))
           | Error (_, msg) -> Error ((e2, e'), Msg.esubin_not_unifiable (ESubIn(e, e2, e3)) e' msg)
           end
@@ -749,7 +781,7 @@ and unify env ctx lvl lc sl vars x lift =
             Error ((App (e1, e2), e'), Msg.app_mixed_unify e1 e2 e')
           else
             let e = eval (App (se1, se2)) and e' = eval se' in
-            begin match unify env ctx lvl lc sl vars (e, e', ty) lift with
+            begin match unify env ctx ind lvl lc sl vars (e, e', ty) lift with
             | Ok e -> Ok e
             | Error (_, msg) -> Error ((e, e'), Msg.app_mixed_unify_zonk e e' msg)
             end
@@ -762,10 +794,10 @@ and unify env ctx lvl lc sl vars x lift =
         if e1 = e && e2 = e' then
           (* Stop and return error when there are no metas to zonk in their values *)
           if eval e = eval e' then Ok e else
-            Error ((e, e'), Msg.not_syntactically_equal e e')
+            Error ((e, e'), Msg.not_syntactically_equal e e' ctx)
         else
           let e1 = eval e1 and e2 = eval e2 in
-          begin match unify env ctx lvl lc sl vars (e1, e2, ty) lift with
+          begin match unify env ctx ind lvl lc sl vars (e1, e2, ty) lift with
           | Ok e -> Ok e
           | Error (_, msg) -> Error ((e, e'), Msg.zonking_fal msg)
           end

@@ -10,16 +10,16 @@ open Basis
 open Ast
 open Data
 
-let is_declared x env =
+let is_declared x ind =
   let rec helper x = function
     | [] -> false
-    | (id,_) :: env -> 
-      if x = id then 
+    | (y, _) :: ind -> 
+      if x = y then
         true
-      else 
-        helper x env
+      else
+        helper x ind
   in
-  helper x (List.rev env)
+  helper x (List.rev ind)
 
 (* This occurs_name function ignores bound variables *)
 
@@ -229,13 +229,13 @@ let check_universe_levels ctx_univ constrs_univs target_lvl =
 
 (* Prints the inductive types with their constructors *)
 
-let print ctx = 
+let print ind = 
   let rec printrev = function
     | [] -> "" 
-    | (id, ty) :: ctx -> 
-      " " ^ id ^ " : " ^ Pretty.printf ty ^ "\n" ^ printrev ctx
+    | (id, ty) :: ind -> 
+      " " ^ id ^ " : " ^ Pretty.printf ty ^ "\n" ^ printrev ind
   in
-  printrev (List.rev ctx)
+  printrev (List.rev ind)
 
 (* Global registry of evaluated inductive definitions *)
 
@@ -254,3 +254,21 @@ let find_print id =
   | Some rec_spec ->
     print_spec id rec_spec
   | None -> "Inductive type not found in environment"
+
+(* Determines whether a given typed variable occurs in the inductive environment *)
+
+let rec check_var_ty x ty = function
+  | [] -> false 
+  | (y, ty') :: ind -> 
+    if x = y && ty' = ty then 
+      true
+    else
+      check_var_ty x ty ind
+
+let rec var_type x = function
+  | [] -> Error()
+  | (y, ty) :: ind' -> 
+    if x = y then 
+      Ok ty
+    else 
+      var_type x ind'

@@ -9,7 +9,7 @@ open Basis
 open Context
 open Eval
 
-let check global ind ctx lvl =
+let check global ctx ind lvl =
   let rec helper l = 
     match l with
   | [] -> Ok []
@@ -18,8 +18,8 @@ let check global ind ctx lvl =
     | Error msg -> Error ("The specified context is invalid: " ^ msg)
     | Ok ty' ->
       (* Dumps inductive type data into the context (reversed to preserve its order ) *)
-      let ind_ctx = List.map (fun (id, ty) -> (id, ty, true)) ind @ (List.rev ctx') in
-      match Type.check global ind_ctx lvl ty', helper ctx' with
+      (* let ind_ctx = List.map (fun (id, ty) -> (id, ty, true)) ind @ (List.rev ctx') in *)
+      match Type.check global (List.rev ctx) ind lvl ty', helper ctx' with
       | Ok elab, Ok ctx'' -> 
         if Env.is_declared x global then
           Error ("Naming conflict with the identifier '" ^ x ^ 
@@ -31,7 +31,7 @@ let check global ind ctx lvl =
   in
   helper (List.rev ctx)
 
-let check_with_universe global ctx lvl =
+let check_with_universe global ctx ind lvl =
   let rec helper l = 
     match l with
   | [] -> Ok ([], [])
@@ -39,7 +39,7 @@ let check_with_universe global ctx lvl =
     match Env.unfold_all global 0 ty with
     | Error msg -> Error ("The specified context is invalid: " ^ msg)
     | Ok ty' ->
-      match Type.check global ctx' lvl ty', helper ctx' with
+      match Type.check global ctx' ind lvl ty', helper ctx' with
       | Ok (ty', univ), Ok (ctx1, ctx2) -> 
         if Env.is_declared x global then
           Error ("Naming conflict with the identifier '" ^ x ^ 

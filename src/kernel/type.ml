@@ -10,13 +10,13 @@ open Basis
 open Ast
 open Eval
 
-let check global ctx lvl ty =
+let check global ctx ind lvl ty =
   match ty with
   | Meta _ -> Ok (Meta 0, ty)
   | _ ->
     let ty' = eval ty in
     Placeholder.restore 0;
-    match Elab.elaborate global ctx lvl 0 ([], []) (Meta 0) 1 ty' with
+    match Elab.elaborate global ctx ind lvl 0 ([], []) (Meta 0) 1 ty' with
     | Error (_, msg) -> Error ("Failed typehood check. \n" ^ msg)
     | Ok (ty', tTy, _) ->
       match tTy with

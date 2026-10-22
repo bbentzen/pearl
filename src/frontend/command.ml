@@ -40,9 +40,8 @@ let rec compile_proof env ind lopen filename lvl next_location cmd (id, l, ty_ra
     | Ok hty ->
       let ctx = Global.create_ctx l in
       let (h1, h2) = 
-        Ctx.check env ind ctx lvl,
-        let ind_ctx = Inductive.add ind ctx in
-        Type.check env ind_ctx lvl (eval hty)
+        Ctx.check env ctx ind lvl,
+        Type.check env ctx ind lvl (eval hty)
       in
       begin 
         match h1, h2 with
@@ -61,9 +60,9 @@ let rec compile_proof env ind lopen filename lvl next_location cmd (id, l, ty_ra
                 let e' = Placeholder.unique e' in
                 begin
                   (* Evaluate expressions and temporarily add inductive types to the context for type checking *)
-                  let ictx = Inductive.add ind ctx' in
+                  (* let ictx' = Inductive.add ind ctx' in *)
                   let e' = eval e' and ty' = eval ty' in
-                  let res = Synthesize.init env ictx lvl e' ty' fresh_vars in
+                  let res = Synthesize.init env ctx' ind lvl e' ty' fresh_vars in
                   match res with 
                   | Ok (e1, ty1) ->
                     if id = "infer" then
@@ -157,8 +156,8 @@ and compile env ind lopen filename lvl next_location =
         let ty = of_raw_expr ty_raw in
         let ctx = Global.create_ctx l in
         let (h1, h2) =
-          Ctx.check_with_universe env ctx lvl,
-          Type.check env ctx lvl (eval ty)
+          Ctx.check_with_universe env ctx ind lvl,
+          Type.check env ctx ind lvl (eval ty)
         in
         begin match h1, h2 with
         | Ok (ctx_checked, ctx_univ), Ok (ty', _) ->
@@ -183,8 +182,9 @@ and compile env ind lopen filename lvl next_location =
                         ("Strict positivity check failed for constructor '" ^ c_name ^
                         "' in inductive type '" ^ id ^ "'")
                     else
-                      let ind_ctx = Inductive.add ((id, ty_fam) :: ind) ctx' in
-                      begin match Type.check env ind_ctx lvl (eval c_ty) with
+                      (* let ind_ctx = Inductive.add ((id, ty_fam) :: ind) ctx' in *)
+                      let ind' = (id, ty_fam) :: ind in
+                      begin match Type.check env ctx' ind' lvl (eval c_ty) with
                       | Ok (c_ty', c_univ) ->
                         let c_indexed_ty = Inductive.parametrize_constructor_ty c_ty' ctx in
                         (* Store indexed, non-indexed versions, and their type universes *)

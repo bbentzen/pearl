@@ -23,8 +23,8 @@ let goal_msg ctx e ty =
   "when checking that\n  " ^ Pretty.printf e ^ "\nhas the expected type\n" ^ Global.printf ctx ^ 
   "-------------------------------------------\n ⊢ " ^ Pretty.printf ty
 
-let undeclared x =
-  "No declaration for the variable " ^ x
+let undeclared x ctx =
+  "No declaration for the variable " ^ x ^ "in the present context: " ^ Inductive.print ctx
 
 let var_type_mismatch x ty' ty msg = 
   Pretty.printf (Global x) ^ " has type\n   " ^ Pretty.printf ty' ^ 
@@ -200,8 +200,9 @@ let unify_quot msg =
 let unify_mkq e1 e2 e1' e2'  msg =
   "Unification failed for the equivalence classes " ^ Pretty.printf (Mkq (e1, e2)) ^ " and " ^ Pretty.printf (Mkq (e1', e2')) ^ msg
 
-let not_syntactically_equal e e' =
-  "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. "
+let not_syntactically_equal e e' ctx =
+  "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. 
+  \n\nThe present context is: \n " ^ Global.print ctx
 
 let zonking_fal msg =
   "Unification failed after zonking: " ^ msg
