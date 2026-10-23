@@ -24,7 +24,7 @@ let goal_msg ctx e ty =
   "-------------------------------------------\n ⊢ " ^ Pretty.printf ty
 
 let undeclared x ctx =
-  "No declaration for the variable " ^ x ^ "in the present context: " ^ Inductive.print ctx
+  "No declaration for the variable " ^ x ^ " in the present context: " ^ Inductive.print ctx
 
 let var_type_mismatch x ty' ty msg = 
   Pretty.printf (Global x) ^ " has type\n   " ^ Pretty.printf ty' ^ 
@@ -85,7 +85,7 @@ let pi_unexpected x ty1 ty2 ty ty1' u1 ty2' u2 =
   "\nand that\n  " ^ Pretty.printf ty2' ^ "\nhas type " ^ Pretty.printf u2
 
 let not_a_pi_type ty1' =
-  "Type mismatch when checking that\n  " ^ Pretty.printf ty1' ^ "\nhas type\n  Π (v? : I) ?0?. "
+  "Type mismatch when checking that\n  " ^ Pretty.printf ty1' ^ "\nhas type\n  Π (v? : ?1?) ?2?. "
 
 (* Void *)
 
@@ -167,6 +167,9 @@ let app_mixed_unify_zonk e e' msg =
 let app_unify_arg e2 h1 msg =
   "Failed to check that " ^ Pretty.printf e2 ^ " has type " ^ Pretty.printf h1 ^ ".\n" ^ msg
 
+let app_unify_arg_2 e2 ty1 =
+  "The head " ^ Pretty.printf e2 ^ " is expected to have type Π (v? : ?1?) ?2? but has type\n  " ^ Pretty.printf ty1
+
 let app_unify_app e i e' =
   "Don't know how to unify the applied term\n  " ^ Pretty.printf (App (e, i)) ^ "\nwith\n  " ^ Pretty.printf e' ^ "." 
 
@@ -200,9 +203,8 @@ let unify_quot msg =
 let unify_mkq e1 e2 e1' e2'  msg =
   "Unification failed for the equivalence classes " ^ Pretty.printf (Mkq (e1, e2)) ^ " and " ^ Pretty.printf (Mkq (e1', e2')) ^ msg
 
-let not_syntactically_equal e e' ctx =
-  "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal. 
-  \n\nThe present context is: \n " ^ Global.print ctx
+let not_syntactically_equal e e' =
+  "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal."
 
 let zonking_fal msg =
   "Unification failed after zonking: " ^ msg

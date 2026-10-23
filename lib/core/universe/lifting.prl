@@ -17,9 +17,9 @@ def next_lvl :
 type ℓ₂
 
 def max_left :
-  type (max ℓ₁ ℓ₂) :=
+  type (next (max ℓ₁ ℓ₂)) :=
 type ℓ₁
 
 def max_right :
-  type (max ℓ₁ ℓ₂) :=
+  type (next (max ℓ₁ ℓ₂)) :=
 type ℓ₂

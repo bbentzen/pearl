@@ -152,6 +152,20 @@ let mk_fresh var ctx =
   in
   loop 0
 
+(* Undoes the explicit substitutions in an expression *)
+
+let rec reset = function
+  | Pi (y, e1, e2) -> Pi (y, reset e1, reset e2)  
+  | Lam (y, e) -> Lam (y, reset e)
+  | App (e1, e2) -> App (reset e1, reset e2)
+  | Eq (e, e1, e2) -> Eq (reset e, reset e1, reset e2)
+  | Quot (e1, e2) -> Quot (reset e1, reset e2)
+  | Mkq (e1, e2) -> Mkq (reset e1, reset e2)
+  | Reflect (e1, e2) -> Reflect (e1, reset e2)
+  | ESubIn (_, e, _) -> reset e
+  | Type l -> Type l
+  | Global _ | Local _ | Rfl _ | Void _ | Meta _ | Wild _ as e -> e
+
 (* Extract realizer of a proof: removes reflect, explode, revert explicit substitutions *)
 (* Importantly, this also generalizes universe levels --- to save computational power we do this all in one go*)
 

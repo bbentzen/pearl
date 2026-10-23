@@ -173,7 +173,7 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
             (* Otherwise unify both types possibly lifting the universe levels *)
             let ty2' = eval (Expr.open_var 0 e2' ty2) in
             begin match unify env ctx ind lvl lc sl (vars+1) (ty, ty2', h3) true with
-            | Ok _ -> Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
+            | Ok ty -> Ok (App (e1', e2'), ty, Stack.append sa1 sa2)
             | Error (_, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_1 e1' e2' ty2' ty msg)
             end
           | Error (sa2, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_2 e1 e2 ty1' msg)
@@ -228,8 +228,7 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
           eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 [(a, b)]
         else
           Error (sa, Msg.reflect_goal_mkq ctx e1 rel a b ty)
-      | Void () ->
-        Ok (Reflect (e1, e2), ty, sa)
+      | Void () -> Ok (Reflect (e1, e2), ty, sa)
       | ty1 -> Error (sa, Msg.reflect_1 e1 ty1)
       end
     | Error (sa, msg) -> Error (sa, Msg.reflect_2 e1 msg)
@@ -263,7 +262,6 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
       | Error (sl, msg), _ -> Error (sl, Msg.rfl_error_1 ty msg)
       |  _ , Error (sl, msg) -> Error (sl, Msg.rfl_error_1 ty msg)
       end
-
     | Meta n ->
       let h1 = Placeholder.generate () in
       let h2 = Placeholder.generate () in
@@ -274,7 +272,8 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
 
   | Pi(x, ty1, ty2) ->
     let ty1 = eval ty1 in
-    let h1 = Level.ignore_meta ty in
+    (* let h1 = Level.ignore_meta ty in *)
+    let h1 = Placeholder.generate () in
     let elab1 = elaborate env ctx ind lvl lc sl h1 vars ty1 in
     let ty2 = eval ty2 in
     let ty2' = (Expr.open_var 0 (Global x) ty2) in
@@ -292,8 +291,8 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
           Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type m, Stack.append sa1 sa2)
         else 
           Error (Stack.append sa1 sa2, Msg.pi_universe_1 x ty1 ty2 max m)
-      | Meta n ->
-        Hashtbl.add Data.meta_store n { Data.solution = Type max};
+      | Meta _ ->
+        (* Hashtbl.add Data.meta_store n { Data.solution = Type max}; *)
         Ok (Pi(x, ty1', Expr.close_bound x ty2'), Type max, Stack.append sa1 sa2)
       | _ -> Error (Stack.append sa1 sa2, Msg.pi_universe_2 x ty1 ty2 ty)
       end
@@ -494,7 +493,7 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
     | Ok _ ->
       begin match (Expr.type_of ty) with
       | Type m ->
-        if Level.leq n m then 
+        if Level.leq (Suc n) m then 
           Ok (Type n, Type m, sl) 
         else if Level.is_arbitrary m then 
           Ok (Type n, Type m, sl)
@@ -590,7 +589,7 @@ and unify env ctx ind lvl lc sl vars x lift =
       | e , _, Eq(_, _, _) ->
         Ok e
 
-      | Pi (_, ty1, ty2), Pi (_, ty1', ty2'), ty ->
+      | Pi (x, ty1, ty2), Pi (_, ty1', ty2'), ty ->
         (* For now we just evaluate, soon we'll only evaluate if they are values *)
         let ty1 = eval ty1 in 
         let ty1' = eval ty1' in
@@ -604,7 +603,7 @@ and unify env ctx ind lvl lc sl vars x lift =
           let ty2'_open = eval ty2'_open in
           let u2 = unify env ((v1, s1, true) :: ctx) ind lvl lc sl (vars+1) (ty2_open, ty2'_open, ty) lift in
           begin match u2 with
-          | Ok s2 -> Ok (Pi (v1, s1, Expr.close_bound v1 s2))
+          | Ok s2 -> Ok (Pi (x, s1, Placeholder.close v1 (Expr.close_bound v1 s2)))
           | Error (_, msg) -> Error ((ty2_open, ty2'_open), Msg.unify_pi msg)
           end
         | Error ((e1, e2), msg) -> Error ((e1, e2), Msg.unify_pi msg)
@@ -670,21 +669,25 @@ and unify env ctx ind lvl lc sl vars x lift =
           let tyv1 = Expr.open_var 0 (Global v1) ty2 in
           let u = unify env ((v1, ty1, true) :: ctx) ind lvl lc sl (vars+1) (ev1, ev1', tyv1) lift in
           begin match u with
-          | Ok s -> Ok (Lam (v1, s))
+          | Ok s -> Ok (Lam (v1, Placeholder.close v1 (Expr.close_bound v1 s)))
+            (* Ok (Lam (v1, Placeholder.close v1 (Expr.close_bound v1 s))) *)
           | Error ((e, e'), msg) -> Error ((e, e'), Msg.lam_unify_2 x e y e' msg)
           end
       
       | App (e1, e2), App (e1', e2'), ty ->
+        let v1 = Expr.init_fresh vars in
         let h1 = Placeholder.generate () in
-        let elab2 = elaborate env ctx ind lvl lc sl h1 vars e2 in
-        begin match elab2 with
-        | Ok (_, ty2, _) ->
-          let u2 = unify env ctx ind lvl lc sl vars (e2, e2', ty2) lift in
-          let v1 = Expr.init_fresh vars in
-          let u1 = unify env ctx ind lvl lc sl (vars+1) (e1, e1', Pi(v1, ty2, Expr.fullsubst 0 e2 (Local 0) ty)) lift in
-          begin match u1, u2 with
-          | Ok s1, Ok s2 -> Ok (App (s1, s2))
-          | Error (ex, msg), _ | _, Error (ex, msg) ->
+        let h2 = Placeholder.generate () in
+        (* First attempt to unify heads and if that fails unify args *)
+        begin match elaborate env ctx ind lvl lc sl (Pi(v1, h1, h2)) vars e1 with
+        | Ok (_, Pi(x, ty1, ty2), _) ->
+          begin match unify env ctx ind lvl lc sl vars (e1, e1', Pi(x, ty1, ty2)) lift with
+          | Ok s1 -> 
+            begin match unify env ctx ind lvl lc sl (vars+1) (e2, e2', eval ty1) lift with
+            | Ok s2 -> Ok (App (s1, s2))
+            | Error (ex, msg) -> Error (ex, msg)
+            end
+          | Error (ex, msg) ->
             (* Check for metavariable application *)
             let head, args = Eval.break_args [] (App (e1, e2)) in
             begin match solve_meta_application args vars (App(e1', e2')) head with
@@ -707,6 +710,44 @@ and unify env ctx ind lvl lc sl vars x lift =
               end
             end
           end
+        | Ok (e1, pty1', _) -> 
+          begin match elaborate env ctx ind lvl lc sl h1 (vars+1) e2 with
+          | Ok (e2', ty1, _) ->
+            Constraints.add st {
+            lhs = (Pi(v1, ty1, h2)); 
+            rhs = pty1'; 
+            cty = Type(Var "?_"); 
+            clift = true };
+            (* Delay unification *)
+            let u2 = unify env ctx ind lvl lc sl vars (e2, e2', ty1) lift in
+            let u1 = unify env ctx ind lvl lc sl (vars+1) (e1, e1', Pi(v1, ty1, h2)) lift in
+            begin match u1, u2 with
+            | Ok s1, Ok s2 -> Ok (App (s1, s2))
+            | Error (ex, msg), _ | _, Error (ex, msg) ->
+              (* Check for metavariable application *)
+              let head, args = Eval.break_args [] (App (e1, e2)) in
+              begin match solve_meta_application args vars (App(e1', e2')) head with
+              | Some s -> Ok s
+              | None ->
+                let head, args = Eval.break_args [] (App (e1', e2')) in
+                begin match solve_meta_application args vars (App(e1, e2)) head with
+                | Some s -> Ok s
+                | None ->
+                  (* Try again now by evaluating both applications *)
+                  let app1 = App (e1, e2) in
+                  let app2 = App (e1', e2') in
+                  (* TODO: this is not ideal, to avoid re-evaluation, better store values in a hasthtable and look them up *)
+                  let app1' = eval app1 in
+                  let app2' = eval app2 in
+                  if app1 = app1' && app2 = app2' then
+                    Error (ex, Msg.app_unify_fallback e1 e2 e1' e2' msg)
+                  else
+                    unify env ctx ind lvl lc sl (vars+1) (app1', app2', ty) lift
+                end
+              end
+            end
+          | Error (_, msg) -> Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
+          end  
         | Error (_, msg) -> Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
         end
       
@@ -794,7 +835,7 @@ and unify env ctx ind lvl lc sl vars x lift =
         if e1 = e && e2 = e' then
           (* Stop and return error when there are no metas to zonk in their values *)
           if eval e = eval e' then Ok e else
-            Error ((e, e'), Msg.not_syntactically_equal e e' ctx)
+            Error ((e, e'), Msg.not_syntactically_equal e e')
         else
           let e1 = eval e1 and e2 = eval e2 in
           begin match unify env ctx ind lvl lc sl vars (e1, e2, ty) lift with

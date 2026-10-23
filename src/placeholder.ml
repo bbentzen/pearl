@@ -123,3 +123,21 @@ let rec unique = function
 let without e1 = function
   | Meta _ -> e1
   | e2 -> e2
+
+let rec close var = function
+  | Meta n -> 
+    begin match Hashtbl.find_opt Data.meta_store n with
+    | Some stored ->
+      (* Close any globals variables the solved meta might contain *)
+      Expr.close_bound var stored.solution
+    | None -> Meta n
+    end
+  | Pi (x, e1, e2) -> Pi (x, close var e1, close var e2)
+  | Lam (x, e) -> Lam (x, close var e)
+  | App (e1, e2) -> App (close var e1, close var e2)  
+  | Eq (e, e1, e2) -> Eq (close var e, close var e1, close var e2)
+  | Quot (e1, e2) -> Quot (close var e1, close var e2)
+  | Mkq (e1, e2) -> Mkq (close var e1, close var e2)
+  | Reflect (e1, e2) -> Reflect (close var e1, close var e2)
+  | ESubIn (e, e1, e2) -> ESubIn (close var e, close var e1, close var e2)
+  | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
