@@ -91,7 +91,7 @@ let rec_motive_idx elaborate env ctx ind lvl lc sl vars rec_env ty args = functi
           in
           (* Step 3: rebuild the application with the inferred motive and indices *)
           let args' = List.mapi (fun i arg -> 
-            if i < rec_spec.num_indices && Placeholder.is_wild arg then
+            if i < rec_spec.num_indices && Placeholder.is_with_eta arg then
               match infer_index with
               | Some idx_args -> List.nth idx_args i
               | None -> if Placeholder.is_wild arg then Placeholder.generate () else arg

@@ -22,13 +22,17 @@ let generate_neg () =
 
 let restore n = counter := n
 
-(* Determines whether an expression is a placeholder/underscore *)
+(* Determines whether an expression is a placeholder/underscore with a variant up to eta *)
 
 let is = function
   | Meta _ | Wild _ -> true
   | _ -> false
 
-(* Determines whether an expression is an underscore *)
+let is_with_eta = function
+  | Lam (_, App(e, Local 0)) when is e -> true
+  | e -> is e
+
+  (* Determines whether an expression is an underscore *)
 
 let is_wild = function
   | Wild _ -> true | _ -> false

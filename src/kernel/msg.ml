@@ -52,6 +52,10 @@ let app_fail_1 e1 e2 ty2 ty msg =
   " was found to have the type\n  " ^ Pretty.printf ty2 ^ 
   "\nand not the expected type\n  " ^ Pretty.printf ty ^ "\n" ^ msg
 
+let app_pi_fail_2 e1 ty e2 ty1' msg = 
+  "The head function in the application\n  " ^ Pretty.printf e1 ^ "\nhas been found to have type\n  " ^ Pretty.printf ty ^ "\nand cannot be applied to the argument\n  " ^ Pretty.printf e2 ^ 
+  "\nbecause the argument does inhabit the expected domain\n  " ^ Pretty.printf ty1' ^ "\n" ^ msg
+
 let app_fail_2 e1 e2 ty1' msg = 
   "Cannot apply the function\n  " ^
   Pretty.printf e1 ^ "\nto the argument\n  " ^ Pretty.printf e2 ^ 
@@ -162,7 +166,6 @@ let app_mixed_unify e1 e2 e' =
 let app_mixed_unify_zonk e e' msg =
   "Failed to solve the metavariables needed to unify " ^ Pretty.printf e ^ 
   " with " ^ Pretty.printf e' ^ " after multiple substitutions. " ^ msg
-
 
 let app_unify_arg e2 h1 msg =
   "Failed to check that " ^ Pretty.printf e2 ^ " has type " ^ Pretty.printf h1 ^ ".\n" ^ msg
