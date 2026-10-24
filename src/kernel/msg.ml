@@ -54,7 +54,7 @@ let app_fail_1 e1 e2 ty2 ty msg =
 
 let app_pi_fail_2 e1 ty e2 ty1' msg = 
   "The head function in the application\n  " ^ Pretty.printf e1 ^ "\nhas been found to have type\n  " ^ Pretty.printf ty ^ "\nand cannot be applied to the argument\n  " ^ Pretty.printf e2 ^ 
-  "\nbecause the argument does inhabit the expected domain\n  " ^ Pretty.printf ty1' ^ "\n" ^ msg
+  "\nbecause the argument does not inhabit the expected domain\n  " ^ Pretty.printf ty1' ^ "\n" ^ msg
 
 let app_fail_2 e1 e2 ty1' msg = 
   "Cannot apply the function\n  " ^
@@ -192,7 +192,7 @@ let universe_unify_2 m n =
 
 let lam_unify x e e' =
   let e = Expr.open_var 0 (Global x) e in
-  "Don't know how to unify the lambda abstraction\n  " ^ 
+  "Don't know how to unify up to eta-conversion the lambda abstraction\n  " ^ 
   Pretty.printf (Lam (x, e)) ^ "\nwith the term\n  " ^ Pretty.printf e'
 
 let lam_unify_2 x e y e' msg =
@@ -304,3 +304,8 @@ let reflect_goal_mkq ctx e1 rel a b ty =
   "\n\n" ^ Global.printf ctx ^ "-------------------------------------------\n ⊢ " ^ Pretty.printf ty ^ "\n"
 
 let no_reflect () = "There is nothing to reflect. "
+
+(* Prints all solutions to the metavariables with repetitions *)
+
+let meta_solutions () =
+   Hashtbl.fold (fun x y acc -> "\n" ^ (string_of_int x) ^ "==>" ^ (Pretty.printf (y.Data.solution)) ^ "\n" ^ acc) Data.meta_store ""
