@@ -510,6 +510,13 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
     | Error msg -> Error (sl, msg)
     end
   
+  | Ann (e1, ty1) -> 
+    begin match unify env ctx ind lvl lc sl (vars+1) (ty, ty1, Type (Var "?_")) true with
+    | Ok ty -> Ok (Ann (e1, ty1), ty, sl)
+    | Error (_, msg) -> Error (sl, Msg.fail_ann e1 ty1 ty msg)
+    end
+    
+  
   | Meta (n, b) -> Ok (Meta (n, b), ty, sl)
     
   | Wild n ->
@@ -702,7 +709,7 @@ and unify env ctx ind lvl lc sl vars x lift =
                 Ok (Lam (v1, Expr.close_bound v1 s))
               | Error ((e, e'), msg) ->  Error ((e, e'), Msg.lam_unify_2 x e y e' msg)
           end
-      
+
       | App (e1, e2), App (e1', e2'), ty ->
         let h1 = Placeholder.generate () in
         let elab2 = elaborate env ctx ind lvl lc sl h1 vars e2 in
@@ -737,6 +744,20 @@ and unify env ctx ind lvl lc sl vars x lift =
             end
           end
         | Error (_, msg) -> Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
+        end
+      
+      | Ann (e1, e2), Ann (e1', e2'), ty ->
+        let e1 = eval e1 in 
+        let e1' = eval e1' in
+        begin match unify env ctx ind lvl lc sl vars (e1, e1', ty) lift with
+        | Ok s1 -> 
+          let e2 = eval e2 in
+          let e2' = eval e2' in
+          begin match unify env ctx ind lvl lc sl (vars+1) (e2, e2', ty) lift with
+          | Ok s2 -> Ok (Ann (s1, s2))
+          | Error (_, msg) -> Error ((e2, e2'), Msg.unify_ann e1 e2 e1' e2' msg)
+          end
+        | Error ((e1, e2), msg) -> Error ((e1, e2), Msg.unify_ann e1 e2 e1' e2' msg)
         end
       
       | Reflect (p, e), Reflect (_, e'), ty ->

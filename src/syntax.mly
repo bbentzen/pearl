@@ -164,6 +164,7 @@ head_expr:
 atom:
   | ID                                                      { RId($1) }
   | LPAREN expr RPAREN                                      { $2 }
+  | LPAREN expr COLON expr RPAREN                           { RAnn($2, $4) }
   | LPAREN expr COMMA expr RPAREN                           { pair_def $2 $4 }
   | ZERO                                                    { RId("zero") }
   | NAT                                                     { RId("nat") }

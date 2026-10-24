@@ -305,6 +305,15 @@ let reflect_goal_mkq ctx e1 rel a b ty =
 
 let no_reflect () = "There is nothing to reflect. "
 
+(* Explicit type annotations *)
+
+let unify_ann e1 e2 e1' e2' msg =
+  "Unification failed for the annotated terms " ^ Pretty.printf (Ann (e1, e2)) ^ " and " ^ Pretty.printf (Ann (e1', e2')) ^ msg
+
+let fail_ann e1 ty1 ty msg =
+  "The annotated term " ^ Pretty.printf (Ann (e1, ty1)) ^ " does not have type " ^ Pretty.printf ty ^ msg
+
+
 (* Prints all solutions to the metavariables with repetitions *)
 
 let meta_solutions () =

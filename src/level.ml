@@ -73,6 +73,7 @@ let rec placeholder_levels = function
   | Eq (l1, l2, l3) -> Eq (placeholder_levels l1, placeholder_levels l2, placeholder_levels l3)
   | Quot (l1, l2) -> Quot (placeholder_levels l1, placeholder_levels l2)
   | Mkq (l1, l2) -> Mkq (placeholder_levels l1, placeholder_levels l2)
+  | Ann (l1, l2) -> Ann (placeholder_levels l1, placeholder_levels l2)
   | Reflect (l1, l2) -> Reflect (placeholder_levels l1, placeholder_levels l2)
   | ESubIn (l1, l2, l3) -> ESubIn (placeholder_levels l1, placeholder_levels l2, placeholder_levels l3)
   | Global _ | Local _ | Rfl _ | Void _ | Meta _ | Wild _ as e -> e

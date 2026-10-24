@@ -20,6 +20,7 @@ let rec shift cutoff amount = function
   | Eq (e, e1, e2) -> Eq (shift cutoff amount e, shift cutoff amount e1, shift cutoff amount e2)
   | Quot (e1, e2) -> Quot (shift cutoff amount e1, shift cutoff amount e2)
   | Mkq (e1, e2) -> Mkq (shift cutoff amount e1, shift cutoff amount e2)
+  | Ann (e1, e2) -> Ann (shift cutoff amount e1, shift cutoff amount e2)
   | Reflect (e1, e2) -> Reflect (shift cutoff amount e1, shift cutoff amount e2)
   | ESubIn (e, e1, e2) -> ESubIn (shift cutoff amount e, shift cutoff amount e1, shift cutoff amount e2)
 
@@ -36,6 +37,7 @@ let rec open_var k replace = function
   | App (e1, e2) -> App (open_var k replace e1, open_var k replace e2)
   | Eq (e, e1, e2) -> Eq (open_var k replace e, open_var k replace e1, open_var k replace e2)
   | Quot (e1, e2) -> Quot (open_var k replace e1, open_var k replace e2)
+  | Ann (e1, e2) -> Ann (open_var k replace e1, open_var k replace e2)
   | Mkq (e1, e2) -> Mkq (open_var k replace e1, open_var k replace e2)
   | Reflect (e1, e2) -> Reflect (open_var k replace e1, open_var k replace e2)
   | ESubIn (e, e1, e2) -> ESubIn (open_var k replace e, open_var k replace e1, open_var k replace e2)
@@ -49,6 +51,7 @@ let rec close_var k x = function
   | Eq (e, e1, e2) -> Eq (close_var k x e, close_var k x e1, close_var k x e2)
   | Quot (e1, e2) -> Quot (close_var k x e1, close_var k x e2)
   | Mkq (e1, e2) -> Mkq (close_var k x e1, close_var k x e2)
+  | Ann (e1, e2) -> Ann (close_var k x e1, close_var k x e2)
   | Reflect (e1, e2) -> Reflect (close_var k x e1, close_var k x e2)
   | ESubIn (e, e1, e2) -> ESubIn (close_var k x e, close_var k x e1, close_var k x e2)
 
@@ -71,6 +74,7 @@ let rec fullsubst k ex d = function
   | Eq (e, e1, e2) -> Eq (fullsubst k ex d e, fullsubst k ex d e1, fullsubst k ex d e2)
   | Quot (e1, e2) -> Quot (fullsubst k ex d e1, fullsubst k ex d e2)
   | Mkq (e1, e2) -> Mkq (fullsubst k ex d e1, fullsubst k ex d e2)
+  | Ann (e1, e2) -> Ann (fullsubst k ex d e1, fullsubst k ex d e2)
   | Reflect (e1, e2) -> Reflect (fullsubst k ex d e1, fullsubst k ex d e2)
   | ESubIn (e, e1, e2) -> ESubIn (fullsubst k ex d e, fullsubst k ex d e1, fullsubst k ex d e2)
 
@@ -86,10 +90,11 @@ let rec reflsubst k ex d = function
   | Eq (e, e1, e2) -> Eq (reflsubst k ex d e, reflsubst k ex d e1, reflsubst k ex d e2)
   | Quot (e1, e2) -> Quot (reflsubst k ex d e1, reflsubst k ex d e2)
   | Mkq (e1, e2) -> Mkq (reflsubst k ex d e1, reflsubst k ex d e2)
+  | Ann (e1, e2) -> Ann (reflsubst k ex d e1, reflsubst k ex d e2)
   | Reflect (e1, e2) -> Reflect (reflsubst k ex d e1, reflsubst k ex d e2)
   | ESubIn (e, e1, e2) -> ESubIn (reflsubst k ex d e, reflsubst k ex d e1, reflsubst k ex d e2)
 
-(* Occurrence of indices: note that the first arguments of reflect and explode are ignored *)
+(* Occurrence of indices: note that the first arguments of reflect and explode are ignored, as well as the type of Ann *)
 (* This is useful to allow for eta-conversion *)
 
 let rec occurs_index target cutoff = function
@@ -99,14 +104,14 @@ let rec occurs_index target cutoff = function
   | Lam (_, e)  -> occurs_index target (cutoff + 1) e
   | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) -> occurs_index target cutoff e1 || occurs_index target cutoff e2
   | Eq (e, e1, e2) -> occurs_index target cutoff e || occurs_index target cutoff e1 || occurs_index target cutoff e2
-  | Reflect (_, e) | ESubIn (e, _, _) -> occurs_index target cutoff e
+  | Reflect (_, e) | ESubIn (e, _, _) | Ann (e, _) -> occurs_index target cutoff e
 
 let rec occurs_name s hint = function
   | Local _ -> s = hint | Global t -> t = hint  
   | Lam (x, e) -> x = hint || occurs_name x hint e
   | Pi (x, e1, e2) -> x = hint || occurs_name x hint e1 || occurs_name x hint e2
   | Rfl _ | Void _ | Type _ | Wild _ | Meta _ -> false
-  | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> occurs_name s hint e1 || occurs_name s hint e2
+  | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Ann (e1, e2) | Reflect (e1, e2) -> occurs_name s hint e1 || occurs_name s hint e2
   | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> occurs_name s hint e || occurs_name s hint e1 || occurs_name s hint e2
 
 let rec free_occurs_name s = function
@@ -114,7 +119,7 @@ let rec free_occurs_name s = function
   | Local _ | Rfl _ | Void _ | Type _ | Wild _ | Meta _ -> false
   | Lam (x, e) -> free_occurs_name x e
   | Pi (x, e1, e2) -> free_occurs_name x e1 || free_occurs_name x e2
-  | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> free_occurs_name s e1 || free_occurs_name s e2
+  | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Ann (e1, e2) | Reflect (e1, e2) -> free_occurs_name s e1 || free_occurs_name s e2
   | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> free_occurs_name s e || free_occurs_name s e1 || free_occurs_name s e2
 
 (* Converts a list of expressions into a single expression by application *)
@@ -161,6 +166,7 @@ let rec reset = function
   | Eq (e, e1, e2) -> Eq (reset e, reset e1, reset e2)
   | Quot (e1, e2) -> Quot (reset e1, reset e2)
   | Mkq (e1, e2) -> Mkq (reset e1, reset e2)
+  | Ann (e1, e2) -> Ann (reset e1, reset e2)
   | Reflect (e1, e2) -> Reflect (e1, reset e2)
   | ESubIn (_, e, _) -> reset e
   | Type l -> Type l
@@ -182,6 +188,7 @@ let rec realizer_of = function
   | Eq (e, e1, e2) -> Eq (realizer_of e, realizer_of e1, realizer_of e2)
   | Quot (e1, e2) -> Quot (realizer_of e1, realizer_of e2)
   | Mkq (e1, e2) -> Mkq (realizer_of e1, realizer_of e2)
+  | Ann (e1, e2) -> Ann (realizer_of e1, realizer_of e2)
   | Reflect (_, e) -> realizer_of e
   | ESubIn (_, e, _) -> realizer_of e
   | Type l -> Type (parametrize l)

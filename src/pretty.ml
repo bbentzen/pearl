@@ -100,6 +100,7 @@ let rec print env = function
   | Quot (e1, e2) -> parenthesize env e1 ^ " / " ^ parenthesize env e2
   | Mkq (e1, e2) -> "[" ^ parenthesize env e1 ^ "] " ^ parenthesize env e2
 
+  | Ann (e1, e2) -> "( " ^ print env e1 ^ " : " ^ print env e2 ^ " )"
   | Reflect (e1, e2) -> "reflect " ^ parenthesize env e1 ^ parenthesize env e2
   | ESubIn (e, e1, _) -> 
     (* print env e *)

@@ -168,4 +168,12 @@ let rec unfold_all env vars = function
     | Error msg, _, _ | _, Error msg , _ | _, _, Error msg -> Error msg
     end
 
-  | e -> Ok e 
+  | Ann (e1, e2) -> 
+    let u1 = unfold_all env vars e1 in
+    let u2 = unfold_all env vars e2 in
+    begin match u1, u2 with
+    | Ok e1, Ok e2 -> Ok (Ann (e1, e2))
+    | Error msg, _ | _, Error msg -> Error msg
+    end
+
+  | Local _ |Rfl _|Void _|Type _| Meta (_, _)|Wild _ as e -> Ok e

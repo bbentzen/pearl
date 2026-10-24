@@ -138,7 +138,9 @@ let rec reduce = function
 
   | Type l ->
     Type (Level.reduce l)
-    
+  
+  | Ann(e1, e2) -> Ann(reduce e1, e2)
+
   | e -> e
 
 let eval = reduce
