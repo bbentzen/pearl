@@ -117,7 +117,8 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
         let ty2' = Expr.open_var 0 (Global v1) ty2 in
         let elab = elaborate env ((v1, ty1, true) :: ctx) ind lvl lc sl ty2' (vars+1) e' in
         begin match elab with
-        | Ok (e', ty2', sa) -> Ok (Lam (v1, Expr.close_bound v1 e'), Pi (v1, ty1, Expr.close_bound v1 ty2'), sa)
+        | Ok (e', ty2', sa) -> Placeholder.close v1 e'; Placeholder.close v1 ty2';
+          Ok (Lam (v1, Expr.close_bound v1 e'), Pi (v1, ty1, Expr.close_bound v1 ty2'), sa)
         | Error (sa, msg) -> Error (sa, msg)
         end
       | Meta _ ->
@@ -171,9 +172,11 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
           begin match elab2 with
           | Ok (e2', _, sa2) ->
             (* Otherwise unify both types possibly lifting the universe levels *)
+            Placeholder.close x ty2;
             let ty2' = eval (Expr.open_var 0 e2' ty2) in
             begin match unify env ctx ind lvl lc sl (vars+1) (ty, ty2', h3) true with
-            | Ok _ -> Ok (App (e1', e2'), ty2', Stack.append sa1 sa2)
+            | Ok ty -> 
+              Ok (App (e1', e2'), ty, Stack.append sa1 sa2)
             | Error (_, msg) -> Error (Stack.append sa1 sa2, Msg.app_fail_1 e1' e2' ty2' ty msg)
             end
           | Error (sa2, msg) -> Error (Stack.append sa1 sa2, Msg.app_pi_fail_2 e1 (Pi(x, ty1, ty2)) e2 ty1' msg)
@@ -281,6 +284,7 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
     begin match elab1, elab2 with
     | Ok (ty1', Type n1, sa1), Ok (ty2', Type n2, sa2) -> 
       let max = Level.reduce (Max(n1, n2)) in
+      Placeholder.close x ty2';
       begin match (Expr.type_of ty) with
       | Type (Var par) when Level.is_arbitrary_string par ->
         (* Synthesize type levels placeholder *)
@@ -574,8 +578,19 @@ and find_equivalence env ctx ind lvl lc sl vars e ty =
 (* Unifies two expressions at type up to alpha/beta/eta-conversion *)
 
 and unify env ctx ind lvl lc sl vars x lift =
+  let eta_unify x e e' ty = match e with
+  | App (Meta n, Local 0) ->
+    Hashtbl.add Data.meta_store n { Data.solution = e'}; Ok e'
+  | App (e , Local 0) ->
+    if not (Expr.occurs_index 0 0 e) && not (Placeholder.has e) then
+      unify env ctx ind lvl lc sl vars (e, e', ty) lift
+    else
+      Error ((Lam (x, App (e , Local 0)) , e'), Msg.lam_unify x e e')
+  | _ -> Error ((Lam (x, e), e'), Msg.lam_unify x e e')
+  in
   match x with
   | e, e', ty ->
+    let e = eval e and e' = eval e' in
     if e = e' then
       Ok e
     else
@@ -603,7 +618,8 @@ and unify env ctx ind lvl lc sl vars x lift =
           let ty2'_open = eval ty2'_open in
           let u2 = unify env ((v1, s1, true) :: ctx) ind lvl lc sl (vars+1) (ty2_open, ty2'_open, ty) lift in
           begin match u2 with
-          | Ok s2 -> Ok (Pi (x, s1, Placeholder.close v1 (Expr.close_bound v1 s2)))
+          | Ok s2 -> Placeholder.close v1 s2;
+            Ok (Pi (x, s1, Expr.close_bound v1 s2))
           | Error (_, msg) -> Error ((ty2_open, ty2'_open), Msg.unify_pi msg)
           end
         | Error ((e1, e2), msg) -> Error ((e1, e2), Msg.unify_pi msg)
@@ -653,15 +669,19 @@ and unify env ctx ind lvl lc sl vars x lift =
         | Error ((e1, e2), msg) -> Error ((e1, e2), Msg.unify_mkq e1 e2 e1' e2' msg)
         end
 
-      | Lam (x, e), Lam (y, e'), Pi(_, ty1 , ty2) ->
+      | Lam (x, e), Lam (y, e'), Pi(z, ty1 , ty2) ->
+        let e = eval e and e' = eval e' in
         if e = e' then
-          Ok (Lam (x, e))
+          (Placeholder.close x e;
+          Ok (Lam (x, e)))
         else if Placeholder.is e' then
           (* Probably want to add to hashtbl *)
-          Ok (Lam (x, e))
+          (Placeholder.close x e;
+          Ok (Lam (x, e)))
         else if Placeholder.is e then
           (* Here too *)
-          Ok (Lam (x, e'))
+          (Placeholder.close y e';
+          Ok (Lam (y, e')))
         else
           let v1 = Expr.init_fresh vars in
           let ev1 = Expr.open_var 0 (Global v1) e in
@@ -669,9 +689,16 @@ and unify env ctx ind lvl lc sl vars x lift =
           let tyv1 = Expr.open_var 0 (Global v1) ty2 in
           let u = unify env ((v1, ty1, true) :: ctx) ind lvl lc sl (vars+1) (ev1, ev1', tyv1) lift in
           begin match u with
-          | Ok s -> Ok (Lam (v1, Placeholder.close v1 (Expr.close_bound v1 s)))
-            (* Ok (Lam (v1, Placeholder.close v1 (Expr.close_bound v1 s))) *)
-          | Error ((e, e'), msg) -> Error ((e, e'), Msg.lam_unify_2 x e y e' msg)
+          | Ok s -> Placeholder.close v1 s; Placeholder.close v1 ty2;
+            Ok (Lam (v1, Expr.close_bound v1 s))
+          | Error _ -> 
+            (* Check for eta-conversion on either side *)
+            match eta_unify x e (Lam (y, e')) (Pi(z, ty1 , ty2)) with
+            | Ok s -> Ok s
+            | Error _ ->
+              match eta_unify y e' (Lam (x, e)) (Pi(z, ty1 , ty2)) with
+            | Ok s -> Ok s
+            | Error ((e, e'), msg) -> Error ((e, e'), Msg.lam_unify_2 x e y e' msg)
           end
       
       | App (e1, e2), App (e1', e2'), ty ->
@@ -813,16 +840,19 @@ and unify env ctx ind lvl lc sl vars x lift =
         | m, n -> compare m n
         end
       
-      | Lam (x, e) , e', _ | e', Lam (x, e), _ ->
+      | Lam (x, e) , e', ty | e', Lam (x, e), ty ->
         (* Checks for eta-equality *)
-        begin match eval e with
+        eta_unify x e e' ty
+        (* begin match eval e with
+        | App (Meta n, Local 0) ->
+          Hashtbl.add Data.meta_store n { Data.solution = e'}; Ok e'
         | App (e , Local 0) ->
           if not (Expr.occurs_index 0 0 e) && not (Placeholder.has e) then
             unify env ctx ind lvl lc sl vars (e, e', ty) lift
           else
             Error ((Lam (x, App (e , Local 0)) , e'), Msg.lam_unify x e e')
         | _ -> Error ((Lam (x, e), e'), Msg.lam_unify x e e')
-          end
+          end *)
       
       | ESubIn(e, e2, e3) , ESubIn(e', _, _), ty ->
         let e = eval e and e' = eval e' in
