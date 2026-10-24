@@ -121,7 +121,7 @@ let type_unexpected_2 e1 msg =
   "Failed to check that\n  " ^ Pretty.printf e1 ^ "\nhas type\n ?0?.\n" ^ msg
 
 let type_unexpected_3 e1 n msg =
-"Failed to check that\n  " ^ Pretty.printf e1 ^ "\nhas type\n " ^ Pretty.printf (Meta n) ^ "\n" ^ msg
+"Failed to check that\n  " ^ Pretty.printf e1 ^ "\nhas type\n " ^ Pretty.printf (Meta (n, true)) ^ "\n" ^ msg
 
 let universe_inconsitency n m =
   "Universe inconsistency: the universe level of\n  " ^ Pretty.printf (Type n) ^ 

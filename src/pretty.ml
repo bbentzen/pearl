@@ -105,7 +105,7 @@ let rec print env = function
     (* print env e *)
   (* for testing: *)
   "[ " ^ parenthesize env e ^ "/ " ^ parenthesize env e1 ^ " ]"
-  | Meta n -> "?" ^ string_of_int (abs n) ^ "? " (* negative indices are supressed from the user *)
+  | Meta (n,_) -> "?" ^ string_of_int (abs n) ^ "? " (* negative indices are supressed from the user *)
   | Rfl () -> "rfl "
   | Void () -> "void "
   | Wild n -> "?_" ^ string_of_int n ^ "? "

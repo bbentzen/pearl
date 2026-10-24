@@ -30,10 +30,10 @@ let lookup st n = Hashtbl.find_opt st.subst n
 (* Apply the current substitution to an expression, recursively. *)
 
 let rec zonk st = function
-  | Meta n ->
+  | Meta (n, b) ->
     begin match lookup st n with
     | Some e -> zonk st e
-    | None -> Meta n
+    | None -> Meta (n, b)
     end
   | Pi (x, e1, e2) -> Pi (x, zonk st e1, zonk st e2)
   | Lam (x, e) -> Lam (x, zonk st e)

@@ -13,7 +13,7 @@ open Data
 let make_motive n ty = 
   let vars = Expr.create_fresh [ty] (1 + n) in
   let rec helper ty = function
-  | 0 -> ty
+  | 0 -> Placeholder.flag_meta_use ty (* if a meta we set it as false to avoid loops *)
   | n -> Lam (vars.(n-1), helper (Expr.shift 1 0 ty) (n - 1)) 
   in helper ty n
 
@@ -42,9 +42,9 @@ let rec_motive_idx elaborate env ctx ind lvl lc sl vars rec_env ty args = functi
           if rec_spec.num_indices = 0 then false else 
             not (List.compare_length_with 
             (List.filteri (fun i arg -> i < rec_spec.num_indices && 
-            Placeholder.is_wild arg) args) 0 = 0) in
+            Placeholder.can_be_inferred arg) args) 0 = 0) in
         let motive_arg = List.nth args rec_spec.num_indices in
-        let motive_is_wild = Placeholder.is_wild motive_arg in
+        let motive_is_wild = Placeholder.can_be_inferred motive_arg in
         if index_is_wild || motive_is_wild then
           (* Infer based on the target type by matching parameters and the major argument *)
           let major_arg = List.nth args (expected_args - 1) in
@@ -91,10 +91,12 @@ let rec_motive_idx elaborate env ctx ind lvl lc sl vars rec_env ty args = functi
           in
           (* Step 3: rebuild the application with the inferred motive and indices *)
           let args' = List.mapi (fun i arg -> 
-            if i < rec_spec.num_indices && Placeholder.is_with_eta arg then
+            if i < rec_spec.num_indices && Placeholder.inferred_with_eta arg then
               match infer_index with
-              | Some idx_args -> List.nth idx_args i
-              | None -> if Placeholder.is_wild arg then Placeholder.generate () else arg
+              | Some idx_args -> Placeholder.flag_meta_use (List.nth idx_args i)
+              | None -> if Placeholder.is_wild arg then Placeholder.generate () else 
+                if Placeholder.is_meta arg then Placeholder.flag_meta_use arg else
+                  arg
             else
             if i = rec_spec.num_indices && motive_is_wild then infer_motive else arg) args 
           in

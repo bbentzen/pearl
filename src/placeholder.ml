@@ -4,7 +4,8 @@
  
   Desc: This file contains basic operations involving placeholders (metavariables). This
         includes generating placeholders, checking whether an expression is a placeholder,
-        and checking whether an expression has placeholders.
+        and checking whether an expression has placeholders. The bool argument for metas is
+        used to track when they allow for motive/index inference (true). 
  **)
 
 open Ast
@@ -14,11 +15,11 @@ open Ast
 let counter = ref 0
 
 let generate () =
-  incr counter; Meta (!counter)
+  incr counter; Meta (!counter, true)
 
 let generate_neg () =
   decr counter;
-  Meta (!counter)
+  Meta (!counter, true)
 
 let restore n = counter := n
 
@@ -28,14 +29,28 @@ let is = function
   | Meta _ | Wild _ -> true
   | _ -> false
 
-let is_with_eta = function
-  | Lam (_, App(e, Local 0)) when is e -> true
-  | e -> is e
-
   (* Determines whether an expression is an underscore *)
 
 let is_wild = function
-  | Wild _ -> true | _ -> false
+  | Wild _ -> true 
+  | _ -> false
+
+let is_meta = function
+  | Meta _ -> true 
+  | _ -> false
+
+let can_be_inferred = function
+  | Meta (_, b) -> b 
+  | Wild _ -> true
+  | _ -> false
+
+let inferred_with_eta = function
+  | Lam (_, App(e, Local 0)) when can_be_inferred e -> true
+  | e -> can_be_inferred e
+
+let flag_meta_use = function
+  | Meta (n, _) -> Meta (n, false) 
+  | e -> e
 
 (* Tail-recursive recursion with stack for placeholder tracking  *)
 
@@ -59,7 +74,7 @@ let has_placeholder_name name term =
     | [] -> false
     | x :: rest ->
       match x with
-      | Meta n when n = name -> true
+      | Meta (n, _) when n = name -> true
       | Meta _ -> false
       | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> helper (e1 :: e2 :: rest)
       | Lam (_, e) -> helper (e :: rest)
@@ -88,7 +103,7 @@ let has term =
 (* Zonks an expression with the solved metavariables *)
 
 let rec solve env = function
-  | Meta n -> 
+  | Meta (n, b) -> 
     begin match Hashtbl.find_opt Data.meta_store n with
     | Some stored ->
       (* Close any open variables the solved meta might contain *)
@@ -97,10 +112,10 @@ let rec solve env = function
         | x :: env -> bind (count + 1) (Expr.close_var count x e) env 
       in
       bind 0 stored.solution env
-    | None -> Meta n
+    | None -> Meta (n, b)
     end
-  | Pi (x, e1, e2) -> Pi (x, solve env e1, solve env e2)
-  | Lam (x, e) -> Lam (x, solve (x :: env) e)
+  | Pi (x, e1, e2) -> Pi (x, Eval.eval (solve env e1), Eval.eval (solve env e2))
+  | Lam (x, e) -> Lam (x, Eval.eval (solve (x :: env) e))
   | App (e1, e2) -> App (solve env e1, solve env e2)  
   | Eq (e, e1, e2) -> Eq (solve env e, solve env e1, solve env e2)
   | Quot (e1, e2) -> Quot (solve env e1, solve env e2)
@@ -129,19 +144,16 @@ let without e1 = function
   | e2 -> e2
 
 let rec close var = function
-  | Meta n -> 
+  | Meta (n, _) -> 
     begin match Hashtbl.find_opt Data.meta_store n with
     | Some stored ->
       (* Close any globals variables the solved meta might contain *)
-      Expr.close_bound var stored.solution
-    | None -> Meta n
+      begin Hashtbl.replace Data.meta_store n {solution =
+      Expr.close_bound var stored.solution}
+      end
+    | None -> ()
     end
-  | Pi (x, e1, e2) -> Pi (x, close var e1, close var e2)
-  | Lam (x, e) -> Lam (x, close var e)
-  | App (e1, e2) -> App (close var e1, close var e2)  
-  | Eq (e, e1, e2) -> Eq (close var e, close var e1, close var e2)
-  | Quot (e1, e2) -> Quot (close var e1, close var e2)
-  | Mkq (e1, e2) -> Mkq (close var e1, close var e2)
-  | Reflect (e1, e2) -> Reflect (close var e1, close var e2)
-  | ESubIn (e, e1, e2) -> ESubIn (close var e, close var e1, close var e2)
-  | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
+  | Lam (_, e) -> close var e
+  | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> close var e1; close var e2
+  | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> close var e; close var e1; close var e2
+  | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ -> ()
