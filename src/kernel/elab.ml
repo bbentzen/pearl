@@ -350,11 +350,14 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
     | _, Error (sb, msg) -> Error (sb, Msg.pi_codomain ty2o msg)
     | Error (sa, msg), _ -> Error (sa, Msg.pi_domain ty1 msg)
     | Ok (ty1', u1, _), Ok (ty2', u2, _) -> 
-      let ty1' = Placeholder.solve [] ty1' in
-      let ty2' = Placeholder.solve [] ty2' in
-      let u1 = Placeholder.solve [] u1 in
-      let u2 = Placeholder.solve [] u2 in
-      Error (sl, Msg.pi_unexpected x ty1 ty2 ty ty1' u1 ty2' u2)
+      let ty1z = Placeholder.solve [] ty1' in
+      let ty2z = Placeholder.solve [] ty2' in
+      if ty1' = ty1z && ty2' = ty2z then
+        let u1 = Placeholder.solve [] u1 in
+        let u2 = Placeholder.solve [] u2 in
+        Error (sl, Msg.pi_unexpected x ty1 ty2 ty ty1' u1 ty2' u2)
+      else
+        elaborate env ctx ind lvl lc sl ty vars (Pi(x, ty1z, ty2z))
     end
 
   | Void() ->
@@ -891,7 +894,7 @@ and unify env ctx ind lvl lc sl vars x lift =
         if e1 = e && e2 = e' then
           (* Stop and return error when there are no metas to zonk in their values *)
           if eval e = eval e' then Ok e else
-            Error ((e, e'), Msg.not_syntactically_equal e e')
+            Error ((e, e'), Msg.not_syntactically_equal e e' ctx)
         else
           let e1 = eval e1 and e2 = eval e2 in
           begin match unify env ctx ind lvl lc sl vars (e1, e2, ty) lift with

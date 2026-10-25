@@ -9,6 +9,11 @@
 open Basis
 open Context
 
+(* Prints all solutions to the metavariables with repetitions *)
+
+let meta_solutions () =
+   Hashtbl.fold (fun x y acc -> "\n" ^ (string_of_int x) ^ "==>" ^ (Pretty.printf (y.Data.solution)) ^ "\n" ^ acc) Data.meta_store ""
+
 (* Locals *)
 
 let unexpected index ty ctx =
@@ -206,8 +211,9 @@ let unify_quot msg =
 let unify_mkq e1 e2 e1' e2'  msg =
   "Unification failed for the equivalence classes " ^ Pretty.printf (Mkq (e1, e2)) ^ " and " ^ Pretty.printf (Mkq (e1', e2')) ^ msg
 
-let not_syntactically_equal e e' =
-  "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal."
+let not_syntactically_equal e e' ctx =
+  "The two terms\n  " ^ Pretty.printf e ^ "\nand\n  " ^ Pretty.printf e' ^ "\nare not equal." ^
+  "\nThe current context is:\n\n" ^ Global.printf ctx
 
 let zonking_fal msg =
   "Unification failed after zonking: " ^ msg
@@ -304,8 +310,3 @@ let reflect_goal_mkq ctx e1 rel a b ty =
   "\n\n" ^ Global.printf ctx ^ "-------------------------------------------\n ⊢ " ^ Pretty.printf ty ^ "\n"
 
 let no_reflect () = "There is nothing to reflect. "
-
-(* Prints all solutions to the metavariables with repetitions *)
-
-let meta_solutions () =
-   Hashtbl.fold (fun x y acc -> "\n" ^ (string_of_int x) ^ "==>" ^ (Pretty.printf (y.Data.solution)) ^ "\n" ^ acc) Data.meta_store ""
