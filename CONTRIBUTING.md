@@ -16,18 +16,18 @@ represent computer programs. They represent person programs, which in
 some instances can be transformed into computer programs and in other
 instances cannot. [Foundations of constructive analysis, pp. 354–355]
 
-Pearl is written by human beings for human use and built on the convictions shared by Brouwer and Bishop that mathematics is a human activity. The practice of so-called "vibe coding" can undermine this vision and be highly detrimental to human understanding. As a first step, we encourage contributors to abide by the recommendations of the [AHM](https://www.ahmath.org/) and [AGMAI](https://agmai.org/) to protect human mathematics. Our rule of thumb is as follows: while low-impact use of AI for basic technical assistance and proofreading can be tolerated if they do not impact the human programming experience, contributors should explicitly acknowledge any further use and will only publish code that they are fully capable of producing on their own. 
+Pearl is written by human beings for human use and built on the convictions shared by Brouwer and Bishop that mathematics is a human activity. The practice of so-called "vibe coding" can undermine this vision and be highly detrimental to human understanding. As a first step, we encourage contributors to read the recommendations on the [Leiden declaration](https://leidendeclaration.ai/), the [AHM](https://www.ahmath.org/), and [AGMAI](https://agmai.org/) to protect human mathematics. Our rule of thumb is as follows: while low-impact use of AI for basic technical assistance and proofreading can be tolerated if they do not impact the human programming experience, contributors should explicitly acknowledge any further use and will only publish code that they are fully capable of producing on their own. 
 
 ## Desired features
 
 Here are some items on our TODO list:
 
-- Type inference at context
+- Kernel typechecking after elaboration (almost complete)
 - Delay unification (in progress)
+- When a: A is declared in the context the typehood of A should be inferred a la PER semantics and PTT rather than checked
 - Clearly separate elaboration, checking, and look for global identifier conflict when opening a binder only at elaboration stage
 - Improve stack overflow error at synthetization attempts
 - Expand the library with more formalized math for testing strengths and limits
-- Wildcard printing: user should not see inductive data as part of context when _ is entered in a proof (remove ind@ctx hack)
 - Pretty print user-named definitions 
 - Pretty print numbers in applied exprs (but not as levels) as sss...s0, e.g 2 as ss0
 - Publish VS Code extension
