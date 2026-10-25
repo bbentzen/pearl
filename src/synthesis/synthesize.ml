@@ -18,8 +18,8 @@ let rec check global ctx ind lvl sl e ty max vars =
   Hashtbl.clear Data.meta_store;
   match Elab.elaborate global ctx ind lvl 0 sl ty vars e with
   | Ok (e', ty', _) ->
-    let e' = Placeholder.solve [] e' in
-    let ty' = Placeholder.solve [] ty' in
+    (* let e' = Placeholder.solve [] e' in
+    let ty' = Placeholder.solve [] ty' in *)
     Hashtbl.clear Data.meta_store;
     (* Type check the fully elaborated term *)
     let e' = Expr.reset e' in
@@ -27,8 +27,8 @@ let rec check global ctx ind lvl sl e ty max vars =
       begin match Elab.elaborate global ctx ind lvl 0 ([], []) ty vars e' with
       | Ok (e', ty', sl) ->
         (* Need to find a better way to avoid rezonking *)
-        let e' = Placeholder.solve [] e' in
-        let ty' = Placeholder.solve [] ty' in
+        (* let e' = Placeholder.solve [] e' in
+        let ty' = Placeholder.solve [] ty' in *)
         (* Double checks that there are no placeholders left in the synthesization attempts *)
         Hashtbl.clear Data.meta_store;
         if Attempt.trustworthy (fst sl) then

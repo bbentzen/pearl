@@ -117,7 +117,7 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
         let ty2' = Expr.open_var 0 (Global v1) ty2 in
         let elab = elaborate env ((v1, ty1, true) :: ctx) ind lvl lc sl ty2' (vars+1) e' in
         begin match elab with
-        | Ok (e, ty2, sa) -> Placeholder.close v1 e'; Placeholder.close v1 ty2';
+        | Ok (e, ty2, sa) -> Placeholder.close v1 e; Placeholder.close v1 ty2;
           Ok (Lam (v1, Expr.close_bound v1 e), Pi (v1, ty1, Expr.close_bound v1 ty2), sa)
         | Error (sa, msg) -> Error (sa, msg)
         end
@@ -515,7 +515,6 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
     | Ok ty -> Ok (Ann (e1, ty1), ty, sl)
     | Error (_, msg) -> Error (sl, Msg.fail_ann e1 ty1 ty msg)
     end
-    
   
   | Meta (n, b) -> Ok (Meta (n, b), ty, sl)
     
@@ -596,7 +595,7 @@ and unify env ctx ind lvl lc sl vars x lift =
   in
   match x with
   | e, e', ty ->
-    let e = eval e and e' = eval e' in
+    (* let e = eval e and e' = eval e' in *)
     if e = e' then
       Ok e
     else
@@ -745,6 +744,83 @@ and unify env ctx ind lvl lc sl vars x lift =
           end
         | Error (_, msg) -> Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
         end
+      
+      (* | App (e1, e2), App (e1', e2'), ty ->
+        let v1 = Expr.init_fresh vars in
+        let h1 = Placeholder.generate () in
+        let h2 = Placeholder.generate () in
+        (* First attempt to unify heads and if that fails unify args *)
+        begin match elaborate env ctx ind lvl lc sl (Pi(v1, h1, h2)) (vars+1) e1 with
+        | Ok (e1, Pi(x, ty1, ty2), _) ->
+          begin match unify env ctx ind lvl lc sl (vars+1) (e1, e1', Pi(x, ty1, ty2)) lift with
+          | Ok s1 -> 
+            begin match unify env ctx ind lvl lc sl vars (e2, e2', eval ty1) lift with
+            | Ok s2 -> Ok (App (s1, s2))
+            | Error (ex, msg) -> Error (ex, msg)
+            end
+          | Error (ex, msg) ->
+            (* Check for metavariable application *)
+            let head, args = Eval.break_args [] (App (e1, e2)) in
+            begin match solve_meta_application args vars (App(e1', e2')) head with
+            | Some s -> Ok (eval (build_app s args))
+            | None ->
+              let head, args = Eval.break_args [] (App (e1', e2')) in
+              begin match solve_meta_application args vars (App(e1, e2)) head with
+              | Some s -> Ok (eval (build_app s args))
+              | None ->
+                (* Try again now by evaluating both applications *)
+                let app1 = App (e1, e2) in
+                let app2 = App (e1', e2') in
+                (* TODO: this is not ideal, to avoid re-evaluation, better store values in a hasthtable and look them up *)
+                let app1' = eval app1 in
+                let app2' = eval app2 in
+                if app1 = app1' && app2 = app2' then
+                  Error (ex, Msg.app_unify_fallback e1 e2 e1' e2' msg)
+                else
+                  unify env ctx ind lvl lc sl (vars+1) (app1', app2', ty) lift
+              end
+            end
+          end
+        | Ok (e1, pty1', _) -> 
+          begin match elaborate env ctx ind lvl lc sl h1 (vars+1) e2 with
+          | Ok (e2', ty1, _) ->
+            Constraints.add st {
+            lhs = (Pi(v1, ty1, h2)); 
+            rhs = pty1'; 
+            cty = Type(Var "?_"); 
+            clift = true };
+            (* Delay unification *)
+            let u2 = unify env ctx ind lvl lc sl vars (e2, e2', ty1) lift in
+            let u1 = unify env ctx ind lvl lc sl (vars+1) (e1, e1', Pi(v1, ty1, h2)) lift in
+            begin match u1, u2 with
+            | Ok s1, Ok s2 -> Ok (App (s1, s2))
+            | Error (ex, msg), _ | _, Error (ex, msg) ->
+              (* Check for metavariable application *)
+              let head, args = Eval.break_args [] (App (e1, e2)) in
+              begin match solve_meta_application args vars (App(e1', e2')) head with
+              | Some s -> Ok (eval (build_app s args))
+              | None ->
+                let head, args = Eval.break_args [] (App (e1', e2')) in
+                begin match solve_meta_application args vars (App(e1, e2)) head with
+                | Some s -> Ok (eval (build_app s args))
+                | None ->
+                  (* Try again now by evaluating both applications *)
+                  let app1 = App (e1, e2) in
+                  let app2 = App (e1', e2') in
+                  (* TODO: this is not ideal, to avoid re-evaluation, better store values in a hasthtable and look them up *)
+                  let app1' = eval app1 in
+                  let app2' = eval app2 in
+                  if app1 = app1' && app2 = app2' then
+                    Error (ex, Msg.app_unify_fallback e1 e2 e1' e2' msg)
+                  else
+                    unify env ctx ind lvl lc sl (vars+1) (app1', app2', ty) lift
+                end
+              end
+            end
+          | Error (_, msg) -> Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
+          end  
+        | Error (_, msg) -> Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
+        end *)
       
       | Ann (e1, e2), Ann (e1', e2'), ty ->
         let e1 = eval e1 in 

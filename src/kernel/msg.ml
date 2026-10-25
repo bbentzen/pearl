@@ -156,16 +156,16 @@ let unify_eq e e1 e2 e' e1' e2' msg =
   "\nand\n  " ^ Pretty.printf (Eq (e', e1', e2')) ^ " due to the following errors:\n " ^ msg
 
 let app_unify_fallback e1 e2 e1' e2' msg =
-  "Failed to unify the applications " ^ Pretty.printf (App (e1, e2)) ^ 
-              " and " ^ Pretty.printf (App (e1', e2')) ^ ". " ^ msg
+  "Failed to unify the applications\n  " ^ Pretty.printf (App (e1, e2)) ^ 
+  "and\n  " ^ Pretty.printf (App (e1', e2')) ^ "\n" ^ msg
 
 let app_mixed_unify e1 e2 e' =
-  "Failed to solve the metavariables needed to unify " ^ Pretty.printf (App (e1, e2)) ^ 
-  " with " ^ Pretty.printf e' ^ ". "
+  "Failed to solve the metavariables needed to unify\n  " ^ Pretty.printf (App (e1, e2)) ^ 
+  "\nwith\n  " ^ Pretty.printf e' ^ ". "
 
 let app_mixed_unify_zonk e e' msg =
-  "Failed to solve the metavariables needed to unify " ^ Pretty.printf e ^ 
-  " with " ^ Pretty.printf e' ^ " after multiple substitutions. " ^ msg
+  "Failed to solve the metavariables needed to unify\n  " ^ Pretty.printf e ^ 
+  "\nwith\n  " ^ Pretty.printf e' ^ "\nafter multiple substitutions.\n" ^ msg
 
 let app_unify_arg e2 h1 msg =
   "Failed to check that " ^ Pretty.printf e2 ^ " has type " ^ Pretty.printf h1 ^ ".\n" ^ msg
