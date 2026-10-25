@@ -136,10 +136,7 @@ let rec reduce = function
       end
     end
 
-  | Type l ->
-    Type (Level.reduce l)
-  
-  | Ann(e1, e2) -> Ann(reduce e1, e2)
+  | Type l -> Type (Level.reduce l)
 
   | e -> e
 

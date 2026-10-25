@@ -120,7 +120,6 @@ let rec solve env = function
   | Eq (e, e1, e2) -> Eq (solve env e, solve env e1, solve env e2)
   | Quot (e1, e2) -> Quot (solve env e1, solve env e2)
   | Mkq (e1, e2) -> Mkq (solve env e1, solve env e2)
-  | Ann (e1, e2) -> Ann (solve env e1, solve env e2)
   | Reflect (e1, e2) -> Reflect (solve env e1, solve env e2)
   | ESubIn (e, e1, e2) -> ESubIn (solve env e, solve env e1, solve env e2)
   | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
@@ -136,7 +135,6 @@ let rec unique = function
   | Eq (e, e1, e2) -> Eq (unique e, unique e1, unique e2)
   | Quot (e1, e2) -> Quot (unique e1, unique e2)
   | Mkq (e1, e2) -> Mkq (unique e1, unique e2)
-  | Ann (e1, e2) -> Ann (unique e1, unique e2)
   | Reflect (e1, e2) -> Reflect (unique e1, unique e2)
   | ESubIn (e, e1, e2) -> ESubIn (unique e, unique e1, unique e2)
 
@@ -156,6 +154,6 @@ let rec close var = function
     | None -> ()
     end
   | Lam (_, e) -> close var e
-  | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Ann (e1, e2) | Reflect (e1, e2) -> close var e1; close var e2
+  | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> close var e1; close var e2
   | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> close var e; close var e1; close var e2
   | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ -> ()

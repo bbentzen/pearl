@@ -27,7 +27,6 @@ type rawexpr =
   | RMkq of rawexpr * rawexpr
   | RVoid of unit
   | RType of rawlevel
-  | RAnn of rawexpr * rawexpr 
   | RMeta of int
   | RWild of int
   | RReflect of rawexpr * rawexpr
@@ -85,7 +84,6 @@ type expr =
   | Mkq of expr * expr
   | Void of unit
   | Type of level
-  | Ann of expr * expr (* explicit type annotations *)
   | Meta of int * bool (* bool is used in motive/index inference only *)
   | Wild of int
   | Reflect of expr * expr
@@ -130,7 +128,6 @@ let rec of_raw_expr_with_env env = function
   | RRfl () -> Rfl ()
   | RVoid () -> Void ()
   | RType l -> Type (level_of_raw l)
-  | RAnn (e1, e2) -> Ann (of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
   | RMeta n -> Meta (n, true)
   | RWild n -> Wild n
   | RReflect (e1, e2) -> Reflect (of_raw_expr_with_env env e1, of_raw_expr_with_env env e2)
@@ -183,10 +180,6 @@ let rec of_raw_expr_with_vars env = function
     Mkq (e1', e2'), v1 @ v2
   | RVoid () -> Void (), []
   | RType l -> Type (level_of_raw l), []
-  | RAnn (e1, e2) ->
-    let e1', v1 = of_raw_expr_with_vars env e1 in
-    let e2', v2 = of_raw_expr_with_vars env e2 in
-    Ann (e1', e2'), v1 @ v2
   | RMeta n -> Meta (n, true), []
   | RWild n -> Wild n, []
   | RReflect (e1, e2) ->
