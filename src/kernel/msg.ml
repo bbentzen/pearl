@@ -176,7 +176,7 @@ let app_unify_arg e2 h1 msg =
   "Failed to check that " ^ Pretty.printf e2 ^ " has type " ^ Pretty.printf h1 ^ ".\n" ^ msg
 
 let app_unify_arg_2 e2 ty1 =
-  "The head " ^ Pretty.printf e2 ^ " is expected to have type Π (v? : ?1?) ?2? but has type\n  " ^ Pretty.printf ty1
+  "Cannot proceed with unification as the head\n  " ^ Pretty.printf e2 ^ "\nis expected to have type Π (v? : ?1?) ?2? but has type\n  " ^ Pretty.printf ty1
 
 let app_unify_app e i e' =
   "Don't know how to unify the applied term\n  " ^ Pretty.printf (App (e, i)) ^ "\nwith\n  " ^ Pretty.printf e' ^ "." 
