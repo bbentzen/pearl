@@ -212,18 +212,25 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
       | Eq (_, Eq(ty1, a, a'), Eq(ty1', b, b')) ->
         eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 ([(ty1, ty1')] @ [(a, b)] @ [(a', b')])
       | Eq (_, App(a, a'), App(b, b')) ->
+        (* If heads are identical type formers or constructors reflect injectively *)
         let a_head, a_args = Eval.break_args [] a in
         let b_head, b_args = Eval.break_args [] b in
-        if a_head = b_head && List.length a_args = List.length b_args then
+        begin match a_head with
+        | Global name ->
           let rec helper l1 = function
           | [] -> [(a', b')]
           | a :: l2 ->
             let n = List.length l2 in
-            (a, List.nth l1 n) :: helper l1 l2
-        in
-          eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 (helper a_args b_args)
-        else
-          eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 [(App(a, a'), App(b, b'))]
+            (a, List.nth l1 n) :: helper l1 l2 in
+          (* Checks for declaration, identical heads, same number of arguments *)
+          if Inductive.is_declared name ind && b_head = Global name && List.length a_args = List.length b_args then
+            eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 (helper a_args b_args)
+          else
+            (* In the fallback cases just reflect the app terms as usual *)
+            eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 [(App(a, a'), App(b, b'))]
+        | _ -> eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 [(App(a, a'), App(b, b'))]
+        end
+          
       | Eq (_, a, b) ->
         eq_reflection_on env ctx ind lvl lc sl ty vars e1 e2 [(a, b)]
       | App (App (rel, a), b) ->
