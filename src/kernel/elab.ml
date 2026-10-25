@@ -706,43 +706,6 @@ and unify env ctx ind lvl lc sl vars x lift =
               | Error ((e, e'), msg) ->  Error ((e, e'), Msg.lam_unify_2 x e y e' msg)
           end
       
-      (* Original arg-first app unification case *)
-      (* | App (e1, e2), App (e1', e2'), ty ->
-        let h1 = Placeholder.generate () in
-        let elab2 = elaborate env ctx ind lvl lc sl h1 vars e2 in
-        begin match elab2 with
-        | Ok (_, ty2, _) ->
-          let u2 = unify env ctx ind lvl lc sl vars (e2, e2', ty2) lift in
-          let v1 = Expr.init_fresh vars in
-          let u1 = unify env ctx ind lvl lc sl (vars+1) (e1, e1', Pi(v1, ty2, Expr.fullsubst 0 e2 (Local 0) ty)) lift in
-          begin match u1, u2 with
-          | Ok s1, Ok s2 -> Ok (App (s1, s2))
-          | Error (ex, msg), _ | _, Error (ex, msg) ->
-            (* Check for metavariable application *)
-            let head, args = Eval.break_args [] (App (e1, e2)) in
-            begin match solve_meta_application args vars (App(e1', e2')) head with
-            | Some s -> Ok (eval (build_app s args))
-            | None ->
-              let head, args = Eval.break_args [] (App (e1', e2')) in
-              begin match solve_meta_application args vars (App(e1, e2)) head with
-              | Some s -> Ok (eval (build_app s args))
-              | None ->
-                (* Try again now by evaluating both applications *)
-                let app1 = App (e1, e2) in
-                let app2 = App (e1', e2') in
-                (* TODO: this is not ideal, to avoid re-evaluation, better store values in a hasthtable and look them up *)
-                let app1' = eval app1 in
-                let app2' = eval app2 in
-                if app1 = app1' && app2 = app2' then
-                  Error (ex, Msg.app_unify_fallback e1 e2 e1' e2' msg)
-                else
-                  unify env ctx ind lvl lc sl (vars+1) (app1', app2', ty) lift
-              end
-            end
-          end
-        | Error (_, msg) -> Error ((App (e1, e2), App (e1', e2')), Msg.app_unify_arg e2 h1 msg)
-        end *)
-      
       | App (e1, e2), App (e1', e2'), ty ->
         (* Check for metavariable application *)
         let head, args = Eval.break_args [] (App (e1, e2)) in
