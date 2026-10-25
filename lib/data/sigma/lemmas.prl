@@ -71,19 +71,17 @@ def sigma_intro {A B : type ℓ} {C : A → type ℓ} (a : A) (u : C a) :
   Σ (x : A), C x :=
 (a, u)
 
-def sigma_prod_distrb1 {A B : type ℓ} {C : A → type ℓ} :
-  (B × Σ (x : A), C x) → Σ (x : A), B × C x :=
-λ w, (fst (snd w), 
-(fst w, snd (snd w)))
+def sigma_prod_distrb1 {A B : type ℓ} (C : A → type ℓ) (w : B × Σ (x : A), C x) :
+  (Σ (x : A), B × C x) :=
+(fst (snd w), (fst w, snd (snd w)))
 
-def sigma_prod_distrb2 {A B : type ℓ} {C : A → type ℓ} :
-  (Σ (x : A), B × C x) → (B × Σ (x : A), C x) :=
-λ w, (fst (snd w), (fst w, snd (snd w)))
+def sigma_prod_distrb2 {A B : type ℓ} {C : A → type ℓ} (w : Σ (x : A), B × C x) :
+  (B × Σ (x : A), C x) :=
+(fst (snd w), (fst w, snd (snd w)))
 
-def sigma_prod_distrb (A : type ℓ) (B C : A → type ℓ) :
-  (Σ (x : A), B x × C x) → (Σ (x : A), B x) × (Σ (x : A), C x) :=
-λ w, ((fst w, fst (snd w)), 
-(fst w, snd (snd w)))
+def sigma_prod_distrb (A : type ℓ) (B C : A → type ℓ) (w : (Σ (x : A), B x × C x)) :
+  (Σ (x : A), B x) × (Σ (x : A), C x) :=
+((fst w, fst (snd w)), (fst w, snd (snd w)))
 
 def pi_to_not_sigma {A B : type ℓ} {C : A → type ℓ} :
   (Π (x : A), C x) → ¬(Σ (x : A), ¬ C x) :=
@@ -109,9 +107,9 @@ def sigma_pi_exchg {A B : type ℓ} {C : A → B → type ℓ} :
   (Σ (x : A), Π (y : B), C x y) → (Π (y : B), Σ (x : A), C x y) :=
 λ w y, (fst w, (snd w) y)
 
-theorem dprod_up_2_fst {A : type ℓ} {B C : A → type ℓ} :
-  (Π (x : A), B x × C x) → (Π (x : A), B x) :=
-λ f x, fst (f x)
+theorem dprod_up_2_fst {A : type ℓ} {B C : A → type ℓ} (f : Π (x : A), B x × C x) (x : A) :
+  (B x) :=
+fst (f x)
 
 theorem dprod_up_2_snd {A : type ℓ} {B C : A → type ℓ} :
   (Π (x : A), B x × C x) → (Π (x : A), C x) :=

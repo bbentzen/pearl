@@ -15,12 +15,10 @@ open Kernel
 
 let rec check global ctx ind lvl sl e ty max vars =
   let e = eval e and ty = eval ty in
-  Hashtbl.clear Data.meta_store;
   match Elab.elaborate global ctx ind lvl 0 sl ty vars e with
   | Ok (e', ty', _) ->
-    (* let e' = Placeholder.solve [] e' in
-    let ty' = Placeholder.solve [] ty' in *)
-    Hashtbl.clear Data.meta_store;
+    let e' = Placeholder.solve [] e' in
+    let ty' = Placeholder.solve [] ty' in
     (* Type check the fully elaborated term *)
     let e' = Expr.reset e' in
     (* let ty' = Expr.reset ty' in *)

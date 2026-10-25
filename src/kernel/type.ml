@@ -12,11 +12,11 @@ open Eval
 
 let check global ctx ind lvl ty =
   match ty with
-  | Meta _ -> Ok (Meta (0, true), ty)
+  | Meta (n, b) -> Ok (Meta (n, b), ty)
   | _ ->
     let ty' = eval ty in
-    Placeholder.restore 0;
-    match Elab.elaborate global ctx ind lvl 0 ([], []) (Meta (0, true)) 1 ty' with
+    let h1 = Placeholder.generate () in
+    match Elab.elaborate global ctx ind lvl 0 ([], []) h1 1 ty' with
     | Error (_, msg) -> Error ("Failed typehood check. \n" ^ msg)
     | Ok (ty', tTy, _) ->
       match tTy with

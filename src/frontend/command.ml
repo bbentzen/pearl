@@ -39,14 +39,14 @@ let rec compile_proof env ind lopen filename lvl next_location cmd (id, l, ty_ra
     match Env.unfold_all env 0 (Implicit.convert ty) with
     | Ok hty ->
       let ctx = Global.create_ctx l in
-      let (h1, h2) = 
+      let (h1, h2) =
+        Placeholder.restore 0; 
         Ctx.check env ctx ind lvl,
         Type.check env ctx ind lvl (eval hty)
       in
       begin 
         match h1, h2 with
         | Ok ctx, Ok (ty', _) -> 
-          Placeholder.restore 0;
           let ctx' = List.rev ctx in
           begin 
             match Env.unfold_all env 0 (Implicit.convert e) with
