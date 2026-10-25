@@ -72,13 +72,11 @@ let rec_motive_idx elaborate env ctx ind lvl lc sl vars rec_env ty args = functi
           let infer_motive = make_motive (rec_spec.num_params + 1) ty' in
           (* Step 2: elaborate major argument to infer indices *)
           let infer_index =
-            let num_idx = rec_spec.num_indices in
-            let num_params = rec_spec.num_params in (* Clean this up *)
-            let name = rec_spec.ind_name in
-            (* let ph = num_extra_args + ph in  *)(* ensures uniqueness *)
-            let h1 = generate_ind_pl name (num_idx + num_params) in
+            let h1 = Placeholder.generate () in
             begin match elaborate env ctx ind lvl lc sl h1 vars major_arg with
             | Ok (_, xty, _) ->
+              (* Recover the inductive type by zonking all its metavariables *)
+              let xty = Placeholder.solve [] xty in
               let _, ind_args = Eval.break_args [] xty in
               let num_args = List.length ind_args in
               if num_args < rec_spec.num_params + rec_spec.num_indices then 
