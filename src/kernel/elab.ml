@@ -20,7 +20,7 @@ let solve_meta_application args vars body = function
       | [] -> body
       | _ :: args -> 
         let v1 = Expr.init_fresh vars in
-        Lam (v1, build_lam (vars + 1) (Expr.shift 1 0 body) args)
+        Lam (v1, build_lam (vars + 1) body args)
     in
     if Placeholder.has_placeholder_name n body then None else
       let solved = build_lam vars body args in
