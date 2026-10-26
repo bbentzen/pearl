@@ -14,7 +14,7 @@ let make_motive n ty =
   let vars = Expr.create_fresh [ty] (1 + n) in
   let rec helper ty = function
   | 0 -> Placeholder.flag_meta_use ty (* if a meta we set it as false to avoid loops *)
-  | n -> Lam (vars.(n-1), helper (Expr.shift 1 0 ty) (n - 1)) 
+  | n -> Lam (vars.(n-1), helper ty (n - 1)) 
   in helper ty n
 
 let generate_ind_pl name num_idx_params =
@@ -62,9 +62,9 @@ let rec_motive_idx elaborate env ctx ind lvl lc sl vars rec_env ty args = functi
               let h1 = Placeholder.generate () in
               begin match elaborate env ctx ind lvl lc sl h1 vars extra_arg with
               | Ok (_, extra_arg_ty, _) -> 
-                Pi("v?", extra_arg_ty, Expr.shift 1 0 (append_ty_extra ty (n - 1)))
+                Pi("v?", extra_arg_ty, append_ty_extra ty (n - 1))
               | _ -> (* this might happen if the extra argument is another recursor *)
-                Pi("v?", Placeholder.generate (), Expr.shift 1 0 (append_ty_extra ty (n - 1))) 
+                Pi("v?", Placeholder.generate (), append_ty_extra ty (n - 1))
               end
           in
           (* Close motive with abstractions and rebuild the application with the result *)
