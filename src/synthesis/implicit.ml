@@ -11,6 +11,7 @@ open Ast
 (* Replaces 0-indexed wildcards with uniquely assigned indices starting at n *)
 
 let rec read n = function
+  | Meta _ -> Placeholder.generate (), n
   | Wild 0 -> Wild n, n+1 
   | Wild m -> Wild m, n+m
   | Pi (y, e1, e2) ->
@@ -49,3 +50,5 @@ let rec read n = function
   | e -> e, n
 
 let convert e = fst (read 1 e)
+
+(* Count the number of metas in the expression and start Placeholder.restore from n> *)

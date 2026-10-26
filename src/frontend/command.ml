@@ -40,7 +40,6 @@ let rec compile_proof env ind lopen filename lvl next_location cmd (id, l, ty_ra
     | Ok hty ->
       let ctx = Global.create_ctx l in
       let (h1, h2) =
-        Placeholder.restore 0; 
         Ctx.check env ctx ind lvl,
         Type.check env ctx ind lvl (eval hty)
       in

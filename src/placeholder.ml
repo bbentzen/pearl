@@ -17,11 +17,17 @@ let counter = ref 0
 let generate () =
   incr counter; Meta (!counter, true)
 
-let generate_neg () =
-  decr counter;
-  Meta (!counter, true)
+let restore n = 
+  counter := n;
+  Hashtbl.clear Data.meta_store
 
-let restore n = counter := n
+(* Implicit counter *)
+
+let implicit_counter = ref 0
+
+let impl_generate () =
+  incr implicit_counter;
+  Meta (!implicit_counter, true)
 
 (* Determines whether an expression is a placeholder/underscore with a variant up to eta *)
 
@@ -114,7 +120,7 @@ let rec solve env = function
       bind 0 stored.solution env
     | None -> Meta (n, b)
     end
-  | Pi (x, e1, e2) -> Pi (x, Eval.eval (solve env e1), Eval.eval (solve env e2))
+  | Pi (x, e1, e2) -> Pi (x, Eval.eval (solve env e1), Eval.eval (solve (x :: env) e2))
   | Lam (x, e) -> Lam (x, Eval.eval (solve (x :: env) e))
   | App (e1, e2) -> App (solve env e1, solve env e2)  
   | Eq (e, e1, e2) -> Eq (solve env e, solve env e1, solve env e2)
@@ -123,7 +129,7 @@ let rec solve env = function
   | Reflect (e1, e2) -> Reflect (solve env e1, solve env e2)
   | ESubIn (e, e1, e2) -> ESubIn (solve env e, solve env e1, solve env e2)
   | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ as e -> e
-
+  
 (* Assigns unique positive metas to negative metas *)
 
 let rec unique = function

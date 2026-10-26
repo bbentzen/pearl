@@ -40,7 +40,7 @@ let function_of_def id ctx (e, ty) hole =
       Pi (x, ty, close_var 0 x ty')
     | (x, _, false) :: ctx ->
       let e', ty' = helper (h'+1) ctx in
-      let h = Placeholder.generate_neg () in
+      let h = Placeholder.impl_generate () in
       Global.subst_global 0 h x e', 
       Global.subst_global 0 h x ty' 
   in
@@ -55,11 +55,10 @@ let rec check_def_id id = function
 (* Appends a quadruple (id * (term * type)) * attrb to the env context *)
 
 let add env id ctx elab attrb =
+  Placeholder.implicit_counter := 0;
   match check_def_id id env with
   | Ok _ -> env
-  | Error _ -> 
-    Placeholder.restore 0;
-    (function_of_def id ctx elab 0, attrb) :: env
+  | Error _ -> (function_of_def id ctx elab 0, attrb) :: env
 
 (* Returns the body of a definition when given a declared env constant *)
 
