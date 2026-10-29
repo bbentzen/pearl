@@ -117,6 +117,19 @@ let rec free_occurs_name s = function
   | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> free_occurs_name s e1 || free_occurs_name s e2
   | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> free_occurs_name s e || free_occurs_name s e1 || free_occurs_name s e2
 
+let rec occurs_list k args = function
+  | Global _ as g -> List.mem g args
+  | Local i -> i >= k && List.mem (Local (i - k)) args
+  | Lam (_, e)      -> occurs_list (k + 1) args e
+  | Pi (_, e1, e2)  -> occurs_list k args e1 || occurs_list (k + 1) args e2
+  | App (e1, e2)
+  | Quot (e1, e2)
+  | Mkq (e1, e2)
+  | Reflect (e1, e2) -> occurs_list k args e1 || occurs_list k args e2
+  | Eq (e, e1, e2)
+  | ESubIn (e, e1, e2) -> occurs_list k args e || occurs_list k args e1 || occurs_list k args e2
+  | _ -> false
+
 (* Converts a list of expressions into a single expression by application *)
 
 let rec list_to_expr l =
@@ -194,3 +207,12 @@ let rec type_of = function
   | Reflect (_, e) -> type_of e
   | ESubIn (_, e, _) -> type_of e
   | e -> e
+
+(* Build a string of lambda abstractions λ v_vars v_(vars+1) ... (vars+n-1). body *)
+
+let rec build_lams vars body args =
+  match args with
+  | [] -> body
+  | _ :: rest ->
+    let v = init_fresh vars in
+    Lam (v, build_lams (vars + 1) body rest)

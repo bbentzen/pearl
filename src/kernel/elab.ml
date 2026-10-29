@@ -14,17 +14,70 @@ open Eval
 
 let st = Constraints.empty ()
 
+(* Implements Miller higher-order pattern unification with a constant solution fallback when possible *)
+
 let solve_meta_application args vars body = function
   | Meta (n, _) ->
-    let rec build_lam vars body = function
-      | [] -> body
-      | _ :: args -> 
-        let v1 = Expr.init_fresh vars in
-        Lam (v1, build_lam (vars + 1) body args)
-    in
-    if Placeholder.has_placeholder_name n body then None else
-      let solved = build_lam vars body args in
-      (Hashtbl.replace Data.meta_store n { Data.solution = solved}; Some solved)
+    if Placeholder.has_placeholder_name n body then None
+    else 
+      let n_args = List.length args in
+      let find_arg_pos a =
+        let rec go pos = function
+          | [] -> None
+          | a' :: rest -> if a = a' then Some pos else go (pos + 1) rest
+        in go 0 args
+      in
+      (* All args are distinct rigid variables *)
+      let is_pattern_spine =
+        let rec check seen = function
+          | [] -> true
+          | (Global _ as a) :: rest -> (not (List.mem a seen)) && check (a :: seen) rest
+          | (Local _  as a) :: rest -> (not (List.mem a seen)) && check (a :: seen) rest
+          | _ -> false
+        in check [] args
+      in
+      (* Replace args[j] with binder v_{j+1} and shift every other free local by n *)
+      let rewrite_for_hopu body =
+        let rec go k e =
+          match e with
+          | Global x ->
+            begin match find_arg_pos (Global x) with
+            | Some j -> Local (n_args - 1 - j + k)
+            | None   -> Global x
+            end
+          | Local i ->
+            if i < k then Local i
+            else begin
+              let ctx_i = i - k in
+              match find_arg_pos (Local ctx_i) with
+              | Some j -> Local (n_args - 1 - j + k)
+              | None   -> Local (i + n_args)
+            end
+          | Lam (x, e)        -> Lam (x, go (k + 1) e)
+          | Pi  (x, e1, e2)   -> Pi  (x, go k e1, go (k + 1) e2)
+          | App (e1, e2)      -> App (go k e1, go k e2)
+          | Eq  (e, e1, e2)   -> Eq  (go k e, go k e1, go k e2)
+          | Quot (e1, e2)     -> Quot (go k e1, go k e2)
+          | Mkq  (e1, e2)     -> Mkq  (go k e1, go k e2)
+          | Reflect (e1, e2)  -> Reflect (go k e1, go k e2)
+          | ESubIn (e, e1, e2)-> ESubIn (go k e, go k e1, go k e2)
+          | _ -> e
+        in go 0 body
+      in
+      if is_pattern_spine then begin
+        (* Proceed with higher-order pattern unification *)
+        let body'  = rewrite_for_hopu body in
+        let solved = Expr.build_lams vars body' args in
+        Hashtbl.replace Data.meta_store n { Data.solution = solved };
+        Some solved
+      end
+      else if Expr.occurs_list 0 args body then None
+      else
+        (* Constant fallback: lift free locals above the new binders *)
+        let body'  = Expr.shift 0 n_args body in
+        let solved = Expr.build_lams vars body' args in
+        Hashtbl.replace Data.meta_store n { Data.solution = solved };
+        Some solved
   | _ -> None
 
 (* Checks whether the type of a given expression is the given type *)

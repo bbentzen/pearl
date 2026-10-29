@@ -166,7 +166,7 @@ let app_unify_fallback e1 e2 e1' e2' msg =
 
 let app_mixed_unify e1 e2 e' =
   "Failed to solve the metavariables needed to unify\n  " ^ Pretty.printf (App (e1, e2)) ^ 
-  "\nwith\n  " ^ Pretty.printf e' ^ ". "
+  "\nwith\n  " ^ Pretty.printf e'
 
 let app_mixed_unify_zonk e e' msg =
   "Failed to solve the metavariables needed to unify\n  " ^ Pretty.printf e ^ 
