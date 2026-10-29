@@ -16,9 +16,9 @@ open Kernel
 let rec check global ctx ind lvl sl e ty max vars =
   let e = eval e and ty = eval ty in
   match Elab.elaborate global ctx ind lvl 0 sl ty vars e with
-  | Ok (e', ty', _) ->
-    let e' = Placeholder.solve [] e' in
-    let ty' = Placeholder.solve [] ty' in
+  | Ok (e1, ty1, _) ->
+    let e' = Placeholder.solve [] e1 in
+    let ty' = Placeholder.solve [] ty1 in
     (* Type check the fully elaborated term *)
     let e' = Expr.reset e' in
     (* let ty' = Expr.reset ty' in *)
@@ -27,6 +27,7 @@ let rec check global ctx ind lvl sl e ty max vars =
         (* Need to find a better way to avoid rezonking *)
         (* let e' = Placeholder.solve [] e' in
         let ty' = Placeholder.solve [] ty' in *)
+        (*  *)
         (* Double checks that there are no placeholders left in the synthesization attempts *)
         Hashtbl.clear Data.meta_store;
         if Attempt.trustworthy (fst sl) then
@@ -35,7 +36,13 @@ let rec check global ctx ind lvl sl e ty max vars =
           Ok (e', ty')
         else
           Error ("Untrustworthy synthesization attempt with " ^ Attempt.printfst (fst sl) ^ "\nYou should not see this message, please report.")
-      | Error (_, msg) -> Error ("Cannot typecheck that the fully elaborated term\n  " ^ Pretty.printf e' ^ "\n has the fully elaborated type\n  " ^ Pretty.printf ty' ^ "\nTypechecking failed for the following reasons: " ^ msg)
+      | Error (_, msg) -> 
+        (* Useful msg for testing: *)
+        (* Error ("First elaboration pass: \n" ^ Pretty.printf e1 ^ "\n" ^ Pretty.printf ty1 ^ "\n\n" ^ "After zonking, fully elaborated term\n  " ^ Pretty.printf e' ^ "\n fully elaborated type after zonking\n  " ^ Pretty.printf ty' ^ 
+      Msg.meta_solutions () ^ 
+      "\nTypechecking failed for the following reasons: " ^ msg) *)
+        Error ("Kernel cannot check that the elaborated term\n  " ^ Pretty.printf e' ^ "\n has the elaborated type\n  " ^ Pretty.printf ty' ^ 
+      "\nTypechecking failed for the following reasons: " ^ msg)
       end
   | Error (sl, msg) -> iter sl msg global ctx ind lvl e ty (max+1) vars
 
