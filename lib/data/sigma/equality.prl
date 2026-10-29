@@ -4,28 +4,42 @@
  * Author: Bruno Bentzen
  */
 
+/* Equalities over pairs */
+
 import ../../core/function/equality.prl
 import ./lemmas.prl
 
 universe ℓ
 
-/* Equalities over pairs */
+/* Pair eta equality */
 
 thm prod_eta (A B : type ℓ) (w : A × B) :
   eq (A × B) w (fst w, snd w) :=
 sigmarec A (λ _, B) _ (λ x y, rfl) w
 
+/* Injectivity of pair constructor (including more intensional-like proofs) */
+
 thm pair_eq_fst {A B : type ℓ} {a a' : A} {b b' : B} :
+  eq (A × B) (a, b) (a', b') → eq A a a' :=
+λ p, reflect p rfl
+
+thm pair_eq_fst_ap {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') → eq A a a' :=
 λ p, ap (λ w, fst w) p
 
 thm pair_eq_snd {A B : type ℓ} {a a' : A} {b b' : B} :
+  eq (A × B) (a, b) (a', b') → eq B b b' :=
+λ p, reflect p rfl
+
+thm pair_eq_snd_ap {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') → eq B b b' :=
 λ p, ap (λ w, snd w) p
 
 thm pair_eq_of_eq_pair {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') → eq A a a' × eq B b b' :=
 λ p, (pair_eq_fst p, pair_eq_snd p)
+
+/* Congruence rules for pairs */
 
 thm eq_pair_of_pair_eq {A B : type ℓ} {a a' : A} {b b' : B} :
   (eq A a a' × eq B b b') → eq (A × B) (a, b) (a', b') :=
@@ -35,6 +49,8 @@ thm eq_pair_of_pair_eq {A B : type ℓ} {a a' : A} {b b' : B} :
 thm pair_eq_iff_eq_pair {A B : type ℓ} {a a' : A} {b b' : B} :
   eq (A × B) (a, b) (a', b') ↔ eq A a a' × eq B b b' :=
 (pair_eq_of_eq_pair, eq_pair_of_pair_eq)
+
+/* Not specifically about sigma types but uses products */
 
 def eq_bs {A : type 1} {a b : A} (p q : eq A a b) {C : eq A a b → type 1} :
   C p ↔ C q :=

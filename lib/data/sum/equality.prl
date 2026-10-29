@@ -11,15 +11,25 @@ import ../../core/equality/induction.prl
 
 universe ℓ
 
-/* Equality over sums */
+/* Injectivity of sum injections (including alternative intensional-equality-like proofs ) */
 
 thm sum_eq_inl {A B : type ℓ} {a a' : A} :
   eq (A + B) (inl A B a) (inl A B a') → eq A a a' :=
-λ p, ap (λ w, sumrec _ _ _ id (λ _, a) w) p
+λ p, reflect p rfl
 
 thm sum_eq_inr {A B : type ℓ} {b b' : B} :
   eq (A + B) (inr A B b) (inr A B b') → eq B b b' :=
+λ p, reflect p rfl
+
+thm sum_eq_inl_ap {A B : type ℓ} {a a' : A} :
+  eq (A + B) (inl A B a) (inl A B a') → eq A a a' :=
+λ p, ap (λ w, sumrec _ _ _ id (λ _, a) w) p
+
+thm sum_eq_inr_ap {A B : type ℓ} {b b' : B} :
+  eq (A + B) (inr A B b) (inr A B b') → eq B b b' :=
 λ p, ap (λ w, sumrec _ _ _ (λ _, b) id w) p
+
+/* Equality over sums */
 
 thm sum_neq {A B : type ℓ} {a : A} {b : B} :
   ¬ eq (A + B) (inl A B a) (inr A B b) :=

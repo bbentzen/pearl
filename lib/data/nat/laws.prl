@@ -17,6 +17,10 @@ natrec _ rfl (λ n p, reflect p rfl) m
 
 thm eq_of_succ {n m : nat} :
   eq nat (succ n) (succ m) → eq nat n m :=
+λ p, reflect p rfl
+
+thm eq_of_succ_ap {n m : nat} :
+  eq nat (succ n) (succ m) → eq nat n m :=
 λ p, ap (λ x, natrec _ n (λ k _, k) x) p
 
 thm succ_of_eq {n m : nat} :
