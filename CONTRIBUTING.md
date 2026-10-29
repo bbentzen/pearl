@@ -36,14 +36,16 @@ Here are some items on our TODO list:
 - Opening of modules for referring to module.foo as foo
 - Better documentation (in progress)
 
-## Known bugs
+## Disclaimer
 
-1. Zonking is not currently very stable: 
+This is an academic project maintained by a small group at Zhejiang University. This project is driven by our philosophical credo that the justificatory value of theorem proving in a proof assistant is predicated on its own justifiation. The goal is not to compete with Agda, Lean, Rocq, Idris on practical grounds but to build a proof assistant that prioritizes its own philosophical justification over anything else Indeed, we are first and foremost logicians and philosophers that program in our spare time. No member is a full-time professional programmer, so the implementation can be rough around the edges at times and there will be some bugs. 
+
+### Known bugs
+
+1. Zonking is still not currently very stable: 
 
 - The theorems about sigma types in the library `sigma_prod_distrb1`, `sigma_prod_distrb2`, `sigma_prod_distrb`, `dprod_up_2_fst`, `dprod_up_2_snd` all break if the assumptions involving pairs (typically `w` and `f`, but even `x`) are moved out of the context and pushed in the target type.
 
 - The theorems `nat_eq` and `sum_eq` in the library also break if proven directly in pair format rather than forward and backward separately.
 
-## Disclaimer
-
-This is an academic project maintained by a small group at Zhejiang University in part time. This project is driven by our philosophical credo that the justificatory value of theorem proving in a proof assistant is predicated on its own justifiation. The goal is not to compete with Agda, Lean, Rocq, Idris on practical grounds but to build a proof assistant that prioritizes its own philosophical justification over anything else.
+If you find any other bugs, please open an issue.
