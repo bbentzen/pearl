@@ -111,9 +111,9 @@ theorem dprod_up_2_fst {A : type ℓ} {B C : A → type ℓ} (f : Π (x : A), B 
   (B x) :=
 fst (f x)
 
-theorem dprod_up_2_snd {A : type ℓ} {B C : A → type ℓ} :
-  (Π (x : A), B x × C x) → (Π (x : A), C x) :=
-λ f x, snd (f x)
+theorem dprod_up_2_snd {A : type ℓ} {B C : A → type ℓ} (f : Π (x : A), B x × C x) (x : A) :
+  (C x) :=
+snd (f x)
 
 theorem pi_prod_distr {A B : type ℓ} {C : A → type ℓ} :
   (B × Π (x : A), C x) → (Π (x : A), B × C x) :=

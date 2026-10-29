@@ -34,11 +34,21 @@ def sum_code (A B : type ℓ) (v v' : A + B) :
 sumrec _ _ _ (λ x, sumrec _ _ _ (λ x', eq (A + B) (inl A B x) (inl A B x')) (λ _, void) v') 
 (λ y, sumrec _ _ _ (λ _, void) (λ y', eq (A + B) (inr A B y) (inr A B y')) v') v
 
-thm sum_eq {A B : type ℓ} (v v' : A + B) :
+thm sum_eq_left {A B : type ℓ} (v v' : A + B) :
+  eq (A + B) v v' → sum_code A B v v' :=
+sumrec _ _ _ (λ y, sumrec _ _ _  (λ _, id) (λ _, sum_neq) v') 
+(λ y, sumrec _ _ _ (λ _, sum_neq') (λ _, id) v') v
+
+thm sum_eq_right {A B : type ℓ} (v v' : A + B) :
+  sum_code A B v v' → eq (A + B) v v' :=
+sumrec _ _ _ (λ y, sumrec _ _ _  (λ _, id) (λ _, absurd) v') 
+(λ y, sumrec _ _ _ (λ _, absurd) (λ _, id) v') v
+
+/* thm sum_eq {A B : type ℓ} (v v' : A + B) :
   eq (A + B) v v' ↔ sum_code A B v v' :=
 sumrec _ _ _
   (λ y, sumrec _ _ _  (λ y', id_iff_id) (λ y', (sum_neq, absurd)) v') 
-  (λ y, sumrec _ _ _ (λ y', (sum_neq', absurd)) (λ x', id_iff_id) v') v
+  (λ y, sumrec _ _ _ (λ y', (sum_neq', absurd)) (λ x', id_iff_id) v') v */
 
 /* Injectivity of sum type former */
 

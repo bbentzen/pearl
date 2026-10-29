@@ -109,7 +109,17 @@ def nat_code (n m : nat) :
 natrec _ (natrec _ (eq nat 0 0) (λ _ _, void) m) 
 (λ n' C, natrec _ void (λ m' _, eq nat (succ n') (succ m')) m) n
  
-thm nat_eq {n m : nat} :
+thm nat_eq_left {n m : nat} :
+  eq nat n m → nat_code n m :=
+natrec _ (natrec _ id (λ k _, nat_neq) m)
+(λ k _, natrec _ nat_neq' (λ k' _, id) m) n
+
+thm nat_eq_right {n m : nat} :
+  nat_code n m → eq nat n m :=
+natrec _ (natrec _ id (λ k _, absurd) m)
+(λ k _, natrec _ absurd (λ k' _, id) m) n
+
+/* thm nat_eq {n m : nat} :
   eq nat n m ↔ nat_code n m :=
 natrec _ (natrec _ id_iff_id (λ k _, (nat_neq, absurd)) m)
-(λ k _, natrec _ (nat_neq', absurd) (λ k' _, id_iff_id) m) n 
+(λ k _, natrec _ (nat_neq', absurd) (λ k' _, id_iff_id) m) n */
