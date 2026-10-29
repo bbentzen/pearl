@@ -38,7 +38,7 @@ Here are some items on our TODO list:
 
 ## Disclaimer
 
-This is an academic project maintained by a small group at Zhejiang University. This project is driven by our philosophical credo that the justificatory value of theorem proving in a proof assistant is predicated on its own justifiation. The goal is not to compete with Agda, Lean, Rocq, Idris on practical grounds but to build a proof assistant that prioritizes its own philosophical justification over anything else Indeed, we are first and foremost logicians and philosophers that program in our spare time. No member is a full-time professional programmer, so the implementation can be rough around the edges at times and there will be some bugs. 
+This is an academic project maintained by a small group at Zhejiang University. This project is driven by our philosophical credo that the justificatory value of theorem proving in a proof assistant is predicated on its own justifiation. The goal is not to compete with Agda, Lean, Rocq, Idris on practical grounds but to build a proof assistant that prioritizes its own philosophical justification over anything else. Indeed, we are first and foremost logicians and philosophers that program in our spare time. No member is a full-time professional programmer, so the implementation can be rough around the edges at times and there will be some bugs. 
 
 ### Known bugs
 
