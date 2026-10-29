@@ -22,9 +22,9 @@ Pearl is written by human beings for human use and built on the convictions shar
 
 Here are some items on our TODO list:
 
-- Kernel typechecking after elaboration (almost complete)
-- Delay unification (in progress)
-- When a: A is declared in the context the typehood of A should be inferred a la PER semantics and PTT rather than checked
+- Add an escaping metavariable flag
+- When a: A is declared in the context the typehood of A should be inferred a la PER semantics and PTT program explanations rather than checked
+- Delay unification
 - Clearly separate elaboration, checking, and look for global identifier conflict when opening a binder only at elaboration stage
 - Improve stack overflow error at synthetization attempts
 - Expand the library with more formalized math for testing strengths and limits
@@ -35,6 +35,14 @@ Here are some items on our TODO list:
 - Let-in local definitions
 - Opening of modules for referring to module.foo as foo
 - Better documentation (in progress)
+
+## Known bugs
+
+1. Zonking is not currently very stable: 
+
+- The theorems about sigma types in the library `sigma_prod_distrb1`, `sigma_prod_distrb2`, `sigma_prod_distrb`, `dprod_up_2_fst`, `dprod_up_2_snd` all break if the assumptions involving pairs (typically `w` and `f`, but even `x`) are moved out of the context and pushed in the target type.
+
+- The theorems `nat_eq` and `sum_eq` in the library also break if proven directly in pair format rather than forward and backward separately.
 
 ## Disclaimer
 
