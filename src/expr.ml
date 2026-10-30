@@ -227,3 +227,7 @@ let rec build_lams vars body args =
   | _ :: rest ->
     let v = init_fresh vars in
     Lam (v, build_lams (vars + 1) body rest)
+
+let remember_meta solved = function
+  | Meta (n, _) -> Hashtbl.replace Data.meta_store n { Data.solution = solved}
+  | _ -> ()

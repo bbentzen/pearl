@@ -87,14 +87,15 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
     begin match Global.var_type x ctx with
     | Ok ty' ->
       let ty = eval ty in
-      let c = Global.check_var_ty x ty ctx in
+      let c = ty' = ty in
       let h = Placeholder.is ty in 
       let h' = Placeholder.is ty' in 
-      let d = Global.is_declared x ctx in
-      begin match c, h, h', d with
-      | true , _, _ , _ | _ , _, true , _ -> Ok (Global x, ty, sl)
-      | _ , true, _ , _ -> Ok (Global x, ty', sl)
-      | false , false, false , true ->
+      begin match c, h, h' with
+      | true , _, _ -> Ok (Global x, ty, sl)
+      | _ , false, true -> (Expr.remember_meta ty ty'; Ok (Global x, ty, sl))
+      | _ , true, false -> (Expr.remember_meta ty' ty; Ok (Global x, ty', sl))
+      | _ , true, _ -> Ok (Global x, ty', sl)
+      | false , false, false ->
         let h1 = Placeholder.generate () in
         begin match elaborate env ctx ind lvl lc sl h1 vars ty' with
         | Ok (_, tTy', sa) ->
@@ -110,21 +111,21 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
           end
         | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
         end
-      | false, false, false, false -> Error (sl, Msg.var_error_2 x)
       end
     | Error _ ->
       (* CHECK IF IN INDUCTIVE ENV *)
       begin match Inductive.var_type x ind with
       | Ok ty' ->
         let ty = eval ty in
-        let c = Inductive.check_var_ty x ty ind in
+        let c = ty' = ty in
         let h = Placeholder.is ty in 
         let h' = Placeholder.is ty' in 
-        let d = Inductive.is_declared x ind in
-        begin match c, h, h', d with
-        | true , _, _ , _ | _ , _, true , _ -> Ok (Global x, ty, sl)
-        | _ , true, _ , _ -> Ok (Global x, ty', sl)
-        | false , false, false , true ->
+        begin match c, h, h' with
+        | true , _, _ -> Ok (Global x, ty, sl)
+        | _ , false, true -> (Expr.remember_meta ty ty'; Ok (Global x, ty, sl))
+        | _ , true, false -> (Expr.remember_meta ty' ty; Ok (Global x, ty', sl))
+        | _ , true, _ -> Ok (Global x, ty', sl)
+        | false , false, false ->
           let h1 = Placeholder.generate () in
           begin match elaborate env ctx ind lvl lc sl h1 vars ty' with
           | Ok (_, tTy', sa) ->
@@ -141,7 +142,6 @@ let rec elaborate env ctx ind lvl lc sl ty vars = function
           (* here *)
           | Error (sa, msg) -> Error (sa, Msg.var_error x msg)
           end
-        | false, false, false, false -> Error (sl, Msg.var_error_2 x)
         end
       | Error _ ->
         (* Check if identifier corresponds to a theorem in the env environment *)

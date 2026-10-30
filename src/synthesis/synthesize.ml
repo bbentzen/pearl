@@ -26,7 +26,7 @@ let store_realizer e ty sl =
 (* Type checks an elaborated term and stores it if no placeholders remain *)
 
 let rec check global ctx ind lvl sl e ty max vars =
-  let num_of_attempts = 1 in
+  let num_of_attempts = 2 in
   let allow_escaped = true in
   let e = eval e and ty = eval ty in
   (* Elaborate the evaluated term and type *)
