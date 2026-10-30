@@ -21,6 +21,7 @@ const UNICODE_ABBREVIATIONS: { [key: string]: string } = {
     'times': '×',
     'nat': 'ℕ', 'int': 'ℤ', 'rat': 'ℚ', 'real': 'ℝ',
     'inv': '⁻¹', 'comp': '·',
+    'bot': '⊥', 'top': '⊤', 
     'forall': '∀', 'exists': '∃', 'and': '∧', 'or': '∨', 'vdash': '⊢',
     'in': '∈', 'notin': '∉', 'subset': '⊂', 'subseteq': '⊆', 'supset': '⊃', 'supseteq': '⊇', 'emptyset': '∅', 'cup': '∪', 'cap': '∩',
     'Rightarrow': '⇒', 'Leftrightarrow': '⇔',
