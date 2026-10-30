@@ -117,6 +117,17 @@ let rec free_occurs_name s = function
   | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> free_occurs_name s e1 || free_occurs_name s e2
   | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> free_occurs_name s e || free_occurs_name s e1 || free_occurs_name s e2
 
+let rec occurs_meta = function
+  | Meta _ -> true
+  | Global _ | Local _ | Rfl _ | Void _ | Type _ | Wild _ -> false
+  | Lam (_, e) -> occurs_meta e
+  | Pi (_, e1, e2) -> occurs_meta e1 || occurs_meta e2
+  | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) | ESubIn (e1, e2, _) -> occurs_meta e1 || occurs_meta e2
+  | Eq (e, e1, e2) -> occurs_meta e || occurs_meta e1 || occurs_meta e2
+
+let escaping_metas e ty =
+  occurs_meta e || occurs_meta ty
+
 let rec occurs_list k args = function
   | Global _ as g -> List.mem g args
   | Local i -> i >= k && List.mem (Local (i - k)) args

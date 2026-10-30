@@ -8,42 +8,58 @@
  **)
 
 open Basis
+open Ast
 open Eval
 open Kernel
 
-(* Iterated synthesization attempts *)
+(* Stores realizers if there are no wildcards left in the synthesization attempts *)
+
+let store_realizer e ty sl =
+  Hashtbl.clear Data.meta_store;
+  if Attempt.trustworthy (fst sl) then
+    Ok (Expr.realizer_of e, Expr.realizer_of ty)
+  else
+    Error ("Untrustworthy synthesization attempt with " 
+    ^ Attempt.printfst (fst sl) ^ 
+    "\nYou should not see this message, please report.")
+
+(* Type checks an elaborated term and stores it if no placeholders remain *)
 
 let rec check global ctx ind lvl sl e ty max vars =
+  let num_of_attempts = 1 in
+  let allow_escaped = true in
   let e = eval e and ty = eval ty in
+  (* Elaborate the evaluated term and type *)
   match Elab.elaborate global ctx ind lvl 0 sl ty vars e with
   | Ok (e1, ty1, _) ->
-    let e' = Placeholder.solve [] e1 in
-    let ty' = Placeholder.solve [] ty1 in
-    (* Type check the fully elaborated term *)
-    let e' = Expr.reset e' in
-    (* let ty' = Expr.reset ty' in *)
-      begin match Elab.elaborate global ctx ind lvl 0 ([], []) ty vars e' with
+    (* Type check the elaborated terms until no escaping metavariables remain *)
+    let rec typecheck e1 ty1 sl = function
+    | 0 ->
+      if not (Expr.escaping_metas e1 ty1) || allow_escaped then
+        store_realizer e1 ty1 sl
+      else
+        if Expr.occurs_meta e1 then Placeholder.escaping "term" e1
+        else Placeholder.escaping "type" ty1
+    | n ->
+      (* Zonk all metas and revert explicit substitutions *)
+      let e' = Placeholder.solve [] e1 and ty' = Placeholder.solve [] ty1 in
+      let e' = Expr.reset e' and ty' = Expr.reset ty' in
+      match Elab.elaborate global ctx ind lvl 0 ([], []) ty vars e' with
       | Ok (e', ty', sl) ->
-        (* Need to find a better way to avoid rezonking *)
-        (* let e' = Placeholder.solve [] e' in
-        let ty' = Placeholder.solve [] ty' in *)
-        (*  *)
-        (* Double checks that there are no placeholders left in the synthesization attempts *)
-        Hashtbl.clear Data.meta_store;
-        if Attempt.trustworthy (fst sl) then
-          let e' = Expr.realizer_of e' in
-          let ty' = Expr.realizer_of ty' in
-          Ok (e', ty')
-        else
-          Error ("Untrustworthy synthesization attempt with " ^ Attempt.printfst (fst sl) ^ "\nYou should not see this message, please report.")
+        if not (Expr.escaping_metas e' ty') || allow_escaped then
+          store_realizer e' ty' sl
+        else 
+          typecheck e' ty' sl (n-1)
       | Error (_, msg) -> 
         (* Useful msg for testing: *)
         (* Error ("First elaboration pass: \n" ^ Pretty.printf e1 ^ "\n" ^ Pretty.printf ty1 ^ "\n\n" ^ "After zonking, fully elaborated term\n  " ^ Pretty.printf e' ^ "\n fully elaborated type after zonking\n  " ^ Pretty.printf ty' ^ 
-      Msg.meta_solutions () ^ 
-      "\nTypechecking failed for the following reasons: " ^ msg) *)
-        Error ("Kernel cannot check that the elaborated term\n  " ^ Pretty.printf e' ^ "\n has the elaborated type\n  " ^ Pretty.printf ty' ^ 
-      "\nTypechecking failed for the following reasons: " ^ msg)
-      end
+        Msg.meta_solutions () ^ 
+        "\nTypechecking failed for the following reasons: " ^ msg) *)
+        Error ( string_of_int n ^ "Kernel cannot check that the elaborated term\n  " 
+        ^ Pretty.printf e' ^ "\n has the elaborated type\n  " ^ Pretty.printf ty' 
+        ^ "\nTypechecking failed for the following reasons: " ^ msg)
+    in
+    typecheck e1 ty1 sl num_of_attempts
   | Error (sl, msg) -> iter sl msg global ctx ind lvl e ty (max+1) vars
 
 and iter sl' msg global ctx ind lvl e ty max vars =

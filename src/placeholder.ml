@@ -163,3 +163,7 @@ let rec close var = function
   | Pi (_, e1, e2) | App (e1, e2) | Quot (e1, e2) | Mkq (e1, e2) | Reflect (e1, e2) -> close var e1; close var e2
   | Eq (e, e1, e2) | ESubIn (e, e1, e2) -> close var e; close var e1; close var e2
   | Local _ | Global _ | Void _ | Rfl _ | Type _ | Wild _ -> ()
+
+let escaping s e =
+  Error ("Warning: The definition or theorem should not be trusted.  After 10 successive failed attempts, the kernel still could not synthesize all metavariables in the elaborated " ^ s ^"\n  " 
+        ^ Pretty.printf e)
